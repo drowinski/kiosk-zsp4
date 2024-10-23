@@ -12,7 +12,7 @@ export async function loader() {
   return result.rows.at(0)?.x;
 }
 
-export default function HomeIndex() {
+export default function HomePage() {
   const data = useLoaderData<typeof loader>();
   return (
     <main className="flex h-full items-center justify-center">

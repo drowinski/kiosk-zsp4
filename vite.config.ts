@@ -1,7 +1,7 @@
 import { vitePlugin as remix } from '@remix-run/dev';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { routes } from './src/routes';
+import { routes } from './src/app/routes';
 
 declare module '@remix-run/node' {
   interface Future {
