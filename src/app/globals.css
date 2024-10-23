@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    @font-face {
+        font-family: "Nunito";
+        src: url("/fonts/nunito/Nunito-VariableFont_wght.ttf"),
+        url("/fonts/nunito/Nunito-Italic-VariableFont_wght.ttf");
+        font-weight: 100 1000;
+    }
+
+    html,
+    body {
+        height: 100%;
+        overscroll-behavior: none;
+    }
+}
