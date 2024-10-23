@@ -4,7 +4,7 @@ export const meta: MetaFunction = () => {
   return [{ title: 'Kiosk ZSP4' }];
 };
 
-export default function Index() {
+export default function HomeIndex() {
   return (
     <main className="flex h-full items-center justify-center">
       <span className={'text-6xl font-extrabold'}>Kiosk ZSP4</span>
