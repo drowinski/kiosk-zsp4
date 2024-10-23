@@ -1,15 +1,25 @@
 import { Form, useActionData } from '@remix-run/react';
-import { ActionFunctionArgs, json } from '@remix-run/node';
+import { ActionFunctionArgs, json, LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { z } from 'zod';
-import { User, userPasswordSchema, userSchema } from '@/features/users/users.validation';
+import { userPasswordSchema, userSchema } from '@/features/users/users.validation';
 import { userService } from '@/features/users/users.service';
+import { getSession } from '@/features/sessions/sessions.utils';
+import { sessionStorage } from '@/features/sessions/sessions.storage';
 
 const formSchema = z.object({
   email: userSchema.shape.email,
   password: userPasswordSchema
 });
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await getSession(request);
+  if (!session || !session.id) {
+    return new Response(null, { headers: { 'Set-Cookie': await sessionStorage.destroySession(session) } });
+  }
+  return redirect('/');
+}
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -19,14 +29,13 @@ export async function action({ request }: ActionFunctionArgs) {
     return json(submission.reply());
   }
 
-  let user: User | null;
   try {
-    user = await userService.signUp(submission.value.email, submission.value.password);
+    await userService.registerUser(submission.value.email, submission.value.password);
   } catch (error) {
     return json(submission.reply({ formErrors: ['Błąd.'] }));
   }
 
-  return null;
+  return redirect('/auth/sign-in');
 }
 
 export default function SignUpPage() {

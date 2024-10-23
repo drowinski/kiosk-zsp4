@@ -1,13 +1,15 @@
-import type { MetaFunction } from '@remix-run/node';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { db } from '@/lib/db/connection';
 import { sql } from 'drizzle-orm';
 import { useLoaderData } from '@remix-run/react';
+import { requireSession } from '@/features/sessions/sessions.utils';
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Kiosk ZSP4' }];
 };
 
-export async function loader() {
+export async function loader({ request }: LoaderFunctionArgs) {
+  await requireSession(request);
   const result = await db.execute(sql<number>`select 123 as x`);
   return result.rows.at(0)?.x;
 }

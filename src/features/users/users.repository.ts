@@ -1,6 +1,6 @@
 import { NewUser, User, UserWithPasswordHash } from '@/features/users/users.validation';
 import { db } from '@/lib/db/connection';
-import { usersTable } from '@/features/users/users.db';
+import { userTable } from '@/features/users/users.db';
 import { eq } from 'drizzle-orm';
 
 export interface UserRepository {
@@ -10,27 +10,27 @@ export interface UserRepository {
 
   createUser(newUser: NewUser): Promise<User | null>;
 
-  updateUser(values: Partial<UserWithPasswordHash>): Promise<User | null>;
+  updateUser(id: number, values: Partial<UserWithPasswordHash>): Promise<User | null>;
 }
 
 export class DrizzleUserRepository implements UserRepository {
   async getUserById(id: number): Promise<User | null> {
-    const result = await db.select().from(usersTable).where(eq(usersTable.id, id));
+    const result = await db.select().from(userTable).where(eq(userTable.id, id));
     return result.at(0) ?? null;
   }
 
   async getUserWithPasswordHashByEmail(email: string): Promise<UserWithPasswordHash | null> {
-    const result = await db.select().from(usersTable).where(eq(usersTable.email, email));
+    const result = await db.select().from(userTable).where(eq(userTable.email, email));
     return result.at(0) ?? null;
   }
 
   async createUser(newUser: NewUser): Promise<User | null> {
-    const result = await db.insert(usersTable).values(newUser).returning();
+    const result = await db.insert(userTable).values(newUser).returning();
     return result.at(0) ?? null;
   }
 
-  async updateUser(values: Partial<UserWithPasswordHash>): Promise<User | null> {
-    const result = await db.update(usersTable).set(values).returning();
+  async updateUser(id: number, values: Partial<UserWithPasswordHash>): Promise<User | null> {
+    const result = await db.update(userTable).set(values).where(eq(userTable.id, id)).returning();
     return result.at(0) ?? null;
   }
 }

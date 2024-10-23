@@ -1,29 +1,49 @@
 import { Form, useActionData } from '@remix-run/react';
 import { useForm } from '@conform-to/react';
-import { ActionFunctionArgs, json } from '@remix-run/node';
+import { ActionFunctionArgs, json, LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { z } from 'zod';
 import { userPasswordSchema, userSchema } from '@/features/users/users.validation';
 import { parseWithZod } from '@conform-to/zod';
 import { userService } from '@/features/users/users.service';
+import { sessionStorage } from '@/features/sessions/sessions.storage';
+import { getSession } from '@/features/sessions/sessions.utils';
 
 const formSchema = z.object({
   email: userSchema.shape.email,
   password: userPasswordSchema
 });
 
+export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await getSession(request);
+  if (!session || !session.id) {
+    return new Response(null, { headers: { 'Set-Cookie': await sessionStorage.destroySession(session) } });
+  }
+  return redirect('/');
+}
+
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: formSchema });
   if (submission.status !== 'success') {
-    return json({ lastResult: submission.reply(), user: null });
+    return json({ lastResult: submission.reply() });
   }
 
-  const user = await userService.signIn(submission.value.email, submission.value.password);
+  const user = await userService.validateUser(submission.value.email, submission.value.password);
   if (!user) {
-    return json({ lastResult: submission.reply({ formErrors: ['Błąd.'] }), user: null });
+    return json({ lastResult: submission.reply({ formErrors: ['Błąd.'] }) });
   }
 
-  return json({ lastResult: submission.reply(), user: user });
+  const session = await sessionStorage.getSession();
+  session.set('userId', user.id);
+
+  return json(
+    { lastResult: submission.reply() },
+    {
+      headers: {
+        'Set-Cookie': await sessionStorage.commitSession(session)
+      }
+    }
+  );
 }
 
 export default function SignInPage() {
@@ -41,7 +61,7 @@ export default function SignInPage() {
     <main className={'flex h-full flex-col items-center justify-center'}>
       <div className={'flex flex-col gap-2 bg-black p-4'}>
         <span className={'text-white'}>SIGN IN</span>
-        {actionData?.user && <span className={'text-white'}>User id: {actionData.user.id}</span>}
+        {/*{actionData?.user && <span className={'text-white'}>User id: {actionData.user.id}</span>}*/}
         <Form
           method={'post'}
           id={form.id}
