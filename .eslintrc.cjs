@@ -72,7 +72,10 @@ module.exports = {
         'plugin:import/recommended',
         'plugin:import/typescript',
         'prettier'
-      ]
+      ],
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'warn'
+      }
     },
 
     // Node
