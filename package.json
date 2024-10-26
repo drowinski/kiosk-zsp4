@@ -24,6 +24,7 @@
     "drizzle-orm": "^0.35.3",
     "drizzle-zod": "^0.5.1",
     "isbot": "^4.1.0",
+    "mime-types": "^2.1.35",
     "pg": "^8.13.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@remix-run/dev": "^2.13.1",
+    "@types/mime-types": "^2.1.4",
     "@types/pg": "^8.11.10",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
