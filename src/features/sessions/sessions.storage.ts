@@ -6,7 +6,7 @@ type SessionData = {
   userId: number;
 };
 
-const { getSession, commitSession, destroySession } = createSessionStorage<SessionData, SessionData>({
+export const sessionStorage = createSessionStorage<SessionData, SessionData>({
   async createData(data: Partial<SessionData>, expiresAt): Promise<string> {
     if (!data.userId) {
       throw new Error('NO USER ID');
@@ -39,9 +39,3 @@ const { getSession, commitSession, destroySession } = createSessionStorage<Sessi
     secure: IS_PRODUCTION_ENV
   }
 });
-
-export const sessionStorage = {
-  getSession,
-  commitSession,
-  destroySession
-};
