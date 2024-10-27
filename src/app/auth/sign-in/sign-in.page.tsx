@@ -21,7 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!session || !session.id) {
     return new Response(null, { headers: { 'Set-Cookie': await sessionStorage.destroySession(session) } });
   }
-  return redirect('/');
+  return redirect('/dashboard');
 }
 
 export async function action({ request }: ActionFunctionArgs) {
