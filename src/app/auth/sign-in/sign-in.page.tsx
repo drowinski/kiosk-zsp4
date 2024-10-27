@@ -86,7 +86,7 @@ export default function SignInPage() {
             name={fields.password.name}
             defaultValue={fields.password.initialValue}
             placeholder={'Hasło'}
-            errorMessages={fields.email.errors}
+            errorMessages={fields.password.errors}
           />
           <Button variant={'default'} type={'submit'}>Zaloguj się</Button>
         </Form>
