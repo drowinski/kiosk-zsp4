@@ -2,11 +2,14 @@ import { Form, useActionData } from '@remix-run/react';
 import { ActionFunctionArgs, json, LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import { userPasswordSchema, userSchema } from '@/features/users/users.validation';
 import { userService } from '@/features/users/users.service';
 import { getSession } from '@/features/sessions/sessions.utils';
 import { sessionStorage } from '@/features/sessions/sessions.storage';
+import { Card } from '@/components/base/card';
+import { Button } from '@/components/base/button';
+import { Input } from '@/components/base/input';
 
 const formSchema = z.object({
   email: userSchema.shape.email,
@@ -46,13 +49,13 @@ export default function SignUpPage() {
       return parseWithZod(formData, { schema: formSchema });
     },
     shouldValidate: 'onBlur',
-    shouldRevalidate: 'onInput'
+    shouldRevalidate: 'onBlur'
   });
 
   return (
     <main className={'flex h-full flex-col items-center justify-center'}>
-      <div className={'flex flex-col gap-2 bg-black p-4'}>
-        <span className={'text-white'}>SIGN UP</span>
+      <Card className={'flex flex-col gap-3'}>
+        <span className={'text-primary text-xl'}>REJESTRACJA</span>
         <Form
           method={'post'}
           id={form.id}
@@ -60,29 +63,32 @@ export default function SignUpPage() {
           noValidate
           className={'flex flex-col gap-2'}
         >
-          {form.errors && <div className={'text-red-500'}>{form.errors}</div>}
-          <input
+          {form.errors && <span className={'text-red-500'}>{form.errors}</span>}
+          <Input
             type={'text'}
             key={fields.email.key}
             name={fields.email.name}
             defaultValue={fields.email.initialValue}
+            placeholder={'Email'}
+            errorMessages={fields.email.errors}
+            autoComplete={'email'}
           />
-          <div className={'text-red-500'}>{fields.email.errors}</div>
-          <input
+          <Input
             type={'password'}
             key={fields.password.key}
             name={fields.password.name}
             defaultValue={fields.password.initialValue}
+            placeholder={'Hasło'}
+            errorMessages={fields.password.errors}
+            autoComplete={'password'}
           />
-          <div className={'text-red-500'}>{fields.password.errors}</div>
-          <button
-            type="submit"
-            className={'bg-white text-black'}
+          <Button
+            type={'submit'}
           >
-            Submit
-          </button>
+            Zarejestruj się
+          </Button>
         </Form>
-      </div>
+      </Card>
     </main>
   );
 }

@@ -1,12 +1,15 @@
 import { Form, useActionData } from '@remix-run/react';
 import { useForm } from '@conform-to/react';
 import { ActionFunctionArgs, json, LoaderFunctionArgs, redirect } from '@remix-run/node';
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 import { userPasswordSchema, userSchema } from '@/features/users/users.validation';
 import { parseWithZod } from '@conform-to/zod';
 import { userService } from '@/features/users/users.service';
 import { sessionStorage } from '@/features/sessions/sessions.storage';
 import { getSession } from '@/features/sessions/sessions.utils';
+import { Card } from '@/components/base/card';
+import { Button } from '@/components/base/button';
+import { Input } from '@/components/base/input';
 
 const formSchema = z.object({
   email: userSchema.shape.email,
@@ -54,14 +57,13 @@ export default function SignInPage() {
       return parseWithZod(formData, { schema: formSchema });
     },
     shouldValidate: 'onBlur',
-    shouldRevalidate: 'onInput'
+    shouldRevalidate: 'onBlur'
   });
 
   return (
     <main className={'flex h-full flex-col items-center justify-center'}>
-      <div className={'flex flex-col gap-2 bg-black p-4'}>
-        <span className={'text-white'}>SIGN IN</span>
-        {/*{actionData?.user && <span className={'text-white'}>User id: {actionData.user.id}</span>}*/}
+      <Card className={'flex flex-col gap-3'}>
+        <span className={'text-primary text-xl uppercase'}>Logowanie</span>
         <Form
           method={'post'}
           id={form.id}
@@ -69,29 +71,26 @@ export default function SignInPage() {
           noValidate
           className={'flex flex-col gap-2'}
         >
-          {form.errors && <div className={'text-red-500'}>{form.errors}</div>}
-          <input
+          {form.errors && <span className={'text-red-500'}>{form.errors}</span>}
+          <Input
             type={'text'}
             key={fields.email.key}
             name={fields.email.name}
             defaultValue={fields.email.initialValue}
+            placeholder={'Email'}
+            errorMessages={fields.email.errors}
           />
-          <div className={'text-red-500'}>{fields.email.errors}</div>
-          <input
+          <Input
             type={'password'}
             key={fields.password.key}
             name={fields.password.name}
             defaultValue={fields.password.initialValue}
+            placeholder={'Hasło'}
+            errorMessages={fields.email.errors}
           />
-          <div className={'text-red-500'}>{fields.password.errors}</div>
-          <button
-            type="submit"
-            className={'bg-white text-black'}
-          >
-            Submit
-          </button>
+          <Button variant={'default'} type={'submit'}>Zaloguj się</Button>
         </Form>
-      </div>
+      </Card>
     </main>
   );
 }

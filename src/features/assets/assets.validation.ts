@@ -1,6 +1,6 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { assetTable } from '@/features/assets/assets.db';
-import { z } from 'zod';
+import { z } from '@/lib/zod';
 
 export const assetSchema = createSelectSchema(assetTable);
 export type Asset = z.infer<typeof assetSchema>;
