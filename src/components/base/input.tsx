@@ -32,5 +32,3 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ errorMess
   </div>
 ));
 Input.displayName = 'Input';
-
-export class InputMessage {}
