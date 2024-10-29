@@ -42,9 +42,9 @@ export default function DashboardLayout() {
             label={'Dodaj media'}
           />
         </DashboardSideNav>
-        <main className={'h-full w-full'}>
+        <div className={'h-full w-full'}>
           <Outlet />
-        </main>
+        </div>
       </div>
     </div>
   );

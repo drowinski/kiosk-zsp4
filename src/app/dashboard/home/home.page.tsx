@@ -1,7 +1,7 @@
 export default function DashboardHomePage() {
   return (
-    <div className={'p-4'}>
+    <main className={'p-4'}>
       Dashboard.
-    </div>
+    </main>
   )
 }
