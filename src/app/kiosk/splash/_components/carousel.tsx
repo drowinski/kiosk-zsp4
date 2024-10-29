@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { cn } from '@/utils/styles';
 import { Slot } from '@radix-ui/react-slot';
