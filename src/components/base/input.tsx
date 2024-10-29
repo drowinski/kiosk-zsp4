@@ -11,10 +11,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ errorMess
       ref={ref}
       className={cn(
         'inline-flex h-9 items-center justify-center shadow-inner',
-        'whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium',
-        'focus-visible:ring-primary focus-visible:outline-none focus-visible:ring-1',
+        'whitespace-nowrap rounded-md bg-white text-black px-3 py-2 text-sm font-medium',
+        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
         'disabled:pointer-events-none disabled:opacity-50',
-        errorMessages && 'ring-danger ring-1',
+        'file:border-0 file:bg-transparent',
+        errorMessages && 'ring-1 ring-danger',
         className
       )}
       {...props}
@@ -23,7 +24,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ errorMess
       new Array<string>().concat(errorMessages).map((errorMessage, index) => (
         <span
           key={index}
-          className={'text-danger text-sm'}
+          className={'text-sm text-danger'}
         >
           {errorMessage}
         </span>

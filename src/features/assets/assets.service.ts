@@ -3,8 +3,7 @@ import { ReadStream } from 'node:fs';
 import { FileManager } from '@/lib/files';
 import { env } from '@/lib/env';
 import * as crypto from 'node:crypto';
-import * as path from 'node:path';
-import { Asset, AssetType } from '@/features/assets/assets.validation';
+import { Asset, AssetType, NewAsset } from '@/features/assets/assets.validation';
 import * as mime from 'mime-types';
 
 export class AssetService {
@@ -21,42 +20,39 @@ export class AssetService {
     this.fileManager = fileManager;
   }
 
-  async uploadAsset(stream: ReadStream, fileName: string, mimeType: string): Promise<Asset> {
-    const newFileName = this.generateFileName(fileName);
-    mimeType = this.normalizeMimeType(mimeType);
+  async uploadAsset(stream: ReadStream, assetData: Omit<NewAsset, 'fileName' | 'assetType'>): Promise<Asset> {
+    const mimeType = this.normalizeMimeType(assetData.mimeType);
+    const fileName = this.generateFileName(mimeType);
 
-    const extension = mime.extension(mimeType);
-    if (!extension) {
-      throw new Error('Unrecognized MIME type.');
-    }
-
-    await this.fileManager.saveFileFromStream(stream, newFileName);
+    await this.fileManager.saveFileFromStream(stream, fileName);
 
     const asset = await this.assetRepository.createAsset({
-      fileName: newFileName,
+      fileName: fileName,
       mimeType: mimeType,
-      assetType: this.getAssetTypeFromMimeType(mimeType)
+      assetType: this.getAssetTypeFromMimeType(mimeType),
+      description: assetData.description,
+      width: assetData.width,
+      height: assetData.height
     });
 
     if (!asset) {
-      throw new Error('Error occurred while adding asset to repository.');
+      throw new Error('An error occurred while adding asset to repository.');
     }
 
     return asset;
   }
 
-  private generateFileName(originalFileNameOrExtension: string): string {
-    const extension =
-      '.' +
-      path
-        .parse(originalFileNameOrExtension)
-        .ext.replaceAll(/[^a-zA-Z0-9]/g, '')
-        .toLowerCase();
-    return crypto.randomUUID() + extension;
+  private generateFileName(mimeType: string): string {
+    return crypto.randomUUID() + '.' + mime.extension(mimeType);
   }
 
   private normalizeMimeType(mimeType: string): string {
-    return mimeType.trim().toLowerCase();
+    mimeType = mimeType.trim().toLowerCase();
+    const extension = mime.extension(mimeType);
+    if (!extension) {
+      throw new Error('Unrecognized MIME type.');
+    }
+    return mimeType;
   }
 
   private getAssetTypeFromMimeType(mimeType: string): AssetType {

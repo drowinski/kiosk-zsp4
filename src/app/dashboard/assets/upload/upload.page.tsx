@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs, TypedResponse } from '@remix-run/node';
+import { ActionFunctionArgs, json, LoaderFunctionArgs, MetaFunction, TypedResponse } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
 import { SubmissionResult, useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
@@ -7,10 +7,18 @@ import { assetService } from '@/features/assets/assets.service';
 import { requireSession } from '@/features/sessions/sessions.utils';
 import { ReadStream } from 'node:fs';
 import { ReadableStream as NodeReadableStream } from 'node:stream/web';
-import { Asset } from '@/features/assets/assets.validation';
+import { Asset, assetSchema } from '@/features/assets/assets.validation';
+import { Card } from '@/components/base/card';
+import { Button } from '@/components/base/button';
+import { Input } from '@/components/base/input';
+
+export const meta: MetaFunction = () => [
+  { title: 'Dodaj media' }
+];
 
 const formSchema = z.object({
-  file: z.instanceof(File, { message: 'Dodaj plik.' })
+  file: z.instanceof(File, { message: 'Dodaj plik.' }),
+  description: assetSchema.shape.description
 });
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -34,8 +42,10 @@ export async function action({ request }: ActionFunctionArgs): Promise<
 
   const asset = await assetService.uploadAsset(
     ReadStream.fromWeb(file.stream() as NodeReadableStream) as ReadStream,
-    file.name,
-    file.type
+    {
+      mimeType: file.type,
+      description: submission.value.description
+    }
   );
 
   console.log(asset);
@@ -52,11 +62,13 @@ export default function AssetUploadPage() {
 
   return (
     <main className={'flex h-full flex-col items-center justify-center'}>
-      <div className={'flex flex-col gap-2 bg-black p-4 text-white'}>
+      <Card className={'flex flex-col gap-2 p-4'}>
         {actionData?.asset && (
           <div className={'flex flex-col gap-2'}>
             {Object.entries(actionData.asset).map(([key, value]) => (
-              <span key={key}>{key}: {value}</span>
+              <span key={key}>
+                {key}: {value}
+              </span>
             ))}
           </div>
         )}
@@ -67,20 +79,21 @@ export default function AssetUploadPage() {
           encType="multipart/form-data"
           className={'flex flex-col gap-2'}
         >
-          <input
+          <Input
+            type={'text'}
+            placeholder={'Opis'}
+            name={fields.description.name}
+            defaultValue={fields.description.initialValue}
+          />
+          <Input
             type={'file'}
             name={fields.file.name}
             accept={'image/jpeg, image/png, video/mp4'}
           />
           <div>{fields.file.errors}</div>
-          <button
-            type={'submit'}
-            className={'bg-white p-2 text-black'}
-          >
-            Wgraj
-          </button>
+          <Button type={'submit'}>Wgraj</Button>
         </Form>
-      </div>
+      </Card>
     </main>
   );
 }
