@@ -18,7 +18,6 @@ export class FileManager {
 
   async saveFileFromStream(stream: fs.ReadStream, fileName: string): Promise<void> {
     fileName = this.ensurePathSafe(fileName);
-    console.log(fileName);
     const writeStream = fs.createWriteStream(fileName);
     return new Promise<void>((resolve, reject) => {
       stream

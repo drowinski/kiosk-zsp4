@@ -12,7 +12,8 @@
     "typecheck": "tsc",
     "db-generate": "drizzle-kit generate",
     "db-migrate": "drizzle-kit migrate",
-    "db-push": "drizzle-kit push"
+    "db-push": "drizzle-kit push",
+    "db-seed": "tsx ./src/lib/db/seed.ts"
   },
   "dependencies": {
     "@conform-to/react": "^1.2.2",

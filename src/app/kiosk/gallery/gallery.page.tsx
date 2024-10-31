@@ -2,12 +2,10 @@ import { GalleryGrid, GalleryGridItem } from '@/components/gallery-grid';
 import { assetRepository } from '@/features/assets/assets.repository';
 import { useLoaderData } from '@remix-run/react';
 import { json } from '@remix-run/node';
-import { Asset } from '@/features/assets/assets.validation';
 
 export async function loader() {
   const assets = await assetRepository.getAllAssets();
-  const repeatedAssets: Asset[] = new Array(10).fill(assets).flat();
-  return json({ assets: repeatedAssets });
+  return json({ assets: assets });
 }
 
 export default function KioskGalleryPage() {
