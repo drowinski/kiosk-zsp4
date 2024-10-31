@@ -6,6 +6,8 @@ import { eq } from 'drizzle-orm';
 interface AssetRepository {
   getAssetById(id: number): Promise<Asset | null>;
 
+  getAllAssets(): Promise<Asset[]>;
+
   createAsset(newAsset: NewAsset): Promise<Asset | null>;
 }
 
@@ -13,6 +15,10 @@ export class DrizzleAssetRepository implements AssetRepository {
   async getAssetById(id: number): Promise<Asset | null> {
     const result = await db.select().from(assetTable).where(eq(assetTable.id, id));
     return result.at(0) ?? null;
+  }
+
+  async getAllAssets(): Promise<Asset[]> {
+    return db.select().from(assetTable);
   }
 
   async createAsset(newAsset: NewAsset): Promise<Asset | null> {

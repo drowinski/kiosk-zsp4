@@ -7,7 +7,7 @@ export default function KioskSplashPage() {
 
   return (
     <Link
-      to="/"
+      to={'/gallery'}
       className={'flex h-full cursor-default items-center gap-2'}
     >
       <div className={'relative flex h-full flex-grow items-center justify-center overflow-hidden'}>
