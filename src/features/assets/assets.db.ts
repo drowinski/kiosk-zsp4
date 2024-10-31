@@ -20,8 +20,8 @@ export const dateTable = pgTable(
   'date_table',
   {
     id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
-    dateMin: date('date_min').notNull(),
-    dateMax: date('date_max').notNull(),
+    dateMin: date('date_min', { mode: 'date' }).notNull(),
+    dateMax: date('date_max', { mode: 'date' }).notNull(),
     datePrecision: datePrecision('date_precision').notNull(),
     dateIsRange: boolean('date_is_range').notNull().default(false)
   },
