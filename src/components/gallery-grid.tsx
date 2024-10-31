@@ -52,7 +52,7 @@ export function GalleryGridItem({ asset, className, ...props }: GalleryGridItemP
 
   return (
     <div
-      className={cn('relative aspect-square overflow-clip rounded-xl bg-primary/20', className)}
+      className={cn('relative aspect-square overflow-clip rounded-xl bg-primary/20 shadow-sm', className)}
       {...props}
     >
       <div className={cn('absolute size-full', (isLoading || isError) && 'invisible')}>{image}</div>

@@ -32,7 +32,8 @@ export class AssetService {
       assetType: this.getAssetTypeFromMimeType(mimeType),
       description: assetData.description,
       width: assetData.width,
-      height: assetData.height
+      height: assetData.height,
+      date: assetData.date
     });
 
     if (!asset) {
