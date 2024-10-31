@@ -9,12 +9,12 @@ export const dateCreateSchema = createInsertSchema(dateTable).omit({ id: true })
 export type NewDate = z.infer<typeof dateCreateSchema>;
 
 export const assetSchema = createSelectSchema(assetTable).omit({ dateId: true }).extend({
-  date: dateSchema.nullable()
+  date: dateSchema.nullable().optional()
 });
 export type Asset = z.infer<typeof assetSchema>;
 
 export const assetCreateSchema = createInsertSchema(assetTable).omit({ id: true, dateId: true }).extend({
-  date: dateCreateSchema.nullable()
+  date: dateCreateSchema.nullable().optional()
 });
 export type NewAsset = z.infer<typeof assetCreateSchema>;
 
