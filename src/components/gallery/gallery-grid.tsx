@@ -4,9 +4,10 @@ import { Asset } from '@/features/assets/assets.validation';
 
 export interface GalleryGridItemProps extends React.HTMLAttributes<HTMLDivElement> {
   asset: Asset;
+  enableDebugView?: boolean;
 }
 
-export function GalleryGridItem({ asset, className, ...props }: GalleryGridItemProps) {
+export function GalleryGridItem({ asset, enableDebugView = false, className, ...props }: GalleryGridItemProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
@@ -60,6 +61,16 @@ export function GalleryGridItem({ asset, className, ...props }: GalleryGridItemP
       {isError && (
         <div className={'absolute flex size-full flex-col items-center justify-center opacity-50'}>
           <span className={'text-xl font-bold'}>Błąd</span>
+        </div>
+      )}
+      {enableDebugView && (
+        <div className={'absolute flex size-full flex-col'}>
+          <span>ID: {asset.id}</span>
+          <span>File name: {asset.fileName}</span>
+          <span>Asset type: {asset.assetType}</span>
+          <span>Date min: {asset.date?.dateMin.toString()}</span>
+          <span>Date max: {asset.date?.dateMax.toString()}</span>
+          <span>Date precision: {asset.date?.datePrecision}</span>
         </div>
       )}
     </div>
