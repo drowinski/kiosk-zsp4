@@ -24,7 +24,7 @@ const dateFormatters: Record<AssetDatePrecision, DateFormatter> = {
     format(date: Date) {
       const year = date.getFullYear().toString();
       if (year.startsWith('19')) {
-        return 'lata ' + year.at(2) + '0';
+        return 'lata ' + year.at(-2) + '0';
       } else {
         return 'lata ' + year.slice(0, 2) + '00';
       }
