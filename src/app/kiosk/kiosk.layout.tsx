@@ -3,13 +3,13 @@ import { Outlet } from '@remix-run/react';
 
 export default function KioskLayout() {
   return (
-    <div>
-      <header className={'sticky left-0 top-0 z-50 mx-1 pt-1 mb-2 bg-background rounded-b-xl'}>
+    <div className={'h-full flex flex-col'}>
+      <header className={'p-1'}>
         <Card className={'flex items-center justify-center bg-primary px-4 py-3 text-primary-foreground'}>
           <span className={'text-xl font-bold'}>Izba Pamięci</span>
         </Card>
       </header>
-      <div className={'h-full px-1'}>
+      <div className={'h-full px-1 overflow-hidden'}>
         <Outlet />
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
 import './globals.css';
+import React from 'react';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,7 +14,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className={'bg-background text-foreground'}>
+      <body className={'bg-background text-foreground overflow-hidden'}>
         {children}
         <ScrollRestoration />
         <Scripts />

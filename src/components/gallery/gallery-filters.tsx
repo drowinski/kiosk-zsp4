@@ -1,14 +1,16 @@
 import { FilteredAssetsHookReturnType } from '@/features/assets/hooks/use-filtered-assets';
 import { Card } from '@/components/base/card';
 import { Input } from '@/components/base/input';
+import { cn } from '@/utils/styles';
 
 interface GalleryFiltersProps {
   setFilter: FilteredAssetsHookReturnType['setFilter'];
+  className?: string;
 }
 
-export function GalleryFilters({ setFilter }: GalleryFiltersProps) {
+export function GalleryFilters({ setFilter, className }: GalleryFiltersProps) {
   return (
-    <Card className={'flex gap-1'}>
+    <Card className={cn('flex gap-1', className)}>
       <Input
         placeholder={'Starsze niż...'}
         onInput={(event) =>
