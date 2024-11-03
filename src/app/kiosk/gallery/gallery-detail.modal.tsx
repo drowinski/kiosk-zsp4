@@ -1,6 +1,9 @@
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { assetRepository } from '@/features/assets/assets.repository';
+import { Card } from '@/components/base/card';
+import { Asset } from '@/features/assets/components/asset';
+import { formatDate } from '@/features/assets/assets.utils';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const id = Number(params['id']);
@@ -20,21 +23,33 @@ export default function GalleryDetailModal() {
   const { asset } = useLoaderData<typeof loader>();
 
   return (
-    <div className={'fixed bottom-0 left-0 right-0 top-0 z-50 bg-black/90'}>
-      {asset &&
-        (asset.assetType === 'image' ? (
-          <img
-            src={'/media/' + asset?.fileName}
-            alt={asset.description ?? 'nieopisany materiał'}
-            className={'size-full object-contain'}
+    <div className={'fixed bottom-0 left-0 right-0 top-0 z-50 flex gap-2 bg-black/90 p-2'}>
+      <div className={'flex h-full w-full items-center justify-center'}>
+        {asset && (
+          <Asset
+            fileName={asset.fileName}
+            assetType={asset.assetType}
+            description={asset.description}
+            className={'max-h-full max-w-full grow'}
           />
-        ) : asset.assetType === 'video' ? (
-          // eslint-disable-next-line jsx-a11y/media-has-caption
-          <video src={'/media/' + asset.fileName} />
-        ) : (
-          // eslint-disable-next-line jsx-a11y/media-has-caption
-          <audio src={'/media/' + asset.fileName} />
-        ))}
+        )}
+      </div>
+      <div className={'h-full w-3/12'}>
+        <Card className={'flex h-full flex-col gap-4'}>
+          <span className={'text-3xl font-medium'}>O tym materiale</span>
+          <span className={'text-xl'}>{asset?.description && asset.description}</span>
+          <div className={'flex flex-col'}>
+            <span className={'text-xl'}>
+              {asset?.date
+                ? asset.date.dateMin.getTime() !== asset.date.dateMax.getTime() && !asset.date.dateIsRange
+                  ? 'Przybliżona data'
+                  : 'Data'
+                : 'Data'}
+            </span>
+            <span className={'text-2xl font-medium'}>{asset?.date ? formatDate(asset.date) : 'Nieznana'}</span>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { cn } from '@/utils/styles';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Asset } from '@/features/assets/assets.validation';
+import { formatDate } from '@/features/assets/assets.utils';
 
 export interface GalleryGridItemProps extends React.HTMLAttributes<HTMLDivElement> {
   asset: Asset;
@@ -68,8 +69,9 @@ export function GalleryGridItem({ asset, enableDebugView = false, className, ...
           <span>ID: {asset.id}</span>
           <span>File name: {asset.fileName}</span>
           <span>Asset type: {asset.assetType}</span>
-          <span>Date min: {asset.date?.dateMin.toString()}</span>
-          <span>Date max: {asset.date?.dateMax.toString()}</span>
+          <span>Formatted date: {asset?.date ? formatDate(asset.date) : 'Nieznana'}</span>
+          <span>Date min: {asset.date?.dateMin.toDateString()}</span>
+          <span>Date max: {asset.date?.dateMax.toDateString()}</span>
           <span>Date precision: {asset.date?.datePrecision}</span>
         </div>
       )}

@@ -10,7 +10,7 @@ interface GalleryFiltersProps {
 
 export function GalleryFilters({ setFilter, className }: GalleryFiltersProps) {
   return (
-    <Card className={cn('flex gap-1', className)}>
+    <Card className={cn('flex gap-1 bg-secondary text-secondary-foreground', className)}>
       <Input
         placeholder={'Starsze niż...'}
         onInput={(event) =>

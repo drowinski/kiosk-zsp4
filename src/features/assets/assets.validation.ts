@@ -2,19 +2,19 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
 import { z } from '@/lib/zod';
 
-export const dateSchema = createSelectSchema(dateTable);
-export type Date = z.infer<typeof dateSchema>;
+export const assetDateSchema = createSelectSchema(dateTable);
+export type AssetDate = z.infer<typeof assetDateSchema>;
 
-export const dateCreateSchema = createInsertSchema(dateTable).omit({ id: true });
-export type NewDate = z.infer<typeof dateCreateSchema>;
+export const assetDateCreateSchema = createInsertSchema(dateTable).omit({ id: true });
+export type NewAssetDate = z.infer<typeof assetDateCreateSchema>;
 
 export const assetSchema = createSelectSchema(assetTable).omit({ dateId: true }).extend({
-  date: dateSchema.nullable().optional()
+  date: assetDateSchema.nullable().optional()
 });
 export type Asset = z.infer<typeof assetSchema>;
 
 export const assetCreateSchema = createInsertSchema(assetTable).omit({ id: true, dateId: true }).extend({
-  date: dateCreateSchema.nullable().optional()
+  date: assetDateCreateSchema.nullable().optional()
 });
 export type NewAsset = z.infer<typeof assetCreateSchema>;
 

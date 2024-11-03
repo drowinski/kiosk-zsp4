@@ -45,7 +45,7 @@ async function testSeed() {
       date: Math.random() > 0.05 ? {
         dateMin: dateMin,
         dateMax: dateMax,
-        datePrecision: ['day', 'month', 'year', 'decade'].at(Math.random() * 3) as 'day',
+        datePrecision: ['day', 'month', 'year', 'decade'].at(Math.random() * 4) as 'day',
         dateIsRange: Math.random() > 0.5
       } : null
     });

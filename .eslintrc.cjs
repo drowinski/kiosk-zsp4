@@ -36,6 +36,9 @@ module.exports = {
         'plugin:jsx-a11y/recommended',
         'prettier'
       ],
+      rules: {
+        'jsx-a11y/media-has-caption': 'off'
+      },
       settings: {
         react: {
           version: 'detect'

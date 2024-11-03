@@ -1,20 +1,22 @@
 import { boolean, check, date, integer, pgEnum, pgTable, varchar } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
-export const assetType = pgEnum('asset_type', ['image', 'video', 'audio']);
+export const assetTypeEnum = pgEnum('asset_type', ['image', 'video', 'audio']);
 
 export const assetTable = pgTable('assets', {
   id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
   fileName: varchar('file_name', { length: 2048 }).notNull(),
   mimeType: varchar('mime_type', { length: 255 }).notNull(),
-  assetType: assetType('type').notNull(),
+  assetType: assetTypeEnum('type').notNull(),
   width: integer().notNull().default(0),
   height: integer().notNull().default(0),
   description: varchar('description', { length: 512 }),
   dateId: integer('date_id').references(() => dateTable.id, { onDelete: 'set null' })
 });
 
-export const datePrecision = pgEnum('date_precision', ['day', 'month', 'year', 'decade', 'century']);
+const datePrecision = ['day', 'month', 'year', 'decade', 'century'] as const;
+export const datePrecisionEnum = pgEnum('date_precision', datePrecision);
+export type AssetDatePrecision = typeof datePrecision[number];
 
 export const dateTable = pgTable(
   'date_table',
@@ -22,7 +24,7 @@ export const dateTable = pgTable(
     id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
     dateMin: date('date_min', { mode: 'date' }).notNull(),
     dateMax: date('date_max', { mode: 'date' }).notNull(),
-    datePrecision: datePrecision('date_precision').notNull(),
+    datePrecision: datePrecisionEnum('date_precision').notNull(),
     dateIsRange: boolean('date_is_range').notNull().default(false)
   },
   (table) => ({
