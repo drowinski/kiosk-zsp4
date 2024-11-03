@@ -1,4 +1,3 @@
-import { Card } from '@/components/base/card';
 import { cn } from '@/utils/styles';
 import { AssetType } from '@/features/assets/assets.validation';
 
@@ -11,28 +10,25 @@ interface AssetProps {
 
 export function Asset({ fileName, assetType, description, className }: AssetProps) {
   const fullUri = '/media/' + fileName;
-  const assetComponent = (() => {
-    if (assetType === 'image') {
-      return (
-        <img
-          src={fullUri}
-          alt={description || 'Brak opisu.'}
-          className={'size-full object-contain'}
-        />
-      );
-    } else if (assetType === 'video') {
-      return (
-        <video
-          src={fullUri}
-          className={'size-full object-contain'}
-        />
-      );
-    } else if (assetType === 'audio') {
-      return <audio src={fullUri}></audio>;
-    } else {
-      return <div>Niewłaściwy typ multimediów.</div>;
-    }
-  })();
 
-  return <Card className={cn('overflow-hidden p-0', className)}>{assetComponent}</Card>;
+  if (assetType === 'image') {
+    return (
+      <img
+        src={fullUri}
+        alt={description || 'Brak opisu.'}
+        className={cn('max-h-full max-w-full rounded-xl', className)}
+      />
+    );
+  } else if (assetType === 'video') {
+    return (
+      <video
+        src={fullUri}
+        className={cn('max-h-full max-w-full rounded-xl', className)}
+      />
+    );
+  } else if (assetType === 'audio') {
+    return <audio src={fullUri}></audio>;
+  } else {
+    return <div>Niewłaściwy typ multimediów.</div>;
+  }
 }
