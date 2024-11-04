@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
-const SALT_SIZE = 16;
-const KEY_SIZE = 64;
+export const SALT_SIZE = 16;
+export const KEY_SIZE = 64;
 
 export async function hashPassword(password: string): Promise<string> {
   return new Promise((resolve, reject) => {
