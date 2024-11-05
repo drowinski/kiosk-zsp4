@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 export class FileManager {
-  readonly rootDir: string;
+  private readonly rootDir: string;
 
   constructor(rootDir: string) {
     this.rootDir = rootDir;
@@ -17,8 +17,8 @@ export class FileManager {
   }
 
   async saveFileFromStream(stream: fs.ReadStream, fileName: string): Promise<void> {
-    fileName = this.ensurePathSafe(fileName);
-    const writeStream = fs.createWriteStream(fileName);
+    const filePath = this._definePathInsideRootDir(fileName);
+    const writeStream = fs.createWriteStream(filePath);
     return new Promise<void>((resolve, reject) => {
       stream
         .pipe(writeStream)
@@ -27,10 +27,10 @@ export class FileManager {
     });
   }
 
-  private ensurePathSafe(unsafePath: string): string {
+  _definePathInsideRootDir(unsafePath: string): string {
     const absolutePath = path.join(this.rootDir, unsafePath);
     if (!absolutePath.startsWith(this.rootDir)) {
-      throw new Error('Unsafe path!');
+      throw new Error(`Unsafe path! "${unsafePath}" resulted in "${absolutePath}"`);
     }
     return absolutePath;
   }
