@@ -55,24 +55,6 @@ export function AssetUploadForm({ lastSubmissionResult, className }: AssetUpload
   };
 
   return (
-    <>
-      <Button asChild>
-        <label>
-          <input
-            type={'file'}
-            accept={'image/jpeg, image/png, video/mp4'}
-            onInput={(event) => {
-              const fileList = event.currentTarget.files;
-              if (!fileList) return;
-              createAssetFields(fileList);
-              event.currentTarget.value = '';
-            }}
-            multiple
-            className={'hidden'}
-          />
-          Dodaj pliki
-        </label>
-      </Button>
       <Form
         method={'post'}
         id={form.id}
@@ -134,9 +116,27 @@ export function AssetUploadForm({ lastSubmissionResult, className }: AssetUpload
             );
           })}
         </div>
-        <Button type={'submit'}>Prześlij</Button>
+        <div className={'flex gap-2 justify-center'}>
+          <Button asChild>
+            <label>
+              <input
+                type={'file'}
+                accept={'image/jpeg, image/png, video/mp4'}
+                onInput={(event) => {
+                  const fileList = event.currentTarget.files;
+                  if (!fileList) return;
+                  createAssetFields(fileList);
+                  event.currentTarget.value = '';
+                }}
+                multiple
+                className={'hidden'}
+              />
+              Dodaj pliki
+            </label>
+          </Button>
+          <Button type={'submit'}>Prześlij</Button>
+        </div>
       </Form>
-    </>
   );
 }
 

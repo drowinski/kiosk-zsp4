@@ -12,10 +12,8 @@ export default function AssetUploadPage() {
   const actionData = useActionData<typeof action>();
 
   return (
-    <main className={'flex h-full flex-col items-center justify-center'}>
-      <div className={'max-h-full max-w-full h-full flex-col gap-2 p-4 overflow-auto'}>
-        <AssetUploadForm lastSubmissionResult={actionData?.submissionResult} />
-      </div>
+    <main className={'h-full overflow-y-auto flex'}>
+        <AssetUploadForm lastSubmissionResult={actionData?.submissionResult} className={'w-full'} />
     </main>
   );
 }

@@ -31,7 +31,7 @@ export default function DashboardLayout() {
           </Button>
         </Card>
       </header>
-      <div className={'flex h-full'}>
+      <div className={'flex h-full gap-2 overflow-hidden'}>
         <DashboardSideNav className={'h-fit'}>
           <DashboardSideNavItem
             route={'/dashboard'}
@@ -42,7 +42,7 @@ export default function DashboardLayout() {
             label={'Dodaj media'}
           />
         </DashboardSideNav>
-        <div className={'h-full w-full'}>
+        <div className={'h-full w-full overflow-hidden'}>
           <Outlet />
         </div>
       </div>
