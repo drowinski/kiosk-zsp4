@@ -5,11 +5,12 @@ interface AssetProps {
   fileName: string;
   assetType: AssetType;
   description?: string | null;
+  fullUrl?: string;
   className?: string;
 }
 
-export function Asset({ fileName, assetType, description, className }: AssetProps) {
-  const fullUri = '/media/' + fileName;
+export function Asset({ fileName, assetType, description, fullUrl, className }: AssetProps) {
+  const fullUri = fullUrl || '/media/' + fileName;
 
   if (assetType === 'image') {
     return (
