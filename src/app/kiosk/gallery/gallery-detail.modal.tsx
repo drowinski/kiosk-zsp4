@@ -24,7 +24,7 @@ export default function GalleryDetailModal() {
 
   return (
     <div className={'fixed bottom-0 left-0 right-0 top-0 z-50 flex gap-2 bg-black/90 p-2'}>
-      <div className={'flex h-full w-full justify-center'}>
+      <div className={'flex h-full w-full justify-center items-center'}>
         {asset && (
           <Asset
             fileName={asset.fileName}
