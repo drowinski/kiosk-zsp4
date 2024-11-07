@@ -38,7 +38,8 @@ export function AssetUploadForm({ lastSubmissionResult, className }: AssetUpload
   const { files, objectURLs, setFiles } = useFilesWithObjectURLs();
 
   const createAssetFields = (fileList: File[] | FileList) => {
-    setFiles((prev) => [...prev, ...Array.from(fileList)]);
+    fileList = Array.from(fileList);
+    setFiles((prev) => [...prev, ...fileList]);
     for (let i = 0; i < fileList.length; i++) {
       form.insert({
         name: fields.assets.name
