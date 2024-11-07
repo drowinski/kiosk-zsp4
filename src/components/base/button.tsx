@@ -13,6 +13,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground shadow-sm hover:brightness-110',
+        secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:brightness-110',
         ghost: 'hover:bg-white/25'
       },
       size: {
