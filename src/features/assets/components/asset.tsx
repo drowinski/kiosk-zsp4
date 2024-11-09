@@ -2,14 +2,18 @@ import { cn } from '@/utils/styles';
 import { AssetType } from '@/features/assets/assets.validation';
 
 interface AssetProps {
-  fileName: string;
   assetType: AssetType;
-  description?: string | null;
   fullUrl?: string;
+  fileName?: string;
+  description?: string | null;
   className?: string;
 }
 
-export function Asset({ fileName, assetType, description, fullUrl, className }: AssetProps) {
+export function Asset({ assetType, fullUrl, fileName, description, className }: AssetProps) {
+  if (!fileName && !fullUrl) {
+    return null;
+  }
+
   const fullUri = fullUrl || '/media/' + fileName;
 
   if (assetType === 'image') {

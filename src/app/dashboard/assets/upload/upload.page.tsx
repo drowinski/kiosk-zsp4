@@ -1,6 +1,6 @@
 import { ActionFunctionArgs } from '@remix-run/node';
 import { useActionData } from '@remix-run/react';
-import { AssetUploadForm } from '@/features/assets/components/asset-upload-form/asset-upload-form';
+import { AssetUploadForm } from '@/features/assets/components/asset-upload-form/refactored-asset-upload-form';
 import { assetUploadFormAction } from '@/features/assets/components/asset-upload-form/asset-upload-form-action';
 
 export async function action({ request }: ActionFunctionArgs) {

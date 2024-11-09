@@ -154,6 +154,7 @@ export function AssetUploadForm({ lastSubmissionResult, className }: AssetUpload
                 type={'text'}
                 name={fieldset.description.name}
                 placeholder={'Opis'}
+                defaultValue={file.name.replace(/\.[a-zA-Z0-9]+$/, '')}
               />
               {fieldset.description.errors && <InputMessage>{fieldset.description.errors}</InputMessage>}
             </Card>
