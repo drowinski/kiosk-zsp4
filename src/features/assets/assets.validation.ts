@@ -1,28 +1,45 @@
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { assetTable, dateTable } from '@/features/assets/assets.db';
 import { z } from '@/lib/zod';
+import { ASSET_TYPE_ARRAY, DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
 
-export const assetDateSchema = createSelectSchema(dateTable).refine((schema) => schema.dateMin <= schema.dateMax, {
-  message: 'Minimalna data powinna być mniejsza niż maksymalna.'
+// Asset Date
+export const datePrecisionSchema = z.enum(DATE_PRECISION_ARRAY);
+export type AssetDatePrecision = z.output<typeof datePrecisionSchema>;
+
+const assetDateBaseSchema = z.object({
+  id: z.number().positive().int(),
+  dateMin: z.date(),
+  dateMax: z.date(),
+  datePrecision: datePrecisionSchema,
+  dateIsRange: z.boolean().default(false)
 });
-export type AssetDate = z.infer<typeof assetDateSchema>;
 
-export const assetDateCreateSchema = createInsertSchema(dateTable)
+export const assetDateSchema = assetDateBaseSchema;
+export type AssetDate = z.output<typeof assetDateSchema>;
+
+export const assetDateCreateSchema = assetDateSchema
   .omit({ id: true })
-  .refine((schema) => schema.dateMin <= schema.dateMax, {
-    message: 'Minimalna data powinna być mniejsza niż maksymalna.'
+  .refine(({ dateMin, dateMax }: { dateMin: Date; dateMax: Date }) => dateMin <= dateMax, {
+    message: 'Minimalna data powinna być mniejsza niż maksymalna.',
+    path: ['dateMin+dateMax']
   });
-export type NewAssetDate = z.infer<typeof assetDateCreateSchema>;
+export type NewAssetDate = z.input<typeof assetDateCreateSchema>;
 
-export const assetSchema = createSelectSchema(assetTable).omit({ dateId: true }).extend({
+// Asset
+export const assetTypeSchema = z.enum(ASSET_TYPE_ARRAY);
+export type AssetType = z.output<typeof assetTypeSchema>;
+
+export const assetBaseSchema = z.object({
+  fileName: z.string().max(2048),
+  mimeType: z.string().max(255),
+  assetType: assetTypeSchema,
+  description: z.string().max(512).nullable().optional()
+});
+
+export const assetSchema = assetBaseSchema.extend({
+  id: z.number().positive().int(),
   date: assetDateSchema.nullable().optional()
 });
-export type Asset = z.infer<typeof assetSchema>;
+export type Asset = z.output<typeof assetSchema>;
 
-export const assetCreateSchema = createInsertSchema(assetTable).omit({ id: true, dateId: true }).extend({
-  date: assetDateCreateSchema.nullable().optional()
-});
-export type NewAsset = z.infer<typeof assetCreateSchema>;
-
-export const assetTypeSchema = assetSchema.shape.assetType;
-export type AssetType = z.infer<typeof assetTypeSchema>;
+export const assetCreateSchema = assetBaseSchema.extend({ date: assetDateCreateSchema.nullable().optional() });
+export type NewAsset = z.input<typeof assetCreateSchema>;

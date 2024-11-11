@@ -1,22 +1,19 @@
 import { boolean, check, date, integer, pgEnum, pgTable, varchar } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import { ASSET_TYPE_ARRAY, DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
 
-export const assetTypeEnum = pgEnum('asset_type', ['image', 'video', 'audio']);
+export const assetTypeEnum = pgEnum('asset_type', ASSET_TYPE_ARRAY);
 
 export const assetTable = pgTable('assets', {
   id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
   fileName: varchar('file_name', { length: 2048 }).notNull(),
   mimeType: varchar('mime_type', { length: 255 }).notNull(),
   assetType: assetTypeEnum('type').notNull(),
-  width: integer().notNull().default(0),
-  height: integer().notNull().default(0),
   description: varchar('description', { length: 512 }),
   dateId: integer('date_id').references(() => dateTable.id, { onDelete: 'set null' })
 });
 
-const datePrecision = ['day', 'month', 'year', 'decade', 'century'] as const;
-export const datePrecisionEnum = pgEnum('date_precision', datePrecision);
-export type AssetDatePrecision = typeof datePrecision[number];
+export const datePrecisionEnum = pgEnum('date_precision', DATE_PRECISION_ARRAY);
 
 export const dateTable = pgTable(
   'date_table',

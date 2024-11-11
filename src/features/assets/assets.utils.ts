@@ -1,4 +1,4 @@
-import { AssetDatePrecision } from '@/features/assets/assets.db';
+import { AssetDatePrecision } from '@/features/assets/assets.validation';
 
 export const DATE_TIME_LOCALE = 'pl-PL';
 

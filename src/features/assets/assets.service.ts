@@ -31,8 +31,6 @@ export class AssetService {
       mimeType: mimeType,
       assetType: this.getAssetTypeFromMimeType(mimeType),
       description: assetData.description,
-      width: assetData.width,
-      height: assetData.height,
       date: assetData.date
     });
 
