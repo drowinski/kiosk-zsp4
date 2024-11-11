@@ -17,7 +17,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ errorMessages, className, ...props }, ref) => (
-  <div className={'inline-flex flex-col gap-1'}>
+  <>
     <input
       ref={ref}
       className={cn(
@@ -40,6 +40,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ errorMess
           {errorMessage}
         </span>
       ))}
-  </div>
+  </>
 ));
 Input.displayName = 'Input';
