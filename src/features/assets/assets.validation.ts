@@ -2,10 +2,16 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
 import { z } from '@/lib/zod';
 
-export const assetDateSchema = createSelectSchema(dateTable);
+export const assetDateSchema = createSelectSchema(dateTable).refine((schema) => schema.dateMin <= schema.dateMax, {
+  message: 'Minimalna data powinna być mniejsza niż maksymalna.'
+});
 export type AssetDate = z.infer<typeof assetDateSchema>;
 
-export const assetDateCreateSchema = createInsertSchema(dateTable).omit({ id: true });
+export const assetDateCreateSchema = createInsertSchema(dateTable)
+  .omit({ id: true })
+  .refine((schema) => schema.dateMin <= schema.dateMax, {
+    message: 'Minimalna data powinna być mniejsza niż maksymalna.'
+  });
 export type NewAssetDate = z.infer<typeof assetDateCreateSchema>;
 
 export const assetSchema = createSelectSchema(assetTable).omit({ dateId: true }).extend({
