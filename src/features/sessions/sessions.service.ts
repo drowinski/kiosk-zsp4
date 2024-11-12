@@ -3,7 +3,7 @@ import { SessionRepository, sessionRepository } from '@/features/sessions/sessio
 import { Session } from '@/features/sessions/sessions.validation';
 import { SessionValidationResult } from '@/features/sessions/sessions.types';
 
-export class SessionsService {
+export class SessionService {
   private readonly sessionsRepository: SessionRepository;
 
   constructor(sessionsRepository: SessionRepository) {
@@ -15,7 +15,7 @@ export class SessionsService {
   }
 
   async createSession(token: string, userId: number, expiresAt?: Date): Promise<Session> {
-    const sessionId = crypto.createHash('sha256').update(token).digest('hex');
+    const sessionId = this.generateSessionId(token);
     const session = await this.sessionsRepository.createSession({
       id: sessionId,
       userId: userId,
@@ -28,7 +28,7 @@ export class SessionsService {
   }
 
   async validateSessionToken(token: string): Promise<SessionValidationResult> {
-    const sessionId = crypto.createHash('sha256').update(token).digest('hex');
+    const sessionId = this.generateSessionId(token);
     const sessionWithUser = await this.sessionsRepository.getSessionWithUserBySessionId(sessionId);
     if (!sessionWithUser) {
       return { session: null, user: null };
@@ -45,6 +45,10 @@ export class SessionsService {
   async invalidateSession(sessionId: string): Promise<void> {
     await this.sessionsRepository.deleteSessionById(sessionId);
   }
+
+  private generateSessionId(token: string) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
 }
 
-export const sessionService = new SessionsService(sessionRepository);
+export const sessionService = new SessionService(sessionRepository);
