@@ -10,7 +10,7 @@ const assetDateBaseSchema = z.object({
   dateMin: z.date(),
   dateMax: z.date(),
   datePrecision: datePrecisionSchema,
-  dateIsRange: z.boolean().default(false).nullable().optional()
+  dateIsRange: z.boolean().default(false).optional()
 });
 
 export const assetDateSchema = assetDateBaseSchema;

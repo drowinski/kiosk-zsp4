@@ -57,7 +57,7 @@ export function formatDate({
   dateMin: Date;
   dateMax: Date;
   datePrecision: AssetDatePrecision;
-  dateIsRange: boolean;
+  dateIsRange?: boolean;
 }): string {
   const formatter = dateFormatters[datePrecision];
   let formattedString: string;

@@ -1,9 +1,13 @@
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { sessionTable } from '@/features/sessions/sessions.db';
 import { z } from '@/lib/zod';
 
-export const sessionSchema = createSelectSchema(sessionTable);
-export type Session = z.infer<typeof sessionSchema>;
+const sessionBaseSchema = z.object({
+  id: z.string().length(64),
+  userId: z.number().positive().int(),
+  expiresAt: z.date()
+})
 
-export const createSessionSchema = createInsertSchema(sessionTable);
-export type NewSession = z.infer<typeof createSessionSchema>;
+export const sessionSchema = sessionBaseSchema;
+export type Session = z.output<typeof sessionSchema>;
+
+export const createSessionSchema = sessionBaseSchema;
+export type NewSession = z.input<typeof createSessionSchema>;

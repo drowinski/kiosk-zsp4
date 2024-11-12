@@ -1,14 +1,20 @@
 import { z } from '@/lib/zod';
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { userTable } from '@/features/users/users.db';
 
 export const userPasswordSchema = z.string().min(8).max(256);
+export const userPasswordHashSchema = z.string().length(160);
 
-export const userWithPasswordHashSchema = createSelectSchema(userTable);
-export type UserWithPasswordHash = z.infer<typeof userWithPasswordHashSchema>;
+const userBaseSchema = z.object({
+  id: z.number().positive().int(),
+  email: z.string().max(254).email()
+});
 
-export const userSchema = userWithPasswordHashSchema.omit({ passwordHash: true });
-export type User = z.infer<typeof userSchema>;
+export const userWithPasswordHashSchema = userBaseSchema.extend({
+  passwordHash: userPasswordHashSchema
+});
+export type UserWithPasswordHash = z.output<typeof userWithPasswordHashSchema>;
 
-export const createUserSchema = createInsertSchema(userTable).omit({ id: true });
-export type NewUser = z.infer<typeof createUserSchema>;
+export const userSchema = userBaseSchema;
+export type User = z.output<typeof userSchema>;
+
+export const createUserSchema = userWithPasswordHashSchema.omit({ id: true });
+export type NewUser = z.input<typeof createUserSchema>;
