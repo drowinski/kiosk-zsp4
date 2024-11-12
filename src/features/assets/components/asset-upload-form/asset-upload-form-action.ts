@@ -2,7 +2,7 @@ import { parseWithZod } from '@conform-to/zod';
 import { assetService } from '@/features/assets/assets.service';
 import { ReadStream } from 'node:fs';
 import { ReadableStream as NodeReadableStream } from 'node:stream/web';
-import { assetFormSchema } from '@/features/assets/components/asset-upload-form/refactored-asset-upload-form';
+import { assetFormSchema } from '@/features/assets/components/asset-upload-form/asset-upload-form';
 
 export async function assetUploadFormAction(formData: FormData) {
   console.log(formData);
