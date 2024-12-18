@@ -1,8 +1,23 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
 import './globals.css';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  // Prevent default pinch to zoom
+  useEffect(() => {
+    const listener = (event: WheelEvent) => {
+      const { ctrlKey } = event;
+      if (ctrlKey) {
+        event.preventDefault();
+        return;
+      }
+    };
+
+    window.addEventListener('wheel', listener, { passive: false });
+
+    return () => window.removeEventListener('wheel', listener);
+  }, []);
+
   return (
     <html lang="en">
       <head>
@@ -14,7 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className={'bg-background text-foreground overflow-hidden'}>
+      <body className={'overflow-hidden bg-background text-foreground'}>
         {children}
         <ScrollRestoration />
         <Scripts />
