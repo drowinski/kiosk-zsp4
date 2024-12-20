@@ -5,7 +5,7 @@ import { cn } from '@/utils/styles';
 
 const buttonVariants = cva(
   cn(
-    'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium',
+    'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium',
     'transition-[background-color,filter] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
     'disabled:pointer-events-none disabled:opacity-50'
   ),

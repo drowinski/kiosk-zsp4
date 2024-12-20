@@ -22,7 +22,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ errorMess
       ref={ref}
       className={cn(
         'inline-flex h-9 items-center justify-center shadow-inner',
-        'whitespace-nowrap rounded-md bg-white px-3 py-2 text-sm font-medium text-black',
+        'whitespace-nowrap rounded-xl bg-white px-3 py-2 text-sm font-medium text-black',
         'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
         'disabled:pointer-events-none disabled:opacity-50',
         'file:border-0 file:bg-transparent',

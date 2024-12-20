@@ -17,8 +17,11 @@ export default function KioskGalleryPage() {
 
   return (
     <main className={'flex h-full flex-col gap-1'}>
-      <GalleryFilters setFilter={setFilter} className={'z-10'}/>
-      <GalleryGrid className={'no-scrollbar overflow-y-scroll -mt-4 pt-4 px-1 pb-2 z-0'}>
+      <GalleryFilters
+        setFilter={setFilter}
+        className={'z-10'}
+      />
+      <GalleryGrid className={'no-scrollbar z-0 -mt-4 overflow-y-scroll px-1 pb-2 pt-4'}>
         {filteredAssets.map((asset) => (
           <GalleryGridItem
             key={asset.id}
@@ -28,7 +31,7 @@ export default function KioskGalleryPage() {
           />
         ))}
       </GalleryGrid>
-      <Outlet/>
+      <Outlet context={{ assets: filteredAssets }} />
     </main>
   );
 }

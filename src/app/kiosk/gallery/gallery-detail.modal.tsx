@@ -1,32 +1,39 @@
-import { LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
-import { assetRepository } from '@/features/assets/assets.repository';
+import { useNavigate, useOutletContext, useParams } from '@remix-run/react';
 import { Card } from '@/components/base/card';
-import { Asset } from '@/features/assets/components/asset';
+import { Asset as AssetComponent } from '@/features/assets/components/asset';
+import { type Asset } from '@/features/assets/assets.validation';
 import { formatDate } from '@/features/assets/assets.utils';
+import { Button } from '@/components/base/button';
 
-export async function loader({ params }: LoaderFunctionArgs) {
-  const id = Number(params['id']);
-  if (!id) {
-    return { asset: null };
-  }
-  const asset = await assetRepository.getAssetById(id);
-  if (!asset) {
-    return { asset: null };
-  }
-  return {
-    asset: asset
-  };
-}
+// export async function loader({ params }: LoaderFunctionArgs) {
+//   const id = Number(params['id']);
+//   if (!id) {
+//     return { asset: null };
+//   }
+//   const asset = await assetRepository.getAssetById(id);
+//   if (!asset) {
+//     return { asset: null };
+//   }
+//   return {
+//     asset: asset
+//   };
+// }
 
 export default function GalleryDetailModal() {
-  const { asset } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const params = useParams();
+  const id = Number(params['id']);
+
+  const { assets } = useOutletContext<{ assets: Asset[] }>();
+
+  const assetIndex = assets.findIndex((asset) => asset.id === id);
+  const asset = assets[assetIndex];
 
   return (
     <div className={'fixed bottom-0 left-0 right-0 top-0 z-50 flex gap-2 bg-black/90 p-2'}>
-      <div className={'flex h-full w-full justify-center items-center'}>
+      <div className={'flex h-full w-full items-center justify-center'}>
         {asset && (
-          <Asset
+          <AssetComponent
             fileName={asset.fileName}
             assetType={asset.assetType}
             description={asset.description}
@@ -46,6 +53,22 @@ export default function GalleryDetailModal() {
                 : 'Data'}
             </span>
             <span className={'text-2xl font-medium'}>{asset?.date ? formatDate(asset.date) : 'Nieznana'}</span>
+          </div>
+          <div className={'mt-auto flex gap-2'}>
+            <Button
+              type={'button'}
+              className={'grow'}
+              onClick={() => navigate('../' + assets[assetIndex - 1].id, { preventScrollReset: true, replace: true })}
+            >
+              Poprzedni
+            </Button>
+            <Button
+              type={'button'}
+              className={'grow'}
+              onClick={() => navigate('../' + assets[assetIndex + 1].id, { preventScrollReset: true, replace: true })}
+            >
+              Następny
+            </Button>
           </div>
         </Card>
       </div>

@@ -19,6 +19,7 @@
   "dependencies": {
     "@conform-to/react": "^1.2.2",
     "@conform-to/zod": "^1.2.2",
+    "@radix-ui/react-progress": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@remix-run/express": "^2.13.1",
     "@remix-run/node": "^2.13.1",
