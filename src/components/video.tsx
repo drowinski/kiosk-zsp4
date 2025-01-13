@@ -1,6 +1,7 @@
-import React, { MouseEvent, PointerEvent, ReactEventHandler, useRef, useState } from 'react';
+import React, { ReactEventHandler, useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/base/button';
 import { ProgressBar } from '@/components/base/progress-bar';
+import { Slider } from '@/components/base/slider';
 
 interface VideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {}
 
@@ -52,22 +53,40 @@ export function Video({ src, className, ...props }: VideoProps) {
     video.currentTime = scrubbedTime;
   };
 
-  const handleScrubStart = (e: PointerEvent) => {
+  const handleScrubStart = (event: React.PointerEvent) => {
     setIsPointerDownOnProgressBar(true);
     if (!isPaused) {
       setShouldResumeOnScrubEnd(true);
       togglePlay(false);
     }
-    scrub(e);
-  }
+    scrub(event.nativeEvent);
+  };
 
-  const handleScrubEnd = () => {
+  const handleScrubEnd = useCallback(() => {
     setIsPointerDownOnProgressBar(false);
     if (isPaused && shouldResumeOnScrubEnd) {
       setShouldResumeOnScrubEnd(false);
       togglePlay(true);
     }
-  }
+  }, [isPaused, shouldResumeOnScrubEnd]);
+
+  const setVolume = (volume: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.volume = volume;
+  };
+
+  useEffect(() => {
+    const handleWindowPointerMove = (e: PointerEvent) => isPointerDownOnProgressBar && scrub(e);
+    window.addEventListener('pointermove', handleWindowPointerMove);
+    const handleWindowPointerUp = () => handleScrubEnd();
+    window.addEventListener('pointerup', handleWindowPointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handleWindowPointerMove);
+      window.removeEventListener('pointerup', handleWindowPointerUp);
+    };
+  }, [handleScrubEnd, isPointerDownOnProgressBar]);
 
   return (
     <div className={'relative h-full w-fit overflow-hidden rounded-xl'}>
@@ -82,15 +101,27 @@ export function Video({ src, className, ...props }: VideoProps) {
         {...props}
       />
       <div className={'absolute bottom-2 left-2 right-2 flex h-8 gap-2'}>
-        <Button onClick={() => togglePlay()}>{isPaused ? '>' : '||'}</Button>
-        <ProgressBar
-          ref={progressBarRef}
-          value={progress * 100}
-          onPointerDown={handleScrubStart}
-          onPointerUp={handleScrubEnd}
-          onPointerMove={(e) => isPointerDownOnProgressBar && scrub(e)}
-          onClick={(e) => scrub(e)}
-        />
+        <Button
+          size={'square'}
+          onClick={() => togglePlay()}
+        >
+          {isPaused ? '>' : '||'}
+        </Button>
+        <div className={'flex h-full w-full flex-col justify-between'}>
+          <ProgressBar
+            ref={progressBarRef}
+            value={progress * 100}
+            onPointerDown={handleScrubStart}
+            onClick={(e) => scrub(e.nativeEvent)}
+          />
+          <Slider
+            defaultValue={[videoRef.current?.volume || 1]}
+            min={0}
+            max={1}
+            step={0.05}
+            onValueChange={(value) => setVolume(value[0])}
+          />
+        </div>
       </div>
     </div>
   );
