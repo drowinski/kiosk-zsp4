@@ -2,6 +2,7 @@ import React, { ReactEventHandler, useCallback, useEffect, useRef, useState } fr
 import { Button } from '@/components/base/button';
 import { ProgressBar } from '@/components/base/progress-bar';
 import { Slider } from '@/components/base/slider';
+import { PauseIcon, PlayIcon } from '@/components/icons';
 
 interface VideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {}
 
@@ -105,7 +106,7 @@ export function Video({ src, className, ...props }: VideoProps) {
           size={'square'}
           onClick={() => togglePlay()}
         >
-          {isPaused ? '>' : '||'}
+          {isPaused ? <PlayIcon /> : <PauseIcon />}
         </Button>
         <div className={'flex h-full w-full flex-col justify-between'}>
           <ProgressBar

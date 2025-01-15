@@ -1,15 +1,23 @@
 import { Card } from '@/components/base/card';
-import { Outlet } from '@remix-run/react';
+import { Outlet, useNavigate } from '@remix-run/react';
+import { ArrowLeftIcon } from '@/components/icons';
+import { Button } from '@/components/base/button';
 
 export default function KioskLayout() {
+  const navigate = useNavigate();
+
   return (
-    <div className={'h-full flex flex-col select-none'}>
+    <div className={'flex h-full select-none flex-col'}>
       <header className={'p-1'}>
-        <Card className={'flex items-center justify-center bg-primary px-4 py-3 text-primary-foreground'}>
+        <Card className={'flex items-center justify-between bg-primary px-2 py-2 text-primary-foreground'}>
+          <Button variant={'ghost'} size={'icon'}>
+            <ArrowLeftIcon onClick={() => navigate('..')} />
+          </Button>
           <span className={'text-xl font-bold'}>Izba Pamięci</span>
+          <div className={'basis-0 grow-1'}/>
         </Card>
       </header>
-      <div className={'h-full px-1 overflow-hidden'}>
+      <div className={'h-full overflow-hidden px-1'}>
         <Outlet />
       </div>
     </div>

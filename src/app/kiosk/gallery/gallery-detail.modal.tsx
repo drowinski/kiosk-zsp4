@@ -4,6 +4,7 @@ import { Asset as AssetComponent } from '@/features/assets/components/asset';
 import { type Asset } from '@/features/assets/assets.validation';
 import { formatDate } from '@/features/assets/assets.utils';
 import { Button } from '@/components/base/button';
+import { XIcon } from '@/components/icons';
 
 // export async function loader({ params }: LoaderFunctionArgs) {
 //   const id = Number(params['id']);
@@ -72,6 +73,16 @@ export default function GalleryDetailModal() {
           </div>
         </Card>
       </div>
+      <Button
+        size={'icon'}
+        variant={'ghost'}
+        className={'absolute left-3 top-3'}
+        onClick={() => navigate('..')}
+      >
+        <XIcon
+          color={'white'}
+        />
+      </Button>
     </div>
   );
 }
