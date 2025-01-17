@@ -13,5 +13,6 @@ export const routes = defineRoutes((route) => {
   route('dashboard', 'dashboard/dashboard.layout.tsx', () => {
     route('', 'dashboard/home/home.page.tsx', { index: true });
     route('assets/upload', 'dashboard/assets/upload/upload.page.tsx');
+    route('assets/manage', 'dashboard/assets/manage/manage.page.tsx');
   });
 });

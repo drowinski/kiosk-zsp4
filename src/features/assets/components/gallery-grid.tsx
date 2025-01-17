@@ -2,6 +2,7 @@ import { cn } from '@/utils/styles';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Asset } from '@/features/assets/assets.validation';
 import { formatDate } from '@/features/assets/assets.utils';
+import { SpinnerIcon } from '@/components/icons';
 
 export interface GalleryGridItemProps extends React.HTMLAttributes<HTMLDivElement> {
   asset: Asset;
@@ -58,7 +59,11 @@ export function GalleryGridItem({ asset, enableDebugView = false, className, ...
       {...props}
     >
       <div className={cn('absolute size-full', (isLoading || isError) && 'invisible')}>{image}</div>
-      {isLoading && <div className={'absolute flex size-full flex-col items-center justify-center'}>Ładowanie...</div>}
+      {isLoading && (
+        <div className={'absolute flex size-full flex-col items-center justify-center'}>
+          <SpinnerIcon className={'animate-spin'} />
+        </div>
+      )}
       {isError && (
         <div className={'absolute flex size-full flex-col items-center justify-center opacity-50'}>
           <span className={'text-xl font-bold'}>Błąd</span>

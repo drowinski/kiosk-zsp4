@@ -38,8 +38,12 @@ export default function DashboardLayout() {
             label={'Panel zarządzania'}
           />
           <DashboardSideNavItem
+            route={'/dashboard/assets/manage'}
+            label={'Zarządzaj zawartością'}
+          />
+          <DashboardSideNavItem
             route={'/dashboard/assets/upload'}
-            label={'Dodaj media'}
+            label={'Dodaj zawartość'}
           />
         </DashboardSideNav>
         <div className={'h-full w-full overflow-hidden'}>

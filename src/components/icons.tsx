@@ -1,4 +1,12 @@
-import { FaArrowDown, FaArrowLeft, FaArrowRight, FaArrowUp, FaPause, FaPlay } from 'react-icons/fa';
+import {
+  FaArrowDown,
+  FaArrowLeft,
+  FaArrowRight,
+  FaArrowUp,
+  FaPause,
+  FaPlay,
+  FaSpinner
+} from 'react-icons/fa';
 import React from 'react';
 import { FaX } from 'react-icons/fa6';
 
@@ -30,4 +38,8 @@ export function ArrowDownIcon(props: IconProps) {
 
 export function XIcon(props: IconProps) {
   return <FaX {...props} />;
+}
+
+export function SpinnerIcon(props: IconProps) {
+  return <FaSpinner {...props}/>;
 }
