@@ -31,7 +31,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ errorMess
       )}
       {...props}
     />
-    {errorMessages &&
+    {errorMessages && // TODO: Remove this part
       new Array<string>().concat(errorMessages).map((errorMessage, index) => (
         <span
           key={index}

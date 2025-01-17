@@ -3,12 +3,17 @@ import {
   FaArrowLeft,
   FaArrowRight,
   FaArrowUp,
+  FaCheck,
+  FaEdit,
+  FaFilm,
+  FaImage,
   FaPause,
   FaPlay,
-  FaSpinner
+  FaSpinner,
+  FaTrash
 } from 'react-icons/fa';
-import React from 'react';
 import { FaX } from 'react-icons/fa6';
+import React from 'react';
 
 interface IconProps extends React.SVGAttributes<SVGElement> {}
 
@@ -41,5 +46,25 @@ export function XIcon(props: IconProps) {
 }
 
 export function SpinnerIcon(props: IconProps) {
-  return <FaSpinner {...props}/>;
+  return <FaSpinner {...props} />;
+}
+
+export function CheckIcon(props: IconProps) {
+  return <FaCheck {...props} />;
+}
+
+export function EditIcon(props: IconProps) {
+  return <FaEdit {...props} />;
+}
+
+export function TrashIcon(props: IconProps) {
+  return <FaTrash {...props} />;
+}
+
+export function ImageIcon(props: IconProps) {
+  return <FaImage {...props} />;
+}
+
+export function FilmIcon(props: IconProps) {
+  return <FaFilm {...props} />;
 }

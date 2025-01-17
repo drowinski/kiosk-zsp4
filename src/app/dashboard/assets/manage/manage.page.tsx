@@ -17,6 +17,7 @@ export default function AssetManagementPage() {
           <AssetListItem
             key={asset.id}
             asset={asset}
+            onCommitChanges={(assetChanges) => console.log(assetChanges)}
           />
         ))}
       </AssetList>
