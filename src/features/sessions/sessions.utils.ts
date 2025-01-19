@@ -12,7 +12,7 @@ export async function requireSession(request: Request) {
   } catch (error) {
     throw redirect('/auth/sign-in');
   }
-  if (!session || !session.data.userId) {
+  if (!session || !session.data?.userId) {
     throw redirect('/auth/sign-in');
   }
   return session;

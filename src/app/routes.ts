@@ -7,12 +7,12 @@ export const routes = defineRoutes((route) => {
       route(':id', 'kiosk/gallery/gallery-detail.modal.tsx');
     });
   });
-  route('auth/sign-up', 'auth/sign-up/sign-up.page.tsx');
-  route('auth/sign-in', 'auth/sign-in/sign-in.page.tsx');
-  route('auth/sign-out', 'auth/sign-out/sign-out.route.ts');
+  route('auth/sign-up', 'auth/sign-up.page.tsx');
+  route('auth/sign-in', 'auth/sign-in.page.tsx');
+  route('auth/sign-out', 'auth/sign-out.route.ts');
   route('dashboard', 'dashboard/dashboard.layout.tsx', () => {
-    route('', 'dashboard/home/home.page.tsx', { index: true });
-    route('assets/upload', 'dashboard/assets/upload/upload.page.tsx');
-    route('assets/manage', 'dashboard/assets/manage/manage.page.tsx');
+    route('', 'dashboard/home.page.tsx', { index: true });
+    route('assets/upload', 'dashboard/assets/upload.page.tsx');
+    route('assets/manage', 'dashboard/assets/manage.page.tsx');
   });
 });
