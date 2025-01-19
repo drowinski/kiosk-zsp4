@@ -41,6 +41,14 @@ export class AssetService {
     return asset;
   }
 
+  async updateAsset(id: number, assetChanges: Partial<Asset>): Promise<Asset | null> {
+    if (assetChanges.mimeType !== undefined) {
+      assetChanges.mimeType = this.normalizeMimeType(assetChanges.mimeType);
+      assetChanges.assetType = this.getAssetTypeFromMimeType(assetChanges.mimeType);
+    }
+    return this.assetRepository.updateAsset(id, assetChanges);
+  }
+
   private generateFileName(mimeType: string): string {
     return crypto.randomUUID() + '.' + mime.extension(mimeType);
   }

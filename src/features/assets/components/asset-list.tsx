@@ -3,15 +3,17 @@ import React, { useEffect, useState } from 'react';
 import { cn } from '@/utils/styles';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
-import { ImageIcon, FilmIcon, TrashIcon, CheckIcon } from '@/components/icons';
+import { ImageIcon, FilmIcon, TrashIcon, CheckIcon, CalendarIcon } from '@/components/icons';
 import { SeamlessInput } from '@/components/base/seamless-input';
+import { formatDate } from '@/features/assets/assets.utils';
 
 interface AssetListItemProps {
   asset: Asset;
+  onChange?: (assetChanges: Partial<Asset>) => void;
   onCommitChanges?: (assetChanges: Partial<Asset>) => void;
 }
 
-export function AssetListItem({ asset, onCommitChanges }: AssetListItemProps) {
+export function AssetListItem({ asset, onChange, onCommitChanges }: AssetListItemProps) {
   const [isModified, setIsModified] = useState(false);
   const [assetChanges, setAssetChanges] = useState<Partial<Asset>>({});
 
@@ -21,7 +23,10 @@ export function AssetListItem({ asset, onCommitChanges }: AssetListItemProps) {
     } else {
       setIsModified(true);
     }
-  }, [assetChanges]);
+    if (onChange) {
+      onChange(assetChanges);
+    }
+  }, [assetChanges, onChange]);
 
   const handleEdit = <K extends keyof Asset>(key: K, value: Asset[K]) => {
     if (asset[key] === value) {
@@ -40,11 +45,11 @@ export function AssetListItem({ asset, onCommitChanges }: AssetListItemProps) {
       <img
         src={'/media/' + asset.fileName}
         alt={asset.description || 'Brak opisu.'}
-        className={'aspect-square h-24 rounded-md object-cover'}
+        className={'aspect-square h-20 rounded-md object-cover'}
       />
       <div className={'flex w-full flex-col justify-between'}>
         <div className={'flex items-center gap-2'}>
-          <span className={'text-primary'}>
+          <span className={'text-secondary'}>
             {asset.assetType === 'image' ? <ImageIcon /> : asset.assetType === 'video' ? <FilmIcon /> : 'audio'}
           </span>
           <SeamlessInput
@@ -64,6 +69,13 @@ export function AssetListItem({ asset, onCommitChanges }: AssetListItemProps) {
               <CheckIcon /> Zatwierdź zmiany
             </Button>
           )}
+          <Button
+            variant={'secondary'}
+            size={'icon'}
+            className={'flex items-center gap-2 font-medium'}
+          >
+            <CalendarIcon /> {asset?.date ? formatDate(asset.date) : 'Brak daty'}
+          </Button>
           <Button size={'icon'}>
             <TrashIcon />
           </Button>

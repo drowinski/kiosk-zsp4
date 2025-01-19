@@ -22,7 +22,7 @@ export const SeamlessInput = React.forwardRef<HTMLDivElement, SeamlessInputProps
     return (
       <div
         ref={ref}
-        className={cn('transition-colors duration-200 hover:text-primary', className)}
+        className={cn('transition-colors duration-200 hover:text-secondary', className)}
       >
         <span
           className={'pointer-events-none absolute opacity-0'}

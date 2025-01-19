@@ -10,7 +10,7 @@ interface AssetRepository {
 
   createAsset(newAsset: NewAsset): Promise<Asset | null>;
 
-  updateAsset(id: number, newAsset: Partial<NewAsset>): Promise<Asset | null>;
+  updateAsset(id: number, assetChanges: Partial<Asset>): Promise<Asset | null>;
 }
 
 export class DrizzleAssetRepository implements AssetRepository {
@@ -77,8 +77,8 @@ export class DrizzleAssetRepository implements AssetRepository {
     });
   }
 
-  async updateAsset(id: number, newAsset: Partial<NewAsset>): Promise<Asset | null> {
-    const result = await db.update(assetTable).set(newAsset).where(eq(assetTable.id, id)).returning();
+  async updateAsset(id: number, assetChanges: Partial<Asset>): Promise<Asset | null> {
+    const result = await db.update(assetTable).set(assetChanges).where(eq(assetTable.id, id)).returning();
     return result.at(0) ?? null;
   }
 }

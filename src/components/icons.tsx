@@ -2,7 +2,7 @@ import {
   FaArrowDown,
   FaArrowLeft,
   FaArrowRight,
-  FaArrowUp,
+  FaArrowUp, FaCalendar,
   FaCheck,
   FaEdit,
   FaFilm,
@@ -67,4 +67,8 @@ export function ImageIcon(props: IconProps) {
 
 export function FilmIcon(props: IconProps) {
   return <FaFilm {...props} />;
+}
+
+export function CalendarIcon(props: IconProps) {
+  return <FaCalendar {...props} />;
 }
