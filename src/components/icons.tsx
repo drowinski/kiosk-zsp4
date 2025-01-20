@@ -2,7 +2,8 @@ import {
   FaArrowDown,
   FaArrowLeft,
   FaArrowRight,
-  FaArrowUp, FaCalendar,
+  FaArrowUp,
+  FaCalendar,
   FaCheck,
   FaEdit,
   FaFilm,
@@ -12,7 +13,7 @@ import {
   FaSpinner,
   FaTrash
 } from 'react-icons/fa';
-import { FaX } from 'react-icons/fa6';
+import { FaPencil, FaX } from 'react-icons/fa6';
 import React from 'react';
 
 interface IconProps extends React.SVGAttributes<SVGElement> {}
@@ -71,4 +72,8 @@ export function FilmIcon(props: IconProps) {
 
 export function CalendarIcon(props: IconProps) {
   return <FaCalendar {...props} />;
+}
+
+export function PencilIcon(props: IconProps) {
+  return <FaPencil {...props} />;
 }

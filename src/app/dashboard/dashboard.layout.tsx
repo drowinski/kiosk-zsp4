@@ -19,7 +19,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className={'flex h-full flex-col gap-2 p-2'}>
+    <div className={'flex h-full flex-col gap-2 p-2 container'}>
       <header>
         <Card className={'flex items-center bg-primary px-4 py-2 text-primary-foreground'}>
           <span className={'text-xl font-bold'}>{'Panel zarządzania'}</span>
@@ -38,7 +38,7 @@ export default function DashboardLayout() {
             label={'Panel zarządzania'}
           />
           <DashboardSideNavItem
-            route={'/dashboard/assets/manage'}
+            route={'/dashboard/assets'}
             label={'Zarządzaj zawartością'}
           />
           <DashboardSideNavItem

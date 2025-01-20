@@ -4,6 +4,12 @@ export default {
   content: ['./src/{app,components,features/*/components}/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
+      container: {
+        center: true,
+        screens: {
+          '2xl': '1280px'
+        }
+      },
       colors: {
         background: 'hsl(var(--color-background))',
         foreground: 'hsl(var(--color-foreground))',
