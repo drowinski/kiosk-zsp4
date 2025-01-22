@@ -2,7 +2,7 @@ import { cn } from '@/utils/styles';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Asset } from '@/features/assets/assets.validation';
 import { formatDate } from '@/features/assets/assets.utils';
-import { SpinnerIcon } from '@/components/icons';
+import { CircleExclamationIcon, SpinnerIcon } from '@/components/icons';
 
 export interface GalleryGridItemProps extends React.HTMLAttributes<HTMLDivElement> {
   asset: Asset;
@@ -66,7 +66,9 @@ export function GalleryGridItem({ asset, enableDebugView = false, className, ...
       )}
       {isError && (
         <div className={'absolute flex size-full flex-col items-center justify-center opacity-50'}>
-          <span className={'text-xl font-bold'}>Błąd</span>
+          <span className={'inline-flex items-center gap-2 text-xl'}>
+            <CircleExclamationIcon />
+          </span>
         </div>
       )}
       {enableDebugView && (

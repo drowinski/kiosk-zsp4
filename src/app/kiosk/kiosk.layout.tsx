@@ -1,9 +1,12 @@
 import { Card } from '@/components/base/card';
-import { Outlet, useNavigate } from '@remix-run/react';
-import { ArrowLeftIcon } from '@/components/icons';
+import { Outlet, useNavigate, useRouteError } from '@remix-run/react';
+import { ArrowLeftIcon, CircleExclamationIcon } from '@/components/icons';
 import { Button } from '@/components/base/button';
+import React from 'react';
 
-export default function KioskLayout() {
+export interface Layout extends React.PropsWithChildren {}
+
+export function Layout({ children }: Layout) {
   const navigate = useNavigate();
 
   return (
@@ -21,9 +24,31 @@ export default function KioskLayout() {
           <div className={'grow-1 basis-0'} />
         </Card>
       </header>
-      <div className={'h-full overflow-hidden px-1'}>
-        <Outlet />
-      </div>
+      <div className={'h-full overflow-hidden px-1'}>{children}</div>
     </div>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  console.error(error);
+  return (
+    <Layout>
+      <div className={'flex h-full w-full items-center justify-center'}>
+        <Card>
+          <span className={'inline-flex items-center gap-2 text-xl font-medium'}>
+            <CircleExclamationIcon /> Wystąpił błąd
+          </span>
+        </Card>
+      </div>
+    </Layout>
+  );
+}
+
+export default function KioskLayout() {
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
   );
 }

@@ -13,7 +13,7 @@ import {
   FaSpinner,
   FaTrash
 } from 'react-icons/fa';
-import { FaPencil, FaX } from 'react-icons/fa6';
+import { FaCircleExclamation, FaPencil, FaX } from 'react-icons/fa6';
 import React from 'react';
 
 interface IconProps extends React.SVGAttributes<SVGElement> {}
@@ -76,4 +76,8 @@ export function CalendarIcon(props: IconProps) {
 
 export function PencilIcon(props: IconProps) {
   return <FaPencil {...props} />;
+}
+
+export function CircleExclamationIcon(props: IconProps) {
+  return <FaCircleExclamation {...props} />;
 }
