@@ -2,7 +2,11 @@ import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { assetRepository } from '@/features/assets/assets.repository';
 import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
 import { useForm } from '@conform-to/react';
-import { assetCreateSchema, AssetDatePrecision, assetDateSchema } from '@/features/assets/assets.validation';
+import {
+  assetCreateSchema,
+  assetDateCreateSchema,
+  AssetDatePrecision,
+} from '@/features/assets/assets.validation';
 import { parseWithZod } from '@conform-to/zod';
 import { Asset } from '@/features/assets/components/asset';
 import { Button } from '@/components/base/button';
@@ -12,12 +16,13 @@ import { Modal, ModalContent, ModalHeader, ModalTitle } from '@/components/base/
 import { Label } from '@/components/base/label';
 import { TextArea } from '@/components/base/text-area';
 import { AssetDatePicker } from '@/features/assets/components/asset-date-picker';
+import { formatDate } from '@/features/assets/assets.utils';
 
 const assetEditFormSchema = assetCreateSchema
   .pick({
     description: true
   })
-  .extend({ date: assetDateSchema.pick({ datePrecision: true }) });
+  .extend({ date: assetDateCreateSchema });
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const assetId = parseInt(params.id || '');
@@ -97,12 +102,37 @@ export default function AssetEditModal() {
                 maxLength={512}
               />
               <Label>Data</Label>
+              <span>
+                {dateFieldset.dateMin.value &&
+                  dateFieldset.dateMax.value &&
+                  dateFieldset.datePrecision.value &&
+                  formatDate({
+                    dateMin: new Date(dateFieldset.dateMin.value),
+                    dateMax: new Date(dateFieldset.dateMax.value),
+                    datePrecision: dateFieldset.datePrecision.value as AssetDatePrecision,
+                    dateIsRange: false
+                  })}
+              </span>
               <AssetDatePicker
                 formParams={{
                   datePrecision: {
                     key: dateFieldset.datePrecision.key,
                     name: dateFieldset.datePrecision.name,
                     defaultValue: dateFieldset.datePrecision.initialValue as AssetDatePrecision
+                  },
+                  dateMin: {
+                    key: dateFieldset.dateMin.key,
+                    name: dateFieldset.dateMin.name,
+                    defaultValue: dateFieldset.dateMin.initialValue
+                      ? new Date(dateFieldset.dateMin.initialValue)
+                      : undefined
+                  },
+                  dateMax: {
+                    key: dateFieldset.dateMax.key,
+                    name: dateFieldset.dateMax.name,
+                    defaultValue: dateFieldset.dateMax.initialValue
+                      ? new Date(dateFieldset.dateMax.initialValue)
+                      : undefined
                   }
                 }}
               />

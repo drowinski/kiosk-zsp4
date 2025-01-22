@@ -16,7 +16,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   errorMessages?: string[] | string;
 }
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ errorMessages, className, ...props }, ref) => (
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ errorMessages, className, hidden, ...props }, ref) => (
   <>
     <input
       ref={ref}
@@ -26,9 +26,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ errorMess
         'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
         'disabled:pointer-events-none disabled:opacity-50',
         'file:border-0 file:bg-transparent',
+        hidden && 'hidden',
         errorMessages && 'ring-1 ring-danger',
         className
       )}
+      hidden={hidden}
       {...props}
     />
     {errorMessages && // TODO: Remove this part
