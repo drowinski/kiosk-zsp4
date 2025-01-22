@@ -2,18 +2,22 @@ import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { assetRepository } from '@/features/assets/assets.repository';
 import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
 import { useForm } from '@conform-to/react';
-import { assetCreateSchema } from '@/features/assets/assets.validation';
+import { assetCreateSchema, AssetDatePrecision, assetDateSchema } from '@/features/assets/assets.validation';
 import { parseWithZod } from '@conform-to/zod';
-import { Input } from '@/components/base/input';
 import { Asset } from '@/features/assets/components/asset';
 import { Button } from '@/components/base/button';
 import { CheckIcon, PencilIcon } from '@/components/icons';
 import { ClientOnly } from 'remix-utils/client-only';
 import { Modal, ModalContent, ModalHeader, ModalTitle } from '@/components/base/modal';
+import { Label } from '@/components/base/label';
+import { TextArea } from '@/components/base/text-area';
+import { AssetDatePicker } from '@/features/assets/components/asset-date-picker';
 
-const assetEditFormSchema = assetCreateSchema.pick({
-  description: true
-});
+const assetEditFormSchema = assetCreateSchema
+  .pick({
+    description: true
+  })
+  .extend({ date: assetDateSchema.pick({ datePrecision: true }) });
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const assetId = parseInt(params.id || '');
@@ -55,6 +59,8 @@ export default function AssetEditModal() {
     }
   });
 
+  const dateFieldset = fields.date.getFieldset();
+
   return (
     <ClientOnly>
       {() => (
@@ -64,7 +70,9 @@ export default function AssetEditModal() {
         >
           <ModalContent>
             <ModalHeader>
-              <ModalTitle className={'flex gap-2'}><PencilIcon/> Edycja zawartości</ModalTitle>
+              <ModalTitle className={'flex gap-2'}>
+                <PencilIcon /> Edycja zawartości
+              </ModalTitle>
             </ModalHeader>
             <Form
               method={'post'}
@@ -78,15 +86,25 @@ export default function AssetEditModal() {
                   assetType={asset.assetType}
                   fileName={asset.fileName}
                 />
-
               </div>
-              <Input
-                type={'text'}
+              <Label htmlFor={fields.description.name}>Opis</Label>
+              <TextArea
                 key={fields.description.key}
                 name={fields.description.name}
                 defaultValue={fields.description.initialValue}
                 placeholder={'Opis'}
-                errorMessages={fields.description.errors}
+                className={'h-32 resize-none'}
+                maxLength={512}
+              />
+              <Label>Data</Label>
+              <AssetDatePicker
+                formParams={{
+                  datePrecision: {
+                    key: dateFieldset.datePrecision.key,
+                    name: dateFieldset.datePrecision.name,
+                    defaultValue: dateFieldset.datePrecision.initialValue as AssetDatePrecision
+                  }
+                }}
               />
               <Button
                 type={'submit'}

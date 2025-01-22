@@ -2,14 +2,14 @@ import { z } from '@/lib/zod';
 import { ASSET_TYPE_ARRAY, DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
 
 // Asset Date
-export const datePrecisionSchema = z.enum(DATE_PRECISION_ARRAY);
-export type AssetDatePrecision = z.output<typeof datePrecisionSchema>;
+export const assetDatePrecisionSchema = z.enum(DATE_PRECISION_ARRAY);
+export type AssetDatePrecision = z.output<typeof assetDatePrecisionSchema>;
 
 const assetDateBaseSchema = z.object({
   id: z.number().positive().int(),
   dateMin: z.date(),
   dateMax: z.date(),
-  datePrecision: datePrecisionSchema,
+  datePrecision: assetDatePrecisionSchema,
   dateIsRange: z.boolean().default(false).optional()
 });
 
