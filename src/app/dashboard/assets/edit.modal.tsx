@@ -1,12 +1,8 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { assetRepository } from '@/features/assets/assets.repository';
 import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
-import { useForm } from '@conform-to/react';
-import {
-  assetCreateSchema,
-  assetDateCreateSchema,
-  AssetDatePrecision,
-} from '@/features/assets/assets.validation';
+import { useForm, useInputControl } from '@conform-to/react';
+import { assetCreateSchema, assetDateCreateSchema, AssetDatePrecision } from '@/features/assets/assets.validation';
 import { parseWithZod } from '@conform-to/zod';
 import { Asset } from '@/features/assets/components/asset';
 import { Button } from '@/components/base/button';
@@ -17,6 +13,7 @@ import { Label } from '@/components/base/label';
 import { TextArea } from '@/components/base/text-area';
 import { AssetDatePicker } from '@/features/assets/components/asset-date-picker';
 import { formatDate } from '@/features/assets/assets.utils';
+import { useMemo } from 'react';
 
 const assetEditFormSchema = assetCreateSchema
   .pick({
@@ -65,6 +62,28 @@ export default function AssetEditModal() {
   });
 
   const dateFieldset = fields.date.getFieldset();
+  const dateMinControl = useInputControl(dateFieldset.dateMin);
+  const dateMaxControl = useInputControl(dateFieldset.dateMax);
+  const datePrecisionControl = useInputControl(dateFieldset.datePrecision);
+
+  const datePreview = useMemo<string>(() => {
+    console.log(
+      'datePreview',
+      dateFieldset.dateMin.value,
+      dateFieldset.dateMax.value,
+      dateFieldset.datePrecision.value
+    );
+    if (!dateFieldset.dateMin.value || !dateFieldset.dateMax.value || !dateFieldset.datePrecision.value) {
+      return 'Data nieustawiona';
+    }
+
+    return formatDate({
+      dateMin: new Date(dateFieldset.dateMin.value),
+      dateMax: new Date(dateFieldset.dateMax.value),
+      datePrecision: dateFieldset.datePrecision.value as AssetDatePrecision,
+      dateIsRange: false
+    });
+  }, [dateFieldset.dateMin.value, dateFieldset.dateMax.value, dateFieldset.datePrecision.value]);
 
   return (
     <ClientOnly>
@@ -102,37 +121,30 @@ export default function AssetEditModal() {
                 maxLength={512}
               />
               <Label>Data</Label>
-              <span>
-                {dateFieldset.dateMin.value &&
-                  dateFieldset.dateMax.value &&
-                  dateFieldset.datePrecision.value &&
-                  formatDate({
-                    dateMin: new Date(dateFieldset.dateMin.value),
-                    dateMax: new Date(dateFieldset.dateMax.value),
-                    datePrecision: dateFieldset.datePrecision.value as AssetDatePrecision,
-                    dateIsRange: false
-                  })}
-              </span>
+              <span className={'pl-2 font-medium'}>{datePreview}</span>
               <AssetDatePicker
                 formParams={{
                   datePrecision: {
                     key: dateFieldset.datePrecision.key,
                     name: dateFieldset.datePrecision.name,
-                    defaultValue: dateFieldset.datePrecision.initialValue as AssetDatePrecision
+                    defaultValue: dateFieldset.datePrecision.initialValue as AssetDatePrecision,
+                    onChange: datePrecisionControl.change
                   },
                   dateMin: {
                     key: dateFieldset.dateMin.key,
                     name: dateFieldset.dateMin.name,
                     defaultValue: dateFieldset.dateMin.initialValue
                       ? new Date(dateFieldset.dateMin.initialValue)
-                      : undefined
+                      : undefined,
+                    onChange: dateMinControl.change
                   },
                   dateMax: {
                     key: dateFieldset.dateMax.key,
                     name: dateFieldset.dateMax.name,
                     defaultValue: dateFieldset.dateMax.initialValue
                       ? new Date(dateFieldset.dateMax.initialValue)
-                      : undefined
+                      : undefined,
+                    onChange: dateMaxControl.change
                   }
                 }}
               />

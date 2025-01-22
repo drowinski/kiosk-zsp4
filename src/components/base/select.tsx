@@ -1,30 +1,68 @@
 import React from 'react';
 import { cn } from '@/utils/styles';
+import * as RadixSelect from '@radix-ui/react-select';
+import { ChevronDownIcon } from '@/components/icons';
+import { ClientOnly } from 'remix-utils/client-only';
 
-interface OptionProps extends React.InputHTMLAttributes<HTMLOptionElement> {}
+export const Select = RadixSelect.Root;
 
-export const Option = React.forwardRef<HTMLOptionElement, OptionProps>(({ className, ...props }, ref) => (
-  <option
-    ref={ref}
-    className={className}
-    {...props}
-  />
-));
-Option.displayName = 'Option';
-
-interface SelectProps extends React.InputHTMLAttributes<HTMLSelectElement> {}
-
-export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(({ className, ...props }, ref) => (
-  <select
+export const SelectOption = React.forwardRef<
+  React.ElementRef<typeof RadixSelect.SelectItem>,
+  React.ComponentPropsWithoutRef<typeof RadixSelect.SelectItem>
+>(({ className, children, ...props }, ref) => (
+  <RadixSelect.SelectItem
     ref={ref}
     className={cn(
-      'inline-flex h-9 appearance-none items-center justify-center border border-accent shadow-inner',
+      'h-9 items-center justify-center',
+      'whitespace-nowrap bg-white px-3 py-2 text-sm font-medium text-black',
+      className
+    )}
+    {...props}
+  >
+    <RadixSelect.ItemText>{children}</RadixSelect.ItemText>
+  </RadixSelect.SelectItem>
+));
+SelectOption.displayName = 'SelectOption';
+
+export const SelectTrigger = React.forwardRef<
+  React.ElementRef<typeof RadixSelect.Trigger>,
+  React.ComponentPropsWithoutRef<typeof RadixSelect.Trigger>
+>(({ className, ...props }, ref) => (
+  <RadixSelect.Trigger
+    ref={ref}
+    className={cn(
+      'inline-flex h-9 w-fit items-center justify-center gap-1 border border-accent shadow-inner',
       'whitespace-nowrap rounded-xl bg-white px-3 py-2 text-sm font-medium text-black',
       'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
       'disabled:pointer-events-none disabled:opacity-50',
       className
     )}
     {...props}
-  />
+  >
+    <RadixSelect.Value placeholder={'test'} />
+    <RadixSelect.Icon>
+      <ChevronDownIcon />
+    </RadixSelect.Icon>
+  </RadixSelect.Trigger>
 ));
-Select.displayName = 'Select';
+SelectTrigger.displayName = 'SelectTrigger';
+
+export const SelectContent = React.forwardRef<
+  React.ElementRef<typeof RadixSelect.Content>,
+  React.ComponentPropsWithoutRef<typeof RadixSelect.Content>
+>(({ className, children, ...props }, ref) => (
+  <ClientOnly>
+    {() => (
+      <RadixSelect.Portal>
+        <RadixSelect.Content
+          ref={ref}
+          className={cn('z-50', className)}
+          {...props}
+        >
+          <RadixSelect.Viewport className={'border border-accent shadow-inner rounded-xl'}>{children}</RadixSelect.Viewport>
+        </RadixSelect.Content>
+      </RadixSelect.Portal>
+    )}
+  </ClientOnly>
+));
+SelectContent.displayName = 'SelectContent';

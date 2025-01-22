@@ -5,6 +5,10 @@ import {
   FaArrowUp,
   FaCalendar,
   FaCheck,
+  FaChevronDown,
+  FaChevronLeft,
+  FaChevronRight,
+  FaChevronUp,
   FaEdit,
   FaFilm,
   FaImage,
@@ -40,6 +44,22 @@ export function ArrowUpIcon(props: IconProps) {
 
 export function ArrowDownIcon(props: IconProps) {
   return <FaArrowDown {...props} />;
+}
+
+export function ChevronLeftIcon(props: IconProps) {
+  return <FaChevronLeft {...props} />;
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return <FaChevronRight {...props} />;
+}
+
+export function ChevronUpIcon(props: IconProps) {
+  return <FaChevronUp {...props} />;
+}
+
+export function ChevronDownIcon(props: IconProps) {
+  return <FaChevronDown {...props} />;
 }
 
 export function XIcon(props: IconProps) {
