@@ -162,6 +162,7 @@ export function AssetDatePicker({ dateMin, dateMax, datePrecision }: AssetDatePi
           hidden={!isMinMaxDate}
         />
         <label className={'flex h-full items-center justify-center rounded-md bg-accent p-2 text-sm'}>
+          {/* TODO: Improve accessibility */}
           {isMinMaxDate ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           <input
             type={'checkbox'}

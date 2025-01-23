@@ -13,8 +13,9 @@ export const SelectOption = React.forwardRef<
   <RadixSelect.SelectItem
     ref={ref}
     className={cn(
-      'h-9 items-center justify-center',
-      'whitespace-nowrap bg-white px-3 py-2 text-sm font-medium text-black',
+      'h-9 items-center justify-center bg-white px-3 py-2',
+      'cursor-pointer select-none whitespace-nowrap text-sm font-medium text-black',
+      'focus-visible:outline-none focus-visible:bg-primary focus-visible:text-primary-foreground',
       className
     )}
     {...props}
@@ -59,7 +60,9 @@ export const SelectContent = React.forwardRef<
           className={cn('z-50', className)}
           {...props}
         >
-          <RadixSelect.Viewport className={'border border-accent shadow-inner rounded-xl'}>{children}</RadixSelect.Viewport>
+          <RadixSelect.Viewport className={'rounded-xl border border-accent shadow-inner'}>
+            {children}
+          </RadixSelect.Viewport>
         </RadixSelect.Content>
       </RadixSelect.Portal>
     )}
