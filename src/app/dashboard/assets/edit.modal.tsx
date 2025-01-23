@@ -14,6 +14,7 @@ import { TextArea } from '@/components/base/text-area';
 import { AssetDatePicker } from '@/features/assets/components/asset-date-picker';
 import { formatDate } from '@/features/assets/assets.utils';
 import { useMemo } from 'react';
+import { getYYYYMMDD } from '@/utils/dates';
 
 const assetEditFormSchema = assetCreateSchema
   .pick({
@@ -57,7 +58,13 @@ export default function AssetEditModal() {
       return result;
     },
     defaultValue: {
-      ...asset
+      ...asset,
+      date: asset.date || {
+        dateMin: new Date(),
+        dateMax: new Date(),
+        datePrecision: 'day',
+        dateIsRange: false
+      }
     }
   });
 
@@ -67,23 +74,18 @@ export default function AssetEditModal() {
   const datePrecisionControl = useInputControl(dateFieldset.datePrecision);
 
   const datePreview = useMemo<string>(() => {
-    console.log(
-      'datePreview',
-      dateFieldset.dateMin.value,
-      dateFieldset.dateMax.value,
-      dateFieldset.datePrecision.value
-    );
-    if (!dateFieldset.dateMin.value || !dateFieldset.dateMax.value || !dateFieldset.datePrecision.value) {
+    console.log('datePreview', dateMinControl.value, dateMaxControl.value, datePrecisionControl.value);
+    if (!dateMinControl.value || !dateMaxControl.value || !datePrecisionControl.value) {
       return 'Data nieustawiona';
     }
 
     return formatDate({
-      dateMin: new Date(dateFieldset.dateMin.value),
-      dateMax: new Date(dateFieldset.dateMax.value),
-      datePrecision: dateFieldset.datePrecision.value as AssetDatePrecision,
+      dateMin: new Date(dateMinControl.value),
+      dateMax: new Date(dateMaxControl.value),
+      datePrecision: datePrecisionControl.value as AssetDatePrecision,
       dateIsRange: false
     });
-  }, [dateFieldset.dateMin.value, dateFieldset.dateMax.value, dateFieldset.datePrecision.value]);
+  }, [dateMinControl.value, dateMaxControl.value, datePrecisionControl.value]);
 
   return (
     <ClientOnly>
@@ -123,29 +125,20 @@ export default function AssetEditModal() {
               <Label>Data</Label>
               <span className={'pl-2 font-medium'}>{datePreview}</span>
               <AssetDatePicker
-                formParams={{
-                  datePrecision: {
-                    key: dateFieldset.datePrecision.key,
-                    name: dateFieldset.datePrecision.name,
-                    defaultValue: dateFieldset.datePrecision.initialValue as AssetDatePrecision,
-                    onChange: datePrecisionControl.change
-                  },
-                  dateMin: {
-                    key: dateFieldset.dateMin.key,
-                    name: dateFieldset.dateMin.name,
-                    defaultValue: dateFieldset.dateMin.initialValue
-                      ? new Date(dateFieldset.dateMin.initialValue)
-                      : undefined,
-                    onChange: dateMinControl.change
-                  },
-                  dateMax: {
-                    key: dateFieldset.dateMax.key,
-                    name: dateFieldset.dateMax.name,
-                    defaultValue: dateFieldset.dateMax.initialValue
-                      ? new Date(dateFieldset.dateMax.initialValue)
-                      : undefined,
-                    onChange: dateMaxControl.change
-                  }
+                dateMin={{
+                  defaultValue: new Date(dateFieldset.dateMin.initialValue || new Date()),
+                  value: new Date(dateMinControl.value || new Date()),
+                  onChange: (value) => dateMinControl.change(getYYYYMMDD(value))
+                }}
+                dateMax={{
+                  defaultValue: new Date(dateFieldset.dateMax.initialValue || new Date()),
+                  value: new Date(dateMaxControl.value || new Date()),
+                  onChange: (value) => dateMaxControl.change(getYYYYMMDD(value))
+                }}
+                datePrecision={{
+                  defaultValue: (dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined) || 'day',
+                  value: (datePrecisionControl.value as AssetDatePrecision | undefined) || 'day',
+                  onChange: (value) => datePrecisionControl.change(value)
                 }}
               />
               <Button
