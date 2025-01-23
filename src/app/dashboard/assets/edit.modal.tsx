@@ -74,7 +74,6 @@ export default function AssetEditModal() {
   const datePrecisionControl = useInputControl(dateFieldset.datePrecision);
 
   const datePreview = useMemo<string>(() => {
-    console.log('datePreview', dateMinControl.value, dateMaxControl.value, datePrecisionControl.value);
     if (!dateMinControl.value || !dateMaxControl.value || !datePrecisionControl.value) {
       return 'Data nieustawiona';
     }
@@ -126,16 +125,19 @@ export default function AssetEditModal() {
               <span className={'pl-2 font-medium'}>{datePreview}</span>
               <AssetDatePicker
                 dateMin={{
+                  name: dateFieldset.dateMin.name,
                   defaultValue: new Date(dateFieldset.dateMin.initialValue || new Date()),
                   value: new Date(dateMinControl.value || new Date()),
-                  onChange: (value) => dateMinControl.change(getYYYYMMDD(value))
+                  onChange: (value) => { console.log(getYYYYMMDD(value), typeof dateMinControl.value); dateMinControl.change(getYYYYMMDD(value)); }
                 }}
                 dateMax={{
+                  name: dateFieldset.dateMax.name,
                   defaultValue: new Date(dateFieldset.dateMax.initialValue || new Date()),
                   value: new Date(dateMaxControl.value || new Date()),
                   onChange: (value) => dateMaxControl.change(getYYYYMMDD(value))
                 }}
                 datePrecision={{
+                  name: dateFieldset.datePrecision.name,
                   defaultValue: (dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined) || 'day',
                   value: (datePrecisionControl.value as AssetDatePrecision | undefined) || 'day',
                   onChange: (value) => datePrecisionControl.change(value)

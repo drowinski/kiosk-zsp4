@@ -1,5 +1,5 @@
 import { NewAssetDate, AssetDatePrecision } from '@/features/assets/assets.validation';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
 import { MONTHS_IN_POLISH } from '@/lib/constants';
 import { getYYYYMMDD } from '@/utils/dates';
@@ -9,14 +9,16 @@ import { SelectOption, Select, SelectContent, SelectTrigger } from '@/components
 import { cn } from '@/utils/styles';
 
 export interface AssetDatePrecisionComboboxProps {
+  name: string;
   defaultValue: AssetDatePrecision;
   value: AssetDatePrecision;
   onChange: (value: AssetDatePrecision) => void;
 }
 
-export function AssetDatePrecisionCombobox({ defaultValue, value, onChange }: AssetDatePrecisionComboboxProps) {
+export function AssetDatePrecisionCombobox({ name, defaultValue, value, onChange }: AssetDatePrecisionComboboxProps) {
   return (
     <Select
+      name={name}
       defaultValue={defaultValue}
       value={value}
       onValueChange={(value) => onChange(value as AssetDatePrecision)}
@@ -38,14 +40,19 @@ export function AssetDatePrecisionCombobox({ defaultValue, value, onChange }: As
 
 export interface DatePickerProps {
   precision: AssetDatePrecision;
+  name: string;
   defaultValue: Date;
   value: Date;
   onChange: (value: Date) => void;
   hidden?: boolean;
 }
 
-export function DatePicker({ precision, defaultValue, value, onChange, hidden = false }: DatePickerProps) {
+export function DatePicker({ precision, name, defaultValue, value, onChange, hidden = false }: DatePickerProps) {
   const [yearString, setYearString] = useState<string>(defaultValue.getFullYear().toString());
+
+  useEffect(() => {
+    setYearString(value.getFullYear().toString());
+  }, [value]);
 
   return (
     <div
@@ -53,6 +60,7 @@ export function DatePicker({ precision, defaultValue, value, onChange, hidden = 
       aria-hidden={hidden}
     >
       <Input
+        name={name}
         type={'date'}
         value={getYYYYMMDD(value)}
         onChange={(event) => {
@@ -103,6 +111,7 @@ export function DatePicker({ precision, defaultValue, value, onChange, hidden = 
 }
 
 type AssetDatePickerProp<K extends keyof NewAssetDate> = {
+  name: string;
   defaultValue: NewAssetDate[K];
   value: NewAssetDate[K];
   onChange: (value: NewAssetDate[K]) => void;
@@ -132,13 +141,20 @@ export function AssetDatePicker({ dateMin, dateMax, datePrecision }: AssetDatePi
     <div className={'flex flex-col gap-2'}>
       <div className={'flex items-center gap-2'}>
         <Picker
+          name={dateMin.name}
           defaultValue={dateMin.defaultValue}
           value={dateMin.value}
-          onChange={dateMin.onChange}
+          onChange={(value) => {
+            if (!isMinMaxDate) {
+              dateMax.onChange(value);
+            }
+            dateMin.onChange(value);
+          }}
           precision={precision}
         />
         {isMinMaxDate && <span>&mdash;</span>}
         <Picker
+          name={dateMax.name}
           defaultValue={dateMax.defaultValue}
           value={dateMax.value}
           onChange={dateMax.onChange}
@@ -166,6 +182,7 @@ export function AssetDatePicker({ dateMin, dateMax, datePrecision }: AssetDatePi
         </label>
       </div>
       <AssetDatePrecisionCombobox
+        name={datePrecision.name}
         defaultValue={datePrecision.defaultValue}
         value={datePrecision.value}
         onChange={(precision) => {
