@@ -66,7 +66,15 @@ export const assetCreateSchema = assetBaseSchema.omit({ id: true }).extend({
 });
 export type NewAsset = z.input<typeof assetCreateSchema>;
 
-export const assetUpdateSchema = assetBaseSchema.extend({
-  date: assetDateUpdateSchema.nullable().optional()
-});
+export const assetUpdateSchema = z
+  .object({
+    id: assetBaseSchema.shape.id,
+    fileName: assetBaseSchema.shape.fileName.optional(),
+    mimeType: assetBaseSchema.shape.mimeType.optional(),
+    assetType: assetBaseSchema.shape.assetType.optional(),
+    description: assetBaseSchema.shape.description.optional()
+  })
+  .extend({
+    date: assetDateUpdateSchema.nullable().optional()
+  });
 export type UpdatedAsset = z.input<typeof assetUpdateSchema>;

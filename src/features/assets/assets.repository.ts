@@ -1,4 +1,4 @@
-import { Asset, NewAsset } from '@/features/assets/assets.validation';
+import { Asset, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import { db } from '@/lib/db/connection';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
 import { eq, getTableColumns } from 'drizzle-orm';
@@ -10,7 +10,7 @@ interface AssetRepository {
 
   createAsset(newAsset: NewAsset): Promise<Asset | null>;
 
-  updateAsset(id: number, assetChanges: Partial<Asset>): Promise<Asset | null>;
+  updateAsset(updatedAsset: UpdatedAsset): Promise<Asset | null>;
 }
 
 export class DrizzleAssetRepository implements AssetRepository {
@@ -77,9 +77,53 @@ export class DrizzleAssetRepository implements AssetRepository {
     });
   }
 
-  async updateAsset(id: number, assetChanges: Partial<Asset>): Promise<Asset | null> {
-    const result = await db.update(assetTable).set(assetChanges).where(eq(assetTable.id, id)).returning();
-    return result.at(0) ?? null;
+  async updateAsset(updatedAsset: UpdatedAsset): Promise<Asset | null> {
+    const { date: dateValues, ...assetValues } = updatedAsset;
+
+    return db.transaction(async (tx) => {
+      let resultDate;
+      if (dateValues) {
+        const { id: dateId, ...dateValuesWithoutId } = dateValues;
+
+        if (dateId) {
+          resultDate = (
+            await tx.update(dateTable).set(dateValuesWithoutId).where(eq(dateTable.id, dateId)).returning()
+          ).at(0);
+        }
+
+        if (!resultDate) {
+          resultDate = (await tx.insert(dateTable).values(dateValuesWithoutId).returning()).at(0);
+        }
+
+        if (!resultDate) {
+          tx.rollback();
+          return null;
+        }
+      }
+
+      const { id: assetId, ...assetValuesWithoutId } = assetValues;
+      const resultAsset = (
+        await tx
+          .update(assetTable)
+          .set({
+            dateId: resultDate?.id,
+            ...assetValuesWithoutId
+          })
+          .where(eq(assetTable.id, assetId))
+          .returning()
+      ).at(0);
+
+      if (!resultAsset) {
+        return null;
+      }
+
+      const resultAssetWithDate = {
+        ...resultAsset,
+        date: resultDate ?? null
+      };
+
+      return resultAssetWithDate ?? null;
+    });
   }
 }
 

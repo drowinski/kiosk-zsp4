@@ -3,7 +3,7 @@ import { ReadStream } from 'node:fs';
 import { FileManager } from '@/lib/files';
 import { env } from '@/lib/env';
 import * as crypto from 'node:crypto';
-import { Asset, AssetType, NewAsset } from '@/features/assets/assets.validation';
+import { Asset, AssetType, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import * as mime from 'mime-types';
 
 export class AssetService {
@@ -41,12 +41,12 @@ export class AssetService {
     return asset;
   }
 
-  async updateAsset(id: number, assetChanges: Partial<Asset>): Promise<Asset | null> {
-    if (assetChanges.mimeType !== undefined) {
-      assetChanges.mimeType = this.normalizeMimeType(assetChanges.mimeType);
-      assetChanges.assetType = this.getAssetTypeFromMimeType(assetChanges.mimeType);
+  async updateAsset(updatedAsset: UpdatedAsset): Promise<Asset | null> {
+    if (updatedAsset.mimeType !== undefined) {
+      updatedAsset.mimeType = this.normalizeMimeType(updatedAsset.mimeType);
+      updatedAsset.assetType = this.getAssetTypeFromMimeType(updatedAsset.mimeType);
     }
-    return this.assetRepository.updateAsset(id, assetChanges);
+    return this.assetRepository.updateAsset(updatedAsset);
   }
 
   private generateFileName(mimeType: string): string {

@@ -16,6 +16,7 @@ import { formatDate } from '@/features/assets/assets.utils';
 import { useMemo } from 'react';
 import { getYYYYMMDD } from '@/utils/dates';
 import { InputMessage } from '@/components/base/input';
+import { assetService } from '@/features/assets/assets.service';
 
 const assetEditFormSchema = assetUpdateSchema.pick({
   id: true,
@@ -42,6 +43,8 @@ export async function action({ request }: ActionFunctionArgs) {
     return { lastResult: submission.reply() };
   }
   console.log('a', submission.value);
+  const result = await assetService.updateAsset(submission.value);
+  console.log('update result', result);
   return { lastResult: submission.reply() };
 }
 
@@ -139,6 +142,11 @@ export default function AssetEditModal() {
               <Label>Data</Label>
               <InputMessage>{fields.date.errors}</InputMessage>
               <span className={'font-medium'}>{datePreview}</span>
+              <input
+                type={'hidden'}
+                name={dateFieldset.id.name}
+                value={dateFieldset.id.value}
+              />
               <AssetDatePicker
                 dateMin={{
                   name: dateFieldset.dateMin.name,
