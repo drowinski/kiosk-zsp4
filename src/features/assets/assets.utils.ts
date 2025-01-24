@@ -3,8 +3,9 @@ import { AssetDatePrecision } from '@/features/assets/assets.validation';
 export const DATE_TIME_LOCALE = 'pl-PL';
 
 interface DateFormatter {
-  format(date: Date): string
-  formatRange(startDate: Date, endDate: Date): string
+  format(date: Date): string;
+
+  formatRange(startDate: Date, endDate: Date): string;
 }
 
 const dateFormatters: Record<AssetDatePrecision, DateFormatter> = {
@@ -67,4 +68,32 @@ export function formatDate({
     formattedString = formatter.format(dateMin);
   }
   return formattedString;
+}
+
+export function truncateDate(date: Date, precision: AssetDatePrecision): Date {
+  let year = date.getFullYear();
+  let month = date.getMonth();
+  let day = date.getDate();
+  switch (precision) {
+    case 'day':
+      break;
+    case 'month':
+      day = 1;
+      break;
+    case 'year':
+      day = 1;
+      month = 0;
+      break;
+    case 'decade':
+      day = 1;
+      month = 0;
+      year = year - (year % 10);
+      break;
+    case 'century':
+      day = 1;
+      month = 0;
+      year = year - (year % 100) + 1;
+      break;
+  }
+  return new Date(Date.UTC(year, month, day));
 }

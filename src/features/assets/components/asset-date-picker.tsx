@@ -137,6 +137,18 @@ export function AssetDatePicker({ dateMin, dateMax, datePrecision }: AssetDatePi
     }
   }, [precision]);
 
+  const toggleIsMinMaxDate = () => {
+    const _isMinMaxDate = !isMinMaxDate;
+    if (_isMinMaxDate) {
+      dateMax.onChange(lastMaxDate || dateMin.value);
+      setLastMaxDate(null);
+    } else {
+      setLastMaxDate(dateMax.value);
+      dateMax.onChange(dateMin.value);
+    }
+    setIsMinMaxDate(_isMinMaxDate);
+  };
+
   return (
     <div className={'flex flex-col gap-2'}>
       <div className={'flex items-center gap-2'}>
@@ -161,26 +173,19 @@ export function AssetDatePicker({ dateMin, dateMax, datePrecision }: AssetDatePi
           precision={precision}
           hidden={!isMinMaxDate}
         />
-        <label className={'flex h-full items-center justify-center rounded-md bg-accent p-2 text-sm'}>
-          {/* TODO: Improve accessibility */}
+        <div
+          role={'checkbox'}
+          aria-checked={isMinMaxDate}
+          tabIndex={0}
+          onClick={toggleIsMinMaxDate}
+          onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && toggleIsMinMaxDate()}
+          className={cn(
+            'flex h-full items-center justify-center rounded-xl bg-accent p-2 text-sm',
+            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary'
+          )}
+        >
           {isMinMaxDate ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-          <input
-            type={'checkbox'}
-            defaultChecked={isMinMaxDate}
-            onChange={(event) => {
-              const _isMinMaxDate = event.target.checked;
-              if (_isMinMaxDate) {
-                dateMax.onChange(lastMaxDate || dateMin.value);
-                setLastMaxDate(null);
-              } else {
-                setLastMaxDate(dateMax.value);
-                dateMax.onChange(dateMin.value);
-              }
-              setIsMinMaxDate(_isMinMaxDate);
-            }}
-            className={'hidden w-4 appearance-none'}
-          />
-        </label>
+        </div>
       </div>
       <AssetDatePrecisionCombobox
         name={datePrecision.name}

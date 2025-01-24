@@ -2,7 +2,7 @@ import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { assetRepository } from '@/features/assets/assets.repository';
 import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
 import { useForm, useInputControl } from '@conform-to/react';
-import { assetCreateSchema, assetDateCreateSchema, AssetDatePrecision } from '@/features/assets/assets.validation';
+import { AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
 import { parseWithZod } from '@conform-to/zod';
 import { Asset } from '@/features/assets/components/asset';
 import { Button } from '@/components/base/button';
@@ -15,12 +15,13 @@ import { AssetDatePicker } from '@/features/assets/components/asset-date-picker'
 import { formatDate } from '@/features/assets/assets.utils';
 import { useMemo } from 'react';
 import { getYYYYMMDD } from '@/utils/dates';
+import { InputMessage } from '@/components/base/input';
 
-const assetEditFormSchema = assetCreateSchema
-  .pick({
-    description: true
-  })
-  .extend({ date: assetDateCreateSchema });
+const assetEditFormSchema = assetUpdateSchema.pick({
+  id: true,
+  description: true,
+  date: true
+});
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const assetId = parseInt(params.id || '');
@@ -35,13 +36,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  console.log('test');
   const formData = await request.formData();
-  const submission = parseWithZod(formData, { schema: assetEditFormSchema });
+  const submission = await parseWithZod(formData, { schema: assetEditFormSchema, async: true });
   if (submission.status !== 'success') {
     return { lastResult: submission.reply() };
   }
-  console.log(submission.value.description);
+  console.log('a', submission.value);
   return { lastResult: submission.reply() };
 }
 
@@ -53,10 +53,11 @@ export default function AssetEditModal() {
   const [form, fields] = useForm({
     lastResult: actionData?.lastResult,
     onValidate: ({ formData }) => {
-      const result = parseWithZod(formData, { schema: assetEditFormSchema });
-      console.log(result);
-      return result;
+      const submission = parseWithZod(formData, { schema: assetEditFormSchema });
+      console.log(submission);
+      return submission;
     },
+    shouldRevalidate: 'onInput',
     defaultValue: {
       ...asset,
       date: asset.date || {
@@ -74,7 +75,16 @@ export default function AssetEditModal() {
   const datePrecisionControl = useInputControl(dateFieldset.datePrecision);
 
   const datePreview = useMemo<string>(() => {
+    // console.log(dateMinControl.value, dateMaxControl.value, datePrecisionControl.value);
     if (!dateMinControl.value || !dateMaxControl.value || !datePrecisionControl.value) {
+      return 'Data nieustawiona';
+    }
+
+    if (
+      dateMinControl.value.startsWith('NaN') ||
+      dateMaxControl.value.startsWith('NaN') ||
+      datePrecisionControl.value.startsWith('NaN')
+    ) {
       return 'Data nieustawiona';
     }
 
@@ -112,6 +122,11 @@ export default function AssetEditModal() {
                   fileName={asset.fileName}
                 />
               </div>
+              <input
+                type={'hidden'}
+                name={fields.id.name}
+                value={fields.id.value}
+              />
               <Label htmlFor={fields.description.name}>Opis</Label>
               <TextArea
                 key={fields.description.key}
@@ -122,13 +137,17 @@ export default function AssetEditModal() {
                 maxLength={512}
               />
               <Label>Data</Label>
-              <span className={'pl-2 font-medium'}>{datePreview}</span>
+              <InputMessage>{fields.date.errors}</InputMessage>
+              <span className={'font-medium'}>{datePreview}</span>
               <AssetDatePicker
                 dateMin={{
                   name: dateFieldset.dateMin.name,
                   defaultValue: new Date(dateFieldset.dateMin.initialValue || new Date()),
                   value: new Date(dateMinControl.value || new Date()),
-                  onChange: (value) => { console.log(getYYYYMMDD(value), typeof dateMinControl.value); dateMinControl.change(getYYYYMMDD(value)); }
+                  onChange: (value) => {
+                    console.log(getYYYYMMDD(value), typeof dateMinControl.value);
+                    dateMinControl.change(getYYYYMMDD(value));
+                  }
                 }}
                 dateMax={{
                   name: dateFieldset.dateMax.name,
