@@ -125,7 +125,7 @@ export interface AssetDatePickerProps {
 }
 
 export function AssetDatePicker({ dateMin, dateMax, datePrecision }: AssetDatePickerProps) {
-  const [precision, setPrecision] = React.useState<AssetDatePrecision>(datePrecision.defaultValue || 'day');
+  const [precision, setPrecision] = React.useState<AssetDatePrecision>(datePrecision.value || 'day');
   const [isMinMaxDate, setIsMinMaxDate] = React.useState(dateMin.value.toDateString() != dateMax.value.toDateString());
   const [lastMaxDate, setLastMaxDate] = React.useState<Date | null>(dateMax.defaultValue);
 
