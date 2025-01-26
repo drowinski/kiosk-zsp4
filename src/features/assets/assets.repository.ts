@@ -1,7 +1,7 @@
 import { Asset, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import { db } from '@/lib/db/connection';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
-import { eq, getTableColumns } from 'drizzle-orm';
+import { eq, getTableColumns, sql } from 'drizzle-orm';
 
 interface AssetRepository {
   getAssetById(id: number): Promise<Asset | null>;
@@ -79,7 +79,7 @@ export class DrizzleAssetRepository implements AssetRepository {
 
   async updateAsset(updatedAsset: UpdatedAsset): Promise<Asset | null> {
     const { date: dateValues, ...assetValues } = updatedAsset;
-
+    console.log(dateValues);
     return db.transaction(async (tx) => {
       let resultDate;
       if (dateValues) {
@@ -99,6 +99,12 @@ export class DrizzleAssetRepository implements AssetRepository {
           tx.rollback();
           return null;
         }
+      } else if (dateValues === null) {
+        console.log('tryna delete');
+        const assetSelect = tx.$with('date_id').as(
+          tx.select({ dateId: assetTable.dateId }).from(assetTable).where(eq(assetTable.id, assetValues.id))
+        );
+        await tx.with(assetSelect).delete(dateTable).where(eq(dateTable.id, sql`(SELECT date_id FROM ${assetSelect})`));
       }
 
       const { id: assetId, ...assetValuesWithoutId } = assetValues;

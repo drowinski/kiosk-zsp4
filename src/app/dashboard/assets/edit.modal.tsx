@@ -43,6 +43,9 @@ export async function action({ request }: ActionFunctionArgs) {
     return { lastResult: submission.reply() };
   }
   console.log('a', submission.value);
+  if (!submission.value.date) {
+    submission.value.date = null;
+  }
   const result = await assetService.updateAsset(submission.value);
   console.log('update result', result);
   if (!result) {
