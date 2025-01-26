@@ -1,12 +1,34 @@
 import { Asset, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import { db } from '@/lib/db/connection';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
-import { eq, getTableColumns, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
+
+interface Filters {
+  dateMin?: Date;
+  dateMax?: Date;
+  description?: string;
+}
+
+interface Sorting {
+  property: 'date' | 'description';
+  direction: 'asc' | 'desc';
+}
+
+interface Pagination {
+  page: number;
+  itemsPerPage: number;
+}
+
+interface Options {
+  filters?: Filters;
+  sorting?: Sorting;
+  pagination?: Pagination;
+}
 
 interface AssetRepository {
   getAssetById(id: number): Promise<Asset | null>;
 
-  getAllAssets(): Promise<Asset[]>;
+  getAllAssets(options?: Options): Promise<Asset[]>;
 
   createAsset(newAsset: NewAsset): Promise<Asset | null>;
 
@@ -28,8 +50,8 @@ export class DrizzleAssetRepository implements AssetRepository {
     return assets.at(0) ?? null;
   }
 
-  async getAllAssets(): Promise<Asset[]> {
-    return db
+  async getAllAssets(options?: Options): Promise<Asset[]> {
+    let query = db
       .select({
         ...getTableColumns(assetTable),
         date: {
@@ -37,7 +59,36 @@ export class DrizzleAssetRepository implements AssetRepository {
         }
       })
       .from(assetTable)
-      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id));
+      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id))
+      .$dynamic();
+
+    if (options?.filters) {
+      const { description, dateMin, dateMax } = options.filters;
+      query = query.where(
+        and(
+          description ? ilike(assetTable.description, `%${description}%`) : undefined,
+          dateMin ? sql<boolean>`${dateMin} < ${dateTable.dateMax}` : undefined,
+          dateMax ? sql<boolean>`${dateMax} > ${dateTable.dateMin}` : undefined
+        )
+      );
+    }
+
+    if (options?.sorting) {
+      const { property, direction } = options.sorting;
+      const column = {
+        date: dateTable.dateMin,
+        description: assetTable.description
+      }[property];
+      const directionFunc = direction === 'asc' ? asc : desc;
+      query = query.orderBy(directionFunc(column));
+    }
+
+    if (options?.pagination) {
+      const { page, itemsPerPage } = options.pagination;
+      query = query.offset(page * itemsPerPage).limit(itemsPerPage);
+    }
+
+    return query;
   }
 
   async createAsset(newAsset: NewAsset): Promise<Asset | null> {
@@ -101,10 +152,13 @@ export class DrizzleAssetRepository implements AssetRepository {
         }
       } else if (dateValues === null) {
         console.log('tryna delete');
-        const assetSelect = tx.$with('date_id').as(
-          tx.select({ dateId: assetTable.dateId }).from(assetTable).where(eq(assetTable.id, assetValues.id))
-        );
-        await tx.with(assetSelect).delete(dateTable).where(eq(dateTable.id, sql`(SELECT date_id FROM ${assetSelect})`));
+        const assetSelect = tx
+          .$with('date_id')
+          .as(tx.select({ dateId: assetTable.dateId }).from(assetTable).where(eq(assetTable.id, assetValues.id)));
+        await tx
+          .with(assetSelect)
+          .delete(dateTable)
+          .where(eq(dateTable.id, sql`(SELECT date_id FROM ${assetSelect})`));
       }
 
       const { id: assetId, ...assetValuesWithoutId } = assetValues;
