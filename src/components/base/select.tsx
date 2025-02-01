@@ -4,10 +4,7 @@ import * as RadixSelect from '@radix-ui/react-select';
 import { ChevronDownIcon } from '@/components/icons';
 import { ClientOnly } from 'remix-utils/client-only';
 
-export const Select = React.forwardRef<
-  React.ElementRef<typeof RadixSelect.Root>,
-  React.ComponentPropsWithoutRef<typeof RadixSelect.Root>
->(({ onValueChange, ...props }, ref) => {
+export function Select({ onValueChange, ...props }: React.ComponentPropsWithoutRef<typeof RadixSelect.Root>) {
   const handleValueChange = (value: string) => {
     if (!onValueChange) return;
     if (value === 'none') {
@@ -19,13 +16,11 @@ export const Select = React.forwardRef<
 
   return (
     <RadixSelect.Root
-      ref={ref}
       onValueChange={handleValueChange}
       {...props}
     />
   );
-});
-Select.displayName = 'Select';
+}
 
 export const SelectOption = React.forwardRef<
   React.ElementRef<typeof RadixSelect.SelectItem>,
