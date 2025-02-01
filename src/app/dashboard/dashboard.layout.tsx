@@ -32,20 +32,23 @@ export default function DashboardLayout() {
         </Card>
       </header>
       <div className={'flex h-full gap-2 overflow-hidden'}>
-        <DashboardSideNav className={'h-fit'}>
-          <DashboardSideNavItem
-            route={'/dashboard'}
-            label={'Panel zarządzania'}
-          />
-          <DashboardSideNavItem
-            route={'/dashboard/assets'}
-            label={'Zarządzaj zawartością'}
-          />
-          <DashboardSideNavItem
-            route={'/dashboard/assets/upload'}
-            label={'Dodaj zawartość'}
-          />
-        </DashboardSideNav>
+        <div className={'flex flex-col gap-2 max-w-[20%]'}>
+          <DashboardSideNav className={'h-fit'}>
+            <DashboardSideNavItem
+              route={'/dashboard'}
+              label={'Panel zarządzania'}
+            />
+            <DashboardSideNavItem
+              route={'/dashboard/assets'}
+              label={'Zarządzaj zawartością'}
+            />
+            <DashboardSideNavItem
+              route={'/dashboard/assets/upload'}
+              label={'Dodaj zawartość'}
+            />
+          </DashboardSideNav>
+          <div id={'dashboard-side-nav-portal'}/>
+        </div>
         <div className={'h-full w-full overflow-hidden'}>
           <Outlet />
         </div>

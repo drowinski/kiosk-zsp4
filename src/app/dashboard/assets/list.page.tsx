@@ -1,18 +1,19 @@
 import { assetRepository } from '@/features/assets/assets.repository';
-import { Outlet, ShouldRevalidateFunctionArgs, useLoaderData, useSearchParams } from '@remix-run/react';
+import { Outlet, ShouldRevalidateFunctionArgs, useLoaderData } from '@remix-run/react';
 import { AssetList, AssetListItem } from '@/features/assets/components/asset-list';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { Card } from '@/components/base/card';
-import { Input } from '@/components/base/input';
-import { useDeferredValue, useEffect, useState } from 'react';
+import { AssetFilters } from '@/features/assets/components/asset-filters';
+import { createPortal } from 'react-dom';
+import { ClientOnly } from 'remix-utils/client-only';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const description = url.searchParams.get('description');
+  const sortBy = url.searchParams.get('sortBy');
   console.log(description);
   const assets = await assetRepository.getAllAssets({
     filters: { description: description || undefined },
-    sorting: { property: 'date', direction: 'desc' }
+    sorting: sortBy ? { property: sortBy as 'description' | 'date', direction: 'desc' } : undefined
   });
   return { assets };
 }
@@ -32,25 +33,11 @@ export function shouldRevalidate({ currentUrl, nextUrl, defaultShouldRevalidate 
 export default function AssetListPage() {
   const { assets } = useLoaderData<typeof loader>();
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [descriptionFilter, setDescriptionFilter] = useState(() => searchParams.get('description') ?? '');
-
-  const deferredDescriptionFilter = useDeferredValue(descriptionFilter);
-
-  useEffect(() => {
-    setSearchParams({ description: deferredDescriptionFilter });
-  }, [deferredDescriptionFilter, setSearchParams]);
-
   return (
     <main className={'flex h-full flex-col gap-1'}>
-      <Card className={'sticky top-0 bg-secondary text-secondary-foreground'}>
-        <Input
-          type={'text'}
-          defaultValue={descriptionFilter}
-          onChange={(e) => setDescriptionFilter(e.target.value)}
-          placeholder={'Szukaj...'}
-        />
-      </Card>
+      <ClientOnly>
+        {() => createPortal(<AssetFilters />, document.getElementById('dashboard-side-nav-portal') as HTMLElement)}
+      </ClientOnly>
       <AssetList className={'overflow-y-auto'}>
         {assets.map((asset) => (
           <AssetListItem

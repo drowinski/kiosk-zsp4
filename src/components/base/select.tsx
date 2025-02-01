@@ -4,7 +4,28 @@ import * as RadixSelect from '@radix-ui/react-select';
 import { ChevronDownIcon } from '@/components/icons';
 import { ClientOnly } from 'remix-utils/client-only';
 
-export const Select = RadixSelect.Root;
+export const Select = React.forwardRef<
+  React.ElementRef<typeof RadixSelect.Root>,
+  React.ComponentPropsWithoutRef<typeof RadixSelect.Root>
+>(({ onValueChange, ...props }, ref) => {
+  const handleValueChange = (value: string) => {
+    if (!onValueChange) return;
+    if (value === 'none') {
+      onValueChange('');
+    } else {
+      onValueChange(value);
+    }
+  };
+
+  return (
+    <RadixSelect.Root
+      ref={ref}
+      onValueChange={handleValueChange}
+      {...props}
+    />
+  );
+});
+Select.displayName = 'Select';
 
 export const SelectOption = React.forwardRef<
   React.ElementRef<typeof RadixSelect.SelectItem>,
@@ -15,7 +36,7 @@ export const SelectOption = React.forwardRef<
     className={cn(
       'h-9 items-center justify-center bg-white px-3 py-2',
       'cursor-pointer select-none whitespace-nowrap text-sm font-medium text-black',
-      'focus-visible:outline-none focus-visible:bg-primary focus-visible:text-primary-foreground',
+      'focus-visible:bg-primary focus-visible:text-primary-foreground focus-visible:outline-none',
       className
     )}
     {...props}
@@ -27,8 +48,8 @@ SelectOption.displayName = 'SelectOption';
 
 export const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof RadixSelect.Trigger>,
-  React.ComponentPropsWithoutRef<typeof RadixSelect.Trigger>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof RadixSelect.Trigger> & { placeholder?: string }
+>(({ className, placeholder, ...props }, ref) => (
   <RadixSelect.Trigger
     ref={ref}
     className={cn(
@@ -40,7 +61,7 @@ export const SelectTrigger = React.forwardRef<
     )}
     {...props}
   >
-    <RadixSelect.Value placeholder={'test'} />
+    <RadixSelect.Value placeholder={placeholder} />
     <RadixSelect.Icon>
       <ChevronDownIcon />
     </RadixSelect.Icon>
