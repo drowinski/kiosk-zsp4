@@ -1,7 +1,8 @@
 import { Asset, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import { db } from '@/lib/db/connection';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
-import { and, asc, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
+import { PgSelect } from 'drizzle-orm/pg-core';
 
 interface Filters {
   dateMin?: Date;
@@ -25,10 +26,12 @@ interface Options {
   pagination?: Pagination;
 }
 
-interface AssetRepository {
+export interface AssetRepository {
   getAssetById(id: number): Promise<Asset | null>;
 
   getAllAssets(options?: Options): Promise<Asset[]>;
+
+  getAssetCount(options?: Options): Promise<number>;
 
   createAsset(newAsset: NewAsset): Promise<Asset | null>;
 
@@ -51,7 +54,7 @@ export class DrizzleAssetRepository implements AssetRepository {
   }
 
   async getAllAssets(options?: Options): Promise<Asset[]> {
-    let query = db
+    const query = db
       .select({
         ...getTableColumns(assetTable),
         date: {
@@ -60,9 +63,25 @@ export class DrizzleAssetRepository implements AssetRepository {
       })
       .from(assetTable)
       .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id))
-      .$dynamic();
+      .orderBy(desc(assetTable.id));
 
-    if (options?.filters) {
+    return options ? this.buildQueryWithOptions(query.$dynamic(), options) : query;
+  }
+
+  async getAssetCount(options?: Options): Promise<number> {
+    const query = db
+      .select({ count: count() })
+      .from(assetTable)
+      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id))
+      .groupBy(assetTable.id, assetTable.description, dateTable.dateMin);
+
+    const result = options ? await this.buildQueryWithOptions(query.$dynamic(), options) : await query;
+
+    return result.at(0)?.count || 0;
+  }
+
+  private buildQueryWithOptions<T extends PgSelect>(query: T, options: Options): T {
+    if (options.filters) {
       const { description, dateMin, dateMax } = options.filters;
       query = query.where(
         and(
@@ -73,7 +92,7 @@ export class DrizzleAssetRepository implements AssetRepository {
       );
     }
 
-    if (options?.sorting) {
+    if (options.sorting) {
       const { property, direction } = options.sorting;
       const column = {
         date: dateTable.dateMin,
@@ -83,7 +102,7 @@ export class DrizzleAssetRepository implements AssetRepository {
       query = query.orderBy(directionFunc(column));
     }
 
-    if (options?.pagination) {
+    if (options.pagination) {
       const { page, itemsPerPage } = options.pagination;
       query = query.offset(page * itemsPerPage).limit(itemsPerPage);
     }

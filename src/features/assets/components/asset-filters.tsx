@@ -6,6 +6,7 @@ import { useDebounce } from '@/lib/hooks/use-debounce';
 import { cn } from '@/utils/styles';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 import { Label } from '@/components/base/label';
+import { FilterIcon } from '@/components/icons';
 
 interface AssetFilterProps {
   className?: string;
@@ -16,19 +17,36 @@ export function AssetFilters({ className }: AssetFilterProps) {
 
   const [descriptionFilter, setDescriptionFilter] = useState<string>('');
   const debouncedDescriptionFilter = useDebounce(descriptionFilter, 250);
-  const [sortingParameter, setSortingParameter] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortDir, setSortDir] = useState<string>('');
 
   useEffect(() => {
-    setSearchParams((prev) => ({
-      ...prev,
-      ...(debouncedDescriptionFilter && { description: debouncedDescriptionFilter }),
-      ...(sortingParameter && { sortBy: sortingParameter })
-    }));
-  }, [debouncedDescriptionFilter, setSearchParams, sortingParameter]);
+    if (debouncedDescriptionFilter) {
+      searchParams.set('description', debouncedDescriptionFilter);
+    } else {
+      searchParams.delete('description');
+    }
+
+    if (sortBy) {
+      searchParams.set('sortBy', sortBy);
+    } else {
+      searchParams.delete('sortBy');
+    }
+
+    if (sortDir) {
+      searchParams.set('sortDir', sortDir);
+    } else {
+      searchParams.delete('sortDir');
+    }
+
+    setSearchParams(searchParams);
+  }, [sortDir, debouncedDescriptionFilter, setSearchParams, sortBy, searchParams]);
 
   return (
     <Card className={cn('flex flex-col gap-3 bg-secondary text-secondary-foreground', className)}>
-      <span className={'font-medium'}>Filtrowanie zawartości</span>
+      <span className={'inline-flex items-center gap-2 font-medium'}>
+        <FilterIcon /> Filtrowanie
+      </span>
       <div className={'flex flex-col gap-2'}>
         <Label>Wyszukiwanie wg. opisu</Label>
         <Input
@@ -42,13 +60,23 @@ export function AssetFilters({ className }: AssetFilterProps) {
         <Label>Sortowanie</Label>
         <Select
           defaultValue={'none'}
-          onValueChange={(value) => setSortingParameter(value)}
+          onValueChange={(value) => setSortBy(value)}
         >
           <SelectTrigger />
           <SelectContent>
             <SelectOption value={'none'}>Domyślne</SelectOption>
             <SelectOption value={'date'}>Data</SelectOption>
             <SelectOption value={'description'}>Opis</SelectOption>
+          </SelectContent>
+        </Select>
+        <Select
+          defaultValue={'asc'}
+          onValueChange={(value) => setSortDir(value)}
+        >
+          <SelectTrigger />
+          <SelectContent>
+            <SelectOption value={'asc'}>Rosnąco</SelectOption>
+            <SelectOption value={'desc'}>Malejęco</SelectOption>
           </SelectContent>
         </Select>
       </div>

@@ -10,14 +10,14 @@ import {
   FaChevronRight,
   FaChevronUp,
   FaEdit,
-  FaFilm,
+  FaFilm, FaFilter,
   FaImage,
   FaPause,
   FaPlay,
   FaSpinner,
   FaTrash
 } from 'react-icons/fa';
-import { FaCircleExclamation, FaPencil, FaX } from 'react-icons/fa6';
+import { FaCircleExclamation, FaEllipsis, FaPencil, FaX } from 'react-icons/fa6';
 import React from 'react';
 
 interface IconProps extends React.SVGAttributes<SVGElement> {}
@@ -100,4 +100,12 @@ export function PencilIcon(props: IconProps) {
 
 export function CircleExclamationIcon(props: IconProps) {
   return <FaCircleExclamation {...props} />;
+}
+
+export function FilterIcon(props: IconProps) {
+  return <FaFilter {...props} />;
+}
+
+export function EllipsisIcon(props: IconProps) {
+  return <FaEllipsis {...props} />;
 }

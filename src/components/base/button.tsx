@@ -3,7 +3,7 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, VariantProps } from 'class-variance-authority';
 import { cn } from '@/utils/styles';
 
-const buttonVariants = cva(
+export const buttonVariants = cva(
   cn(
     'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium',
     'transition-[background-color,filter] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',

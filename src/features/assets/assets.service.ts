@@ -1,4 +1,4 @@
-import { assetRepository, DrizzleAssetRepository } from '@/features/assets/assets.repository';
+import { AssetRepository, assetRepository } from '@/features/assets/assets.repository';
 import { ReadStream } from 'node:fs';
 import { FileManager } from '@/lib/files';
 import { env } from '@/lib/env';
@@ -7,7 +7,7 @@ import { Asset, AssetType, NewAsset, UpdatedAsset } from '@/features/assets/asse
 import * as mime from 'mime-types';
 
 export class AssetService {
-  private readonly assetRepository: DrizzleAssetRepository;
+  private readonly assetRepository: AssetRepository;
   private readonly fileManager: FileManager;
   private readonly mimeTypeToAssetTypeMap = new Map<string, AssetType>([
     ['image', 'image'],
@@ -15,7 +15,7 @@ export class AssetService {
     ['audio', 'audio']
   ]);
 
-  constructor(assetRepository: DrizzleAssetRepository, fileManager: FileManager) {
+  constructor(assetRepository: AssetRepository, fileManager: FileManager) {
     this.assetRepository = assetRepository;
     this.fileManager = fileManager;
   }
