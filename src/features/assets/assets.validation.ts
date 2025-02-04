@@ -53,11 +53,13 @@ export const assetBaseSchema = z.object({
   fileName: z.string().max(2048),
   mimeType: z.string().max(255),
   assetType: assetTypeSchema,
-  description: z.string().max(512).nullable().optional()
+  description: z.string().max(512).nullable().optional(),
 });
 
 export const assetSchema = assetBaseSchema.extend({
-  date: assetDateSchema.nullable().optional()
+  date: assetDateSchema.nullable().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date()
 });
 export type Asset = z.output<typeof assetSchema>;
 

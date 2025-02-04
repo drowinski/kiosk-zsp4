@@ -1,4 +1,4 @@
-import { boolean, check, date, integer, pgEnum, pgTable, varchar } from 'drizzle-orm/pg-core';
+import { boolean, check, date, integer, pgEnum, pgTable, timestamp, varchar } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { ASSET_TYPE_ARRAY, DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
 
@@ -10,7 +10,9 @@ export const assetTable = pgTable('assets', {
   mimeType: varchar('mime_type', { length: 255 }).notNull(),
   assetType: assetTypeEnum('type').notNull(),
   description: varchar('description', { length: 512 }),
-  dateId: integer('date_id').references(() => dateTable.id, { onDelete: 'set null' })
+  dateId: integer('date_id').references(() => dateTable.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
 export const datePrecisionEnum = pgEnum('date_precision', DATE_PRECISION_ARRAY);

@@ -11,7 +11,7 @@ interface Filters {
 }
 
 interface Sorting {
-  property: 'date' | 'description';
+  property: 'date' | 'description' | 'createdAt' | 'updatedAt';
   direction: 'asc' | 'desc';
 }
 
@@ -95,7 +95,9 @@ export class DrizzleAssetRepository implements AssetRepository {
       const { property, direction } = options.sorting;
       const column = {
         date: dateTable.dateMin,
-        description: assetTable.description
+        description: assetTable.description,
+        createdAt: assetTable.createdAt,
+        updatedAt: assetTable.updatedAt
       }[property];
       const directionFunc = direction === 'asc' ? asc : desc;
       query = query.orderBy(directionFunc(column));

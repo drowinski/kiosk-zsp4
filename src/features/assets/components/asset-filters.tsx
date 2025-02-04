@@ -65,8 +65,10 @@ export function AssetFilters({ className }: AssetFilterProps) {
           <SelectTrigger />
           <SelectContent>
             <SelectOption value={'none'}>Domyślne</SelectOption>
-            <SelectOption value={'date'}>Data</SelectOption>
+            <SelectOption value={'updatedAt'}>Data modyfikacji</SelectOption>
+            <SelectOption value={'createdAt'}>Data utworzenia</SelectOption>
             <SelectOption value={'description'}>Opis</SelectOption>
+            <SelectOption value={'date'}>Data</SelectOption>
           </SelectContent>
         </Select>
         <Select
