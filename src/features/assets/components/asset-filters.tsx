@@ -78,7 +78,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
           <SelectTrigger />
           <SelectContent>
             <SelectOption value={'asc'}>Rosnąco</SelectOption>
-            <SelectOption value={'desc'}>Malejęco</SelectOption>
+            <SelectOption value={'desc'}>Malejąco</SelectOption>
           </SelectContent>
         </Select>
       </div>
