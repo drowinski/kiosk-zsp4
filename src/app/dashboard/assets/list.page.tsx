@@ -16,23 +16,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const page = parseInt(url.searchParams.get('page')!);
   const pageSize = parseInt(url.searchParams.get('pageSize')!);
 
-  const options = {
-    filters: { description: description || undefined },
-    sorting: sortBy
-      ? {
-          property: sortBy as 'description' | 'date',
-          direction: sortDir as 'asc' | 'desc'
-        }
-      : undefined
-  };
+  const filters = { description: description || undefined };
 
-  const assetCount = await assetRepository.getAssetCount(options);
+  const assetCount = await assetRepository.getAssetCount({ filters });
   const assets = await assetRepository.getAllAssets({
     pagination: {
       page: page || 0,
       itemsPerPage: pageSize || 10
     },
-    ...options
+    sorting: sortBy
+      ? {
+          property: sortBy as 'description' | 'date',
+          direction: sortDir as 'asc' | 'desc'
+        }
+      : undefined,
+    filters
   });
 
   return { assets, assetCount };
@@ -79,7 +77,7 @@ export default function AssetListPage() {
               );
               const pageNumber = minPageNumber + i;
 
-              if (pageNumber > totalPages) {
+              if (pageNumber >= totalPages) {
                 return;
               }
 
@@ -92,7 +90,7 @@ export default function AssetListPage() {
                     isActive={pageNumber === currentPage}
                     to={{ search: newParams.toString() }}
                   >
-                    {pageNumber}
+                    {pageNumber + 1}
                   </PaginationLink>
                 </PaginationItem>
               );

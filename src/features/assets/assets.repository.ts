@@ -68,12 +68,11 @@ export class DrizzleAssetRepository implements AssetRepository {
     return options ? this.buildQueryWithOptions(query.$dynamic(), options) : query;
   }
 
-  async getAssetCount(options?: Options): Promise<number> {
+  async getAssetCount(options?: Omit<Options, 'sorting'>): Promise<number> {
     const query = db
       .select({ count: count() })
       .from(assetTable)
-      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id))
-      .groupBy(assetTable.id, assetTable.description, dateTable.dateMin);
+      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id));
 
     const result = options ? await this.buildQueryWithOptions(query.$dynamic(), options) : await query;
 
