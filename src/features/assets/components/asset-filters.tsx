@@ -17,8 +17,8 @@ export function AssetFilters({ className }: AssetFilterProps) {
 
   const [descriptionFilter, setDescriptionFilter] = useState<string>('');
   const debouncedDescriptionFilter = useDebounce(descriptionFilter, 250);
-  const [sortBy, setSortBy] = useState<string>('');
-  const [sortDir, setSortDir] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('updatedAt');
+  const [sortDir, setSortDir] = useState<string>('desc');
 
   const setOrDeleteSearchParam = (searchParams: URLSearchParams, key: string, value: string) => {
     if (value) {
@@ -46,7 +46,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
         <Label>Wyszukiwanie wg. opisu</Label>
         <Input
           type={'text'}
-          defaultValue={descriptionFilter}
+          value={descriptionFilter}
           onChange={(e) => setDescriptionFilter(e.target.value)}
           placeholder={'Szukaj...'}
         />
@@ -54,12 +54,11 @@ export function AssetFilters({ className }: AssetFilterProps) {
       <div className={'flex flex-col gap-2'}>
         <Label>Sortowanie</Label>
         <Select
-          defaultValue={'none'}
+          value={sortBy}
           onValueChange={(value) => setSortBy(value)}
         >
           <SelectTrigger />
           <SelectContent>
-            <SelectOption value={'none'}>Domyślne</SelectOption>
             <SelectOption value={'updatedAt'}>Data modyfikacji</SelectOption>
             <SelectOption value={'createdAt'}>Data utworzenia</SelectOption>
             <SelectOption value={'description'}>Opis</SelectOption>
@@ -67,7 +66,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
           </SelectContent>
         </Select>
         <Select
-          defaultValue={'asc'}
+          value={sortDir}
           onValueChange={(value) => setSortDir(value)}
         >
           <SelectTrigger />

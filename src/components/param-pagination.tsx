@@ -12,17 +12,17 @@ import { useSearchParams } from '@remix-run/react';
 interface ParamPaginationProps {
   itemCount: number;
   defaultPageSize?: number;
-  visiblePageLinkCount?: number;
+  maxVisiblePageLinks?: number;
 }
 
-export function ParamPagination({ itemCount, defaultPageSize = 3, visiblePageLinkCount = 5 }: ParamPaginationProps) {
+export function ParamPagination({ itemCount, defaultPageSize = 3, maxVisiblePageLinks = 5 }: ParamPaginationProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentPage = parseInt(searchParams.get('page')!) || 0;
   const pageSize = parseInt(searchParams.get('pageSize')!) || defaultPageSize;
   const pageCount = Math.ceil(itemCount / pageSize);
   const minPageNumber = Math.max(
-    Math.min(currentPage - Math.floor(visiblePageLinkCount / 2), pageCount - visiblePageLinkCount),
+    Math.min(currentPage - Math.floor(maxVisiblePageLinks / 2), pageCount - maxVisiblePageLinks),
     0
   );
 
@@ -45,7 +45,7 @@ export function ParamPagination({ itemCount, defaultPageSize = 3, visiblePageLin
             <PaginationEllipsis />
           </PaginationItem>
         )}
-        {[...Array(Math.min(visiblePageLinkCount, pageCount))].map((_, i) => {
+        {[...Array(Math.min(maxVisiblePageLinks, pageCount))].map((_, i) => {
           const pageNumber = minPageNumber + i;
 
           const newParams = new URLSearchParams(searchParams);
@@ -62,7 +62,7 @@ export function ParamPagination({ itemCount, defaultPageSize = 3, visiblePageLin
             </PaginationItem>
           );
         })}
-        {minPageNumber + visiblePageLinkCount < pageCount && (
+        {minPageNumber + maxVisiblePageLinks < pageCount && (
           <PaginationItem>
             <PaginationEllipsis />
           </PaginationItem>
