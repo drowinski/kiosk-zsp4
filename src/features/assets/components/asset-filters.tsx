@@ -35,7 +35,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
     setOrDeleteSearchParam(newSearchParams, 'sortDir', sortDir);
 
     setSearchParams(newSearchParams);
-  }, [sortDir, debouncedDescriptionFilter, sortBy]);
+  }, [sortDir, debouncedDescriptionFilter, sortBy, searchParams, setSearchParams]);
 
   return (
     <Card className={cn('flex flex-col gap-3 bg-secondary text-secondary-foreground', className)}>
