@@ -2,7 +2,7 @@ import { Input } from '@/components/base/input';
 import { Card } from '@/components/base/card';
 import { useSearchParams } from '@remix-run/react';
 import { useEffect, useState } from 'react';
-import { useDebounce } from '@/lib/hooks/use-debounce';
+import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/utils/styles';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 import { Label } from '@/components/base/label';
@@ -20,27 +20,22 @@ export function AssetFilters({ className }: AssetFilterProps) {
   const [sortBy, setSortBy] = useState<string>('');
   const [sortDir, setSortDir] = useState<string>('');
 
+  const setOrDeleteSearchParam = (searchParams: URLSearchParams, key: string, value: string) => {
+    if (value) {
+      searchParams.set(key, value);
+    } else {
+      searchParams.delete(key);
+    }
+  }
+
   useEffect(() => {
-    if (debouncedDescriptionFilter) {
-      searchParams.set('description', debouncedDescriptionFilter);
-    } else {
-      searchParams.delete('description');
-    }
+    const newSearchParams = new URLSearchParams(searchParams);
+    setOrDeleteSearchParam(newSearchParams, 'description', debouncedDescriptionFilter);
+    setOrDeleteSearchParam(newSearchParams, 'sortBy', sortBy);
+    setOrDeleteSearchParam(newSearchParams, 'sortDir', sortDir);
 
-    if (sortBy) {
-      searchParams.set('sortBy', sortBy);
-    } else {
-      searchParams.delete('sortBy');
-    }
-
-    if (sortDir) {
-      searchParams.set('sortDir', sortDir);
-    } else {
-      searchParams.delete('sortDir');
-    }
-
-    setSearchParams(searchParams);
-  }, [sortDir, debouncedDescriptionFilter, setSearchParams, sortBy, searchParams]);
+    setSearchParams(newSearchParams);
+  }, [sortDir, debouncedDescriptionFilter, sortBy]);
 
   return (
     <Card className={cn('flex flex-col gap-3 bg-secondary text-secondary-foreground', className)}>

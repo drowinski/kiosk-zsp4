@@ -17,7 +17,7 @@ interface Sorting {
 
 interface Pagination {
   page: number;
-  itemsPerPage: number;
+  pageSize: number;
 }
 
 interface Options {
@@ -104,8 +104,8 @@ export class DrizzleAssetRepository implements AssetRepository {
     }
 
     if (options.pagination) {
-      const { page, itemsPerPage } = options.pagination;
-      query = query.offset(page * itemsPerPage).limit(itemsPerPage);
+      const { page, pageSize } = options.pagination;
+      query = query.offset(page * pageSize).limit(pageSize);
     }
 
     return query;
