@@ -1,7 +1,7 @@
 import { NewUser, User, UserWithPasswordHash } from '@/features/users/users.validation';
 import { db } from '@/lib/db/connection';
 import { userTable } from '@/features/users/users.db';
-import { eq } from 'drizzle-orm';
+import { eq, getTableColumns } from 'drizzle-orm';
 
 export interface UserRepository {
   getUserById(id: number): Promise<User | null>;
@@ -14,8 +14,15 @@ export interface UserRepository {
 }
 
 export class DrizzleUserRepository implements UserRepository {
+  private readonly columnsWithoutPasswordHash: Omit<(typeof userTable)['_']['columns'], 'passwordHash'>;
+
+  constructor() {
+    const { passwordHash: _, ...columnsWithoutPasswordHash } = getTableColumns(userTable);
+    this.columnsWithoutPasswordHash = columnsWithoutPasswordHash;
+  }
+
   async getUserById(id: number): Promise<User | null> {
-    const result = await db.select().from(userTable).where(eq(userTable.id, id));
+    const result = await db.select(this.columnsWithoutPasswordHash).from(userTable).where(eq(userTable.id, id));
     return result.at(0) ?? null;
   }
 
@@ -25,12 +32,16 @@ export class DrizzleUserRepository implements UserRepository {
   }
 
   async createUser(newUser: NewUser): Promise<User | null> {
-    const result = await db.insert(userTable).values(newUser).returning();
+    const result = await db.insert(userTable).values(newUser).returning(this.columnsWithoutPasswordHash);
     return result.at(0) ?? null;
   }
 
-  async updateUser(id: number, values: Partial<UserWithPasswordHash>): Promise<User | null> {
-    const result = await db.update(userTable).set(values).where(eq(userTable.id, id)).returning();
+  async updateUser(id: number, values: Partial<User>): Promise<User | null> {
+    const result = await db
+      .update(userTable)
+      .set(values)
+      .where(eq(userTable.id, id))
+      .returning(this.columnsWithoutPasswordHash);
     return result.at(0) ?? null;
   }
 }
