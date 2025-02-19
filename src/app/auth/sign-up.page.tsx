@@ -12,7 +12,7 @@ import { Button } from '@/components/base/button';
 import { Input } from '@/components/base/input';
 
 const formSchema = z.object({
-  email: userSchema.shape.email,
+  username: userSchema.shape.username,
   password: userPasswordSchema
 });
 
@@ -33,7 +33,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    await userService.registerUser(submission.value.email, submission.value.password);
+    await userService.registerUser(submission.value.username, submission.value.password);
   } catch (error) {
     return json(submission.reply({ formErrors: ['Błąd.'] }));
   }
@@ -66,12 +66,12 @@ export default function SignUpPage() {
           {form.errors && <span className={'text-red-500'}>{form.errors}</span>}
           <Input
             type={'text'}
-            key={fields.email.key}
-            name={fields.email.name}
-            defaultValue={fields.email.initialValue}
-            placeholder={'Email'}
-            errorMessages={fields.email.errors}
-            autoComplete={'email'}
+            key={fields.username.key}
+            name={fields.username.name}
+            defaultValue={fields.username.initialValue}
+            placeholder={'Nazwa użytkownika'}
+            errorMessages={fields.username.errors}
+            autoComplete={'username'}
           />
           <Input
             type={'password'}

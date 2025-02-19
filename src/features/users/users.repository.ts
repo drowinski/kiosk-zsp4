@@ -6,7 +6,7 @@ import { eq, getTableColumns } from 'drizzle-orm';
 export interface UserRepository {
   getUserById(id: number): Promise<User | null>;
 
-  getUserWithPasswordHashByEmail(email: string): Promise<UserWithPasswordHash | null>;
+  getUserWithPasswordHashByUsername(username: string): Promise<UserWithPasswordHash | null>;
 
   createUser(newUser: NewUser): Promise<User | null>;
 
@@ -26,8 +26,8 @@ export class DrizzleUserRepository implements UserRepository {
     return result.at(0) ?? null;
   }
 
-  async getUserWithPasswordHashByEmail(email: string): Promise<UserWithPasswordHash | null> {
-    const result = await db.select().from(userTable).where(eq(userTable.email, email));
+  async getUserWithPasswordHashByUsername(username: string): Promise<UserWithPasswordHash | null> {
+    const result = await db.select().from(userTable).where(eq(userTable.username, username));
     return result.at(0) ?? null;
   }
 

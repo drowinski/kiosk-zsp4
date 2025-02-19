@@ -5,7 +5,7 @@ export const userPasswordHashSchema = z.string().length(160);
 
 const userBaseSchema = z.object({
   id: z.number().positive().int(),
-  email: z.string().max(254).email()
+  username: z.string().min(4).max(32)
 });
 
 export const userWithPasswordHashSchema = userBaseSchema.extend({

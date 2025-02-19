@@ -12,7 +12,7 @@ import { Button } from '@/components/base/button';
 import { Input } from '@/components/base/input';
 
 const formSchema = z.object({
-  email: userSchema.shape.email,
+  username: userSchema.shape.username,
   password: userPasswordSchema
 });
 
@@ -31,7 +31,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ lastResult: submission.reply() });
   }
 
-  const user = await userService.validateUser(submission.value.email, submission.value.password);
+  const user = await userService.validateUser(submission.value.username, submission.value.password);
   if (!user) {
     return json({ lastResult: submission.reply({ formErrors: ['Błąd.'] }) });
   }
@@ -74,11 +74,11 @@ export default function SignInPage() {
           {form.errors && <span className={'text-red-500'}>{form.errors}</span>}
           <Input
             type={'text'}
-            key={fields.email.key}
-            name={fields.email.name}
-            defaultValue={fields.email.initialValue}
-            placeholder={'Email'}
-            errorMessages={fields.email.errors}
+            key={fields.username.key}
+            name={fields.username.name}
+            defaultValue={fields.username.initialValue}
+            placeholder={'Nazwa użytkownika'}
+            errorMessages={fields.username.errors}
           />
           <Input
             type={'password'}

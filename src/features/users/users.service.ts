@@ -9,16 +9,16 @@ export class UserService {
     this.userRepository = userRepository;
   }
 
-  async registerUser(email: string, password: string): Promise<User | null> {
+  async registerUser(username: string, password: string): Promise<User | null> {
     const passwordHash = await hashPassword(password);
     return await this.userRepository.createUser({
-      email: email,
+      username: username,
       passwordHash: passwordHash
     });
   }
 
-  async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.userRepository.getUserWithPasswordHashByEmail(email);
+  async validateUser(username: string, password: string): Promise<User | null> {
+    const user = await this.userRepository.getUserWithPasswordHashByUsername(username);
     if (!user) {
       return null;
     }
