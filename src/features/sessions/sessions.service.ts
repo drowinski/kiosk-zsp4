@@ -51,4 +51,4 @@ export class SessionService {
   }
 }
 
-export const sessionService = new SessionService(sessionRepository);
+export const sessionService: Readonly<SessionService> = Object.freeze(new SessionService(sessionRepository));

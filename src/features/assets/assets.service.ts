@@ -75,4 +75,6 @@ export class AssetService {
   }
 }
 
-export const assetService = Object.freeze(new AssetService(assetRepository, new FileManager(env.ASSET_ROOT_DIR)));
+export const assetService: Readonly<AssetService> = Object.freeze(
+  new AssetService(assetRepository, new FileManager(env.ASSET_ROOT_DIR))
+);

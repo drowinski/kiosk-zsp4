@@ -3,7 +3,7 @@ import { User } from '@/features/users/users.validation';
 import { hashPassword, verifyPassword } from '@/lib/crypto';
 
 export class UserService {
-  private readonly userRepository;
+  private readonly userRepository: UserRepository;
 
   constructor(userRepository: UserRepository) {
     this.userRepository = userRepository;
@@ -11,11 +11,10 @@ export class UserService {
 
   async registerUser(email: string, password: string): Promise<User | null> {
     const passwordHash = await hashPassword(password);
-    const user = await this.userRepository.createUser({
+    return await this.userRepository.createUser({
       email: email,
       passwordHash: passwordHash
     });
-    return user;
   }
 
   async validateUser(email: string, password: string): Promise<User | null> {
