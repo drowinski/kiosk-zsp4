@@ -121,7 +121,7 @@ export default function AssetEditModal() {
     <ClientOnly>
       {() => (
         <Modal
-          onOpenChange={(open) => !open && navigate('..')}
+          onOpenChange={(open) => !open && navigate(-1)}
           defaultOpen
         >
           <ModalContent>

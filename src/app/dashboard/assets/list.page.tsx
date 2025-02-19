@@ -13,8 +13,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
 
   const description = url.searchParams.get('description');
-  const sortBy = url.searchParams.get('sortBy');
-  const sortDir = url.searchParams.get('sortDir');
+  const sortBy = url.searchParams.get('sortBy') as 'description' | 'date' | null;
+  const sortDir = url.searchParams.get('sortDir') as 'asc' | 'desc' | null;
   const page = parseInt(url.searchParams.get('page')!);
   const pageSize = parseInt(url.searchParams.get('pageSize')!);
 
@@ -26,10 +26,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       page: page || 0,
       pageSize: pageSize || DEFAULT_PAGE_SIZE
     },
-    sorting: sortBy
+    sorting: sortBy && sortDir
       ? {
-          property: sortBy as 'description' | 'date',
-          direction: sortDir as 'asc' | 'desc'
+          property: sortBy,
+          direction: sortDir
         }
       : undefined,
     filters

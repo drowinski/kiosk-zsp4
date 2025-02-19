@@ -1,6 +1,6 @@
 import { Input } from '@/components/base/input';
 import { Card } from '@/components/base/card';
-import { useSearchParams } from '@remix-run/react';
+import { useSearchParams } from '@/hooks/use-search-params';
 import { useEffect, useState } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/utils/styles';
@@ -29,13 +29,13 @@ export function AssetFilters({ className }: AssetFilterProps) {
   }
 
   useEffect(() => {
-    const newSearchParams = new URLSearchParams(searchParams);
+    const newSearchParams = new URLSearchParams();
     setOrDeleteSearchParam(newSearchParams, 'description', debouncedDescriptionFilter);
     setOrDeleteSearchParam(newSearchParams, 'sortBy', sortBy);
     setOrDeleteSearchParam(newSearchParams, 'sortDir', sortDir);
 
     setSearchParams(newSearchParams);
-  }, [sortDir, debouncedDescriptionFilter, sortBy, searchParams, setSearchParams]);
+  }, [sortDir, debouncedDescriptionFilter, sortBy, setSearchParams]);
 
   return (
     <Card className={cn('flex flex-col gap-3 bg-secondary text-secondary-foreground', className)}>
