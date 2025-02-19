@@ -207,4 +207,4 @@ export class DrizzleAssetRepository implements AssetRepository {
   }
 }
 
-export const assetRepository: AssetRepository = Object.freeze(new DrizzleAssetRepository());
+export const assetRepository: Readonly<AssetRepository> = Object.freeze(new DrizzleAssetRepository());

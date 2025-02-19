@@ -5,11 +5,12 @@ import { sessionTable } from '@/features/sessions/sessions.db';
 import { userTable } from '@/features/users/users.db';
 import { eq } from 'drizzle-orm';
 
-
 export interface SessionRepository {
-  createSession: (values: NewSession) => Promise<Session | null>;
-  getSessionWithUserBySessionId: (id: string) => Promise<{ session: Session; user: User } | null>;
-  deleteSessionById: (id: string) => Promise<Session | null>;
+  createSession(values: NewSession): Promise<Session | null>;
+
+  getSessionWithUserBySessionId(id: string): Promise<{ session: Session; user: User } | null>;
+
+  deleteSessionById(id: string): Promise<Session | null>;
 }
 
 export class DrizzleSessionRepository implements SessionRepository {
@@ -37,4 +38,4 @@ export class DrizzleSessionRepository implements SessionRepository {
   }
 }
 
-export const sessionRepository: SessionRepository = new DrizzleSessionRepository();
+export const sessionRepository: Readonly<SessionRepository> = Object.freeze(new DrizzleSessionRepository());
