@@ -8,7 +8,7 @@ import { Link } from '@remix-run/react';
 export const Pagination = ({ className, ...props }: React.ComponentProps<'nav'>) => (
   <nav
     role={'navigation'}
-    aria-label={'pagination'}
+    aria-label={'paginacja'}
     className={cn('mx-auto flex w-full justify-center', className)}
     {...props}
   />
@@ -67,7 +67,7 @@ PaginationLink.displayName = 'PaginationLink';
 
 export const PaginationPrevious = ({ className, ...props }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
-    aria-label={'Go to previous page'}
+    aria-label={'poprzednia strona'}
     size={'icon'}
     className={cn('gap-1', className)}
     {...props}
@@ -79,7 +79,7 @@ PaginationPrevious.displayName = 'PaginationPrevious';
 
 export const PaginationNext = ({ className, ...props }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
-    aria-label={'Go to next page'}
+    aria-label={'następna strona'}
     size={'icon'}
     className={cn('gap-1', className)}
     {...props}
