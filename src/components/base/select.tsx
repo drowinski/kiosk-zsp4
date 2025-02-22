@@ -29,9 +29,10 @@ export const SelectOption = React.forwardRef<
   <RadixSelect.SelectItem
     ref={ref}
     className={cn(
-      'h-9 items-center justify-center bg-white px-3 py-2',
+      'h-9 rounded-xl bg-white px-3 py-2',
       'cursor-pointer select-none whitespace-nowrap text-sm font-medium text-black',
-      'focus-visible:bg-primary focus-visible:text-primary-foreground focus-visible:outline-none',
+      'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
+      'data-[state="checked"]:font-bold',
       className
     )}
     {...props}
@@ -48,7 +49,7 @@ export const SelectTrigger = React.forwardRef<
   <RadixSelect.Trigger
     ref={ref}
     className={cn(
-      'inline-flex h-9 w-fit items-center justify-center gap-1 border border-accent shadow-inner',
+      'inline-flex h-9 w-fit items-center justify-between gap-1 border border-accent shadow-inner',
       'whitespace-nowrap rounded-xl bg-white px-3 py-2 text-sm font-medium text-black',
       'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
       'disabled:pointer-events-none disabled:opacity-50',
@@ -67,16 +68,17 @@ SelectTrigger.displayName = 'SelectTrigger';
 export const SelectContent = React.forwardRef<
   React.ElementRef<typeof RadixSelect.Content>,
   React.ComponentPropsWithoutRef<typeof RadixSelect.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, position = 'popper', ...props }, ref) => (
   <ClientOnly>
     {() => (
       <RadixSelect.Portal>
         <RadixSelect.Content
           ref={ref}
-          className={cn('z-50', className)}
+          className={cn('z-50', position === 'popper' && 'mt-0.5', className)}
+          position={position}
           {...props}
         >
-          <RadixSelect.Viewport className={'rounded-xl border border-accent shadow-inner'}>
+          <RadixSelect.Viewport className={'rounded-xl border border-accent bg-white px-1 py-1.5 shadow-inner'}>
             {children}
           </RadixSelect.Viewport>
         </RadixSelect.Content>
