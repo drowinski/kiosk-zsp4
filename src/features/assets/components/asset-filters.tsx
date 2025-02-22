@@ -34,7 +34,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
   }, [debouncedDescriptionFilter, setSearchParams]);
 
   return (
-    <Card className={cn('flex flex-col gap-2 bg-secondary text-secondary-foreground', className)}>
+    <Card className={cn('flex h-fit flex-col gap-2 bg-secondary text-secondary-foreground', className)}>
       <span className={'inline-flex items-center gap-2 font-medium'}>
         <FilterIcon /> Filtrowanie
       </span>

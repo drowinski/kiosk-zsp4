@@ -2,8 +2,10 @@ import { Outlet } from '@remix-run/react';
 import { Button } from '@/components/base/button';
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { requireSession } from '@/features/sessions/sessions.utils';
-import { DashboardSideNav, DashboardSideNavItem } from '@/app/dashboard/_components/dashboard-side-nav';
+import { DashboardNav, DashboardNavItem } from '@/app/dashboard/_components/dashboard-nav';
 import { Card } from '@/components/base/card';
+import { useEffect, useRef } from 'react';
+import { cn } from '@/utils/styles';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireSession(request);
@@ -11,6 +13,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function DashboardLayout() {
+  const headerRef = useRef<HTMLDivElement>(null);
+
   const signOut = async () => {
     await fetch('/auth/sign-out', {
       method: 'post'
@@ -18,11 +22,49 @@ export default function DashboardLayout() {
     location.reload();
   };
 
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        entry.target.toggleAttribute('data-stuck', entry.intersectionRatio < 1);
+        console.log(entry.intersectionRatio);
+      },
+      { threshold: [1] }
+    );
+    observer.observe(header);
+
+    return () => observer.unobserve(header);
+  }, []);
+
   return (
-    <div className={'flex h-full flex-col gap-2 p-2 container'}>
-      <header>
-        <Card className={'flex items-center bg-primary px-4 py-2 text-primary-foreground'}>
-          <span className={'text-xl font-bold'}>{'Panel zarządzania'}</span>
+    <div className={'flex h-full flex-col gap-2 p-2'}>
+      <header
+        ref={headerRef}
+        className={'group container sticky -top-0.5'}
+      >
+        <Card
+          className={cn(
+            'flex items-center gap-4 bg-primary px-4 py-2 text-primary-foreground',
+            'transition-all duration-100 group-data-[stuck]:rounded-t-none'
+          )}
+        >
+          <span className={'text-xl font-bold'}>Kiosk Izby Pamięci ZSP4</span>
+          <DashboardNav className={'h-fit'}>
+            <DashboardNavItem
+              route={'/dashboard/assets'}
+              label={'Zarządzaj zawartością'}
+            />
+            <DashboardNavItem
+              route={'/dashboard/assets/upload'}
+              label={'Dodaj zawartość'}
+            />
+            <DashboardNavItem
+              route={'/'}
+              label={'Podgląd kiosku'}
+              newTab
+            />
+          </DashboardNav>
           <Button
             onClick={signOut}
             className={'ml-auto justify-self-end'}
@@ -31,27 +73,8 @@ export default function DashboardLayout() {
           </Button>
         </Card>
       </header>
-      <div className={'flex h-full gap-2 overflow-hidden'}>
-        <div className={'flex flex-col gap-2 max-w-[20%]'}>
-          <DashboardSideNav className={'h-fit'}>
-            <DashboardSideNavItem
-              route={'/dashboard'}
-              label={'Panel zarządzania'}
-            />
-            <DashboardSideNavItem
-              route={'/dashboard/assets'}
-              label={'Zarządzaj zawartością'}
-            />
-            <DashboardSideNavItem
-              route={'/dashboard/assets/upload'}
-              label={'Dodaj zawartość'}
-            />
-          </DashboardSideNav>
-          <div id={'dashboard-side-nav-portal'}/>
-        </div>
-        <div className={'h-full w-full overflow-hidden'}>
-          <Outlet />
-        </div>
+      <div className={'container pb-2'}>
+        <Outlet />
       </div>
     </div>
   );
