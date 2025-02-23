@@ -1,5 +1,5 @@
 import { assetRepository } from '@/features/assets/assets.repository';
-import { Outlet, ShouldRevalidateFunctionArgs, useLoaderData, useSearchParams } from '@remix-run/react';
+import { Link, Outlet, ShouldRevalidateFunctionArgs, useLoaderData, useSearchParams } from '@remix-run/react';
 import { AssetList, AssetListItem } from '@/features/assets/components/asset-list';
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { AssetFilters } from '@/features/assets/components/asset-filters';
@@ -7,6 +7,8 @@ import { ParamPagination } from '@/components/param-pagination';
 import { Label } from '@/components/base/label';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 import { Card } from '@/components/base/card';
+import { Button } from '@/components/base/button';
+import { PlusIcon } from '@/components/icons';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -50,7 +52,17 @@ export default function AssetListPage() {
 
   return (
     <main className={'flex h-full gap-2'}>
-      <AssetFilters />
+      <div className={'flex flex-col gap-1'}>
+        <Button asChild>
+          <Link
+            to={'upload'}
+            className={'inline-flex items-center gap-1'}
+          >
+            <PlusIcon /> Dodaj nową zawartość
+          </Link>
+        </Button>
+        <AssetFilters />
+      </div>
       <div className={'flex grow flex-col gap-1'}>
         <Card className={'flex items-center justify-end gap-2 bg-secondary px-4 py-2 text-secondary-foreground'}>
           <Label>Sortowanie</Label>

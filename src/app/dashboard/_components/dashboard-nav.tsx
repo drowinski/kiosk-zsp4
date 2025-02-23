@@ -12,7 +12,7 @@ export interface DashboardNavItemProps {
 
 export function DashboardNavItem({ route, label, newTab = false, className }: DashboardNavItemProps) {
   const location = useLocation();
-  const isActive = location.pathname === route;
+  const isActive = location.pathname.startsWith(route);
 
   return (
     <Button

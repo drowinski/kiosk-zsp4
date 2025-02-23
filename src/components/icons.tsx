@@ -13,7 +13,7 @@ import {
   FaFilm, FaFilter,
   FaImage,
   FaPause,
-  FaPlay,
+  FaPlay, FaPlus,
   FaSpinner,
   FaTrash
 } from 'react-icons/fa';
@@ -60,6 +60,10 @@ export function ChevronUpIcon(props: IconProps) {
 
 export function ChevronDownIcon(props: IconProps) {
   return <FaChevronDown {...props} />;
+}
+
+export function PlusIcon(props: IconProps) {
+  return <FaPlus {...props} />;
 }
 
 export function XIcon(props: IconProps) {

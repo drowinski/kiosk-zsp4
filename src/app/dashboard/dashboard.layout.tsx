@@ -56,11 +56,7 @@ export default function DashboardLayout() {
               label={'Zarządzaj zawartością'}
             />
             <DashboardNavItem
-              route={'/dashboard/assets/upload'}
-              label={'Dodaj zawartość'}
-            />
-            <DashboardNavItem
-              route={'/'}
+              route={'/kiosk/gallery'}
               label={'Podgląd kiosku'}
               newTab
             />
