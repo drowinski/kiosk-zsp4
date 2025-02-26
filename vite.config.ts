@@ -24,5 +24,8 @@ export default defineConfig({
       }
     }),
     tsconfigPaths()
-  ]
+  ],
+  optimizeDeps: {
+    include: ['@conform-to/react', '@conform-to/zod']
+  }
 });
