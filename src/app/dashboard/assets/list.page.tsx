@@ -106,7 +106,6 @@ export default function AssetListPage() {
         )}
         <div>
           <ParamPagination
-            key={assetCount}
             itemCount={assetCount}
             defaultPageSize={DEFAULT_PAGE_SIZE}
           />

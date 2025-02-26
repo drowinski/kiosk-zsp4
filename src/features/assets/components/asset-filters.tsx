@@ -14,7 +14,7 @@ interface AssetFilterProps {
 export function AssetFilters({ className }: AssetFilterProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [descriptionFilter, setDescriptionFilter] = useState('');
+  const [descriptionFilter, setDescriptionFilter] = useState(searchParams.get('description') || '');
   const debouncedDescriptionFilter = useDebounce<string>(descriptionFilter);
 
   const setOrDeleteSearchParam = (searchParams: URLSearchParams, key: string, value: string) => {
@@ -27,7 +27,9 @@ export function AssetFilters({ className }: AssetFilterProps) {
 
   useEffect(() => {
     setSearchParams((prev) => {
-      prev.delete('page');
+      if ((prev.get('description') ?? '') !== debouncedDescriptionFilter) {
+        prev.delete('page');
+      }
       setOrDeleteSearchParam(prev, 'description', debouncedDescriptionFilter);
       return prev;
     });
