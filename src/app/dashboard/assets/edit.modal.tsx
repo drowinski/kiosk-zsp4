@@ -94,28 +94,28 @@ export default function AssetEditModal() {
   const datePreview = useMemo<string>(() => {
     if (
       !showDatePicker ||
-      !dateFieldset.dateMin.value ||
-      !dateFieldset.dateMax.value ||
-      !dateFieldset.datePrecision.value
+      !dateMinControl.value ||
+      !dateMaxControl.value ||
+      !datePrecisionControl.value
     ) {
       return 'Data nieustawiona';
     }
 
     if (
-      dateFieldset.dateMin.value.startsWith('NaN') ||
-      dateFieldset.dateMax.value.startsWith('NaN') ||
-      dateFieldset.datePrecision.value.startsWith('NaN')
+      dateMinControl.value.startsWith('NaN') ||
+      dateMaxControl.value.startsWith('NaN') ||
+      datePrecisionControl.value.startsWith('NaN')
     ) {
       return 'Data nieustawiona';
     }
 
     return formatDate({
-      dateMin: new Date(dateFieldset.dateMin.value),
-      dateMax: new Date(dateFieldset.dateMax.value),
-      datePrecision: dateFieldset.datePrecision.value as AssetDatePrecision,
+      dateMin: new Date(dateMinControl.value),
+      dateMax: new Date(dateMaxControl.value),
+      datePrecision: datePrecisionControl.value as AssetDatePrecision,
       dateIsRange: false
     });
-  }, [dateFieldset.dateMin.value, dateFieldset.dateMax.value, dateFieldset.datePrecision.value, showDatePicker]);
+  }, [dateMinControl.value, dateMaxControl.value, datePrecisionControl.value, showDatePicker]);
 
   return (
     <ClientOnly>
