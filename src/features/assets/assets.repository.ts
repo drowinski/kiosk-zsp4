@@ -1,37 +1,38 @@
-import { Asset, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
+import { Asset, AssetType, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import { db } from '@/lib/db/connection';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
-import { and, asc, count, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, getTableColumns, ilike, inArray, sql } from 'drizzle-orm';
 import { PgSelect } from 'drizzle-orm/pg-core';
 
-interface Filters {
+export interface AssetFiltering {
+  assetType?: AssetType[];
+  description?: string;
   dateMin?: Date;
   dateMax?: Date;
-  description?: string;
 }
 
-interface Sorting {
+export interface AssetSorting {
   property: 'date' | 'description' | 'createdAt' | 'updatedAt';
   direction: 'asc' | 'desc';
 }
 
-interface Pagination {
+export interface Pagination {
   page: number;
   pageSize: number;
 }
 
-interface Options {
-  filters?: Filters;
-  sorting?: Sorting;
+export interface AssetOptions {
+  filters?: AssetFiltering;
+  sorting?: AssetSorting;
   pagination?: Pagination;
 }
 
 export interface AssetRepository {
   getAssetById(id: number): Promise<Asset | null>;
 
-  getAllAssets(options?: Options): Promise<Asset[]>;
+  getAllAssets(options?: AssetOptions): Promise<Asset[]>;
 
-  getAssetCount(options?: Options): Promise<number>;
+  getAssetCount(options?: AssetOptions): Promise<number>;
 
   createAsset(newAsset: NewAsset): Promise<Asset | null>;
 
@@ -53,7 +54,7 @@ export class DrizzleAssetRepository implements AssetRepository {
     return assets.at(0) ?? null;
   }
 
-  async getAllAssets(options?: Options): Promise<Asset[]> {
+  async getAllAssets(options?: AssetOptions): Promise<Asset[]> {
     const query = db
       .select({
         ...getTableColumns(assetTable),
@@ -68,7 +69,7 @@ export class DrizzleAssetRepository implements AssetRepository {
     return options ? this.buildQueryWithOptions(query.$dynamic(), options) : query;
   }
 
-  async getAssetCount(options?: Omit<Options, 'sorting'>): Promise<number> {
+  async getAssetCount(options?: Omit<AssetOptions, 'sorting'>): Promise<number> {
     const query = db
       .select({ count: count() })
       .from(assetTable)
@@ -79,11 +80,12 @@ export class DrizzleAssetRepository implements AssetRepository {
     return result.at(0)?.count || 0;
   }
 
-  private buildQueryWithOptions<T extends PgSelect>(query: T, options: Options): T {
+  private buildQueryWithOptions<T extends PgSelect>(query: T, options: AssetOptions): T {
     if (options.filters) {
-      const { description, dateMin, dateMax } = options.filters;
+      const { assetType, description, dateMin, dateMax } = options.filters;
       query = query.where(
         and(
+          assetType && assetType.length > 0 ? inArray(assetTable.assetType, assetType) : undefined,
           description ? ilike(assetTable.description, `%${description}%`) : undefined,
           dateMin ? sql<boolean>`${dateMin} < ${dateTable.dateMax}` : undefined,
           dateMax ? sql<boolean>`${dateMax} > ${dateTable.dateMin}` : undefined

@@ -1,11 +1,12 @@
 import { Input } from '@/components/base/input';
 import { Card } from '@/components/base/card';
 import { useSearchParams } from '@/hooks/use-search-params';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/utils/styles';
 import { Label } from '@/components/base/label';
 import { FilterIcon } from '@/components/icons';
+import { Checkbox } from '@/components/base/checkbox';
 
 interface AssetFilterProps {
   className?: string;
@@ -35,6 +36,21 @@ export function AssetFilters({ className }: AssetFilterProps) {
     });
   }, [debouncedDescriptionFilter, setSearchParams]);
 
+  const onAssetTypeCheckboxChange = (value: string, checked: boolean) => {
+    const assetTypeParam = searchParams.get('assetType');
+    const assetTypes = assetTypeParam?.split('_') || [];
+    if (!checked && assetTypes.includes(value)) {
+      assetTypes.splice(assetTypes.indexOf(value), 1);
+    } else if (checked && !assetTypes.includes(value)) {
+      assetTypes.push(value);
+    }
+    setSearchParams((prev) => {
+      prev.delete('page');
+      setOrDeleteSearchParam(prev, 'assetType', assetTypes.join('_'));
+      return prev;
+    });
+  };
+
   return (
     <Card className={cn('flex h-fit flex-col gap-2 bg-secondary text-secondary-foreground', className)}>
       <span className={'inline-flex items-center gap-2 font-medium'}>
@@ -48,6 +64,28 @@ export function AssetFilters({ className }: AssetFilterProps) {
           value={descriptionFilter}
           onChange={(event) => setDescriptionFilter(event.target.value)}
         />
+        <Label>Typy plików</Label>
+        <Label>
+          <Checkbox
+            defaultChecked={searchParams.get('assetType')?.split('_').includes('image')}
+            onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('image', checked)}
+          />
+          Zdjęcia
+        </Label>
+        <Label>
+          <Checkbox
+            defaultChecked={searchParams.get('assetType')?.split('_').includes('video')}
+            onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('video', checked)}
+          />
+          Filmy
+        </Label>
+        <Label>
+          <Checkbox
+            defaultChecked={searchParams.get('assetType')?.split('_').includes('audio')}
+            onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('audio', checked)}
+          />
+          Audio
+        </Label>
       </div>
     </Card>
   );

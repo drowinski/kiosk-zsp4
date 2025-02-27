@@ -1,4 +1,4 @@
-import { assetRepository } from '@/features/assets/assets.repository';
+import { AssetFiltering, assetRepository } from '@/features/assets/assets.repository';
 import { Link, Outlet, ShouldRevalidateFunctionArgs, useLoaderData, useSearchParams } from '@remix-run/react';
 import { AssetList, AssetListItem } from '@/features/assets/components/asset-list';
 import { LoaderFunctionArgs } from '@remix-run/node';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
 import { PlusIcon } from '@/components/icons';
+import { AssetType } from '@/features/assets/assets.validation';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -16,11 +17,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
 
   const description = url.searchParams.get('description');
+  const assetType = url.searchParams.get('assetType');
   const sort = url.searchParams.get('sort');
   const page = parseInt(url.searchParams.get('page')!);
   const pageSize = parseInt(url.searchParams.get('pageSize')!);
 
-  const filters = { description: description || undefined };
+  const filters: AssetFiltering = {
+    description: description || undefined,
+    assetType: assetType?.split('_') as AssetType[] || undefined
+  };
 
   const assetCount = await assetRepository.getAssetCount({ filters });
   const assets = await assetRepository.getAllAssets({
