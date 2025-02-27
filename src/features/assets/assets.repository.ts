@@ -100,7 +100,7 @@ export class DrizzleAssetRepository implements AssetRepository {
         updatedAt: assetTable.updatedAt
       }[property];
       const directionFunc = direction === 'asc' ? asc : desc;
-      query = query.orderBy(directionFunc(column));
+      query = query.orderBy(sql`${directionFunc(column)} nulls last`);
     }
 
     if (options.pagination) {
