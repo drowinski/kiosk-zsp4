@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import * as nstream from 'node:stream';
 
 export class FileManager {
   private readonly rootDir: string;
@@ -16,14 +17,11 @@ export class FileManager {
     console.log('Initialized a File Manager with root directory at:', this.rootDir);
   }
 
-  async saveFileFromStream(stream: fs.ReadStream, fileName: string): Promise<void> {
+  async saveFileFromStream(stream: nstream.Readable, fileName: string): Promise<void> {
     const filePath = this._definePathInsideRootDir(fileName);
     const writeStream = fs.createWriteStream(filePath);
     return new Promise<void>((resolve, reject) => {
-      stream
-        .pipe(writeStream)
-        .on('error', reject)
-        .on('finish', resolve);
+      stream.pipe(writeStream).on('error', reject).on('finish', resolve);
     });
   }
 

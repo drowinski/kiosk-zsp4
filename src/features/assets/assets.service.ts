@@ -5,6 +5,7 @@ import { env } from '@/lib/env';
 import * as crypto from 'node:crypto';
 import { Asset, AssetType, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import * as mime from 'mime-types';
+import ffmpeg from 'fluent-ffmpeg';
 
 export class AssetService {
   private readonly assetRepository: AssetRepository;
@@ -22,14 +23,51 @@ export class AssetService {
 
   async uploadAsset(stream: ReadStream, assetData: Omit<NewAsset, 'fileName' | 'assetType'>): Promise<Asset> {
     const mimeType = this.normalizeMimeType(assetData.mimeType);
+    const assetType = this.getAssetTypeFromMimeType(mimeType);
     const fileName = this.generateFileName(mimeType);
 
     await this.fileManager.saveFileFromStream(stream, fileName);
+    const filePath = this.fileManager._definePathInsideRootDir(fileName);
+
+    const thumbnailFileName = fileName.split('.')[0] + '-thumbnail.jpg';
+    if (assetType === 'image') {
+      const outputPath = this.fileManager._definePathInsideRootDir(thumbnailFileName);
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg(filePath)
+          .on('end', () => {
+            resolve();
+          })
+          .on('error', (error) => {
+            console.error(error);
+            reject(error);
+          })
+          .outputFormat('mjpeg')
+          .videoFilter('scale=640:-2')
+          .save(outputPath);
+      });
+    } else if (assetType === 'video') {
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg(filePath)
+          .on('end', () => {
+            resolve();
+          })
+          .on('error', (error) => {
+            console.error(error);
+            reject(error);
+          })
+          .thumbnail({
+            filename: thumbnailFileName,
+            folder: this.fileManager._definePathInsideRootDir(''),
+            timestamps: ['5%'],
+            size: '640x?'
+          });
+      });
+    }
 
     const asset = await this.assetRepository.createAsset({
       fileName: fileName,
       mimeType: mimeType,
-      assetType: this.getAssetTypeFromMimeType(mimeType),
+      assetType: assetType,
       description: assetData.description,
       date: assetData.date
     });
