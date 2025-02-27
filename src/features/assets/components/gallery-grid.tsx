@@ -43,7 +43,7 @@ export function GalleryGridItem({ asset, enableDebugView = false, className, ...
     };
     imageRef.current.addEventListener('error', onError);
 
-    imageRef.current.src = '/media/' + asset.fileName; // TODO: Better solution
+    imageRef.current.src = '/media/thumbnails/' + asset.fileName.split('.')[0] + '.jpeg'; // TODO: Better solution
 
     const imageRefCurrent = imageRef.current;
 

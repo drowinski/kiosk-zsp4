@@ -25,10 +25,10 @@ export class FileManager {
     });
   }
 
-  _definePathInsideRootDir(unsafePath: string): string {
-    const absolutePath = path.join(this.rootDir, unsafePath);
+  _definePathInsideRootDir(...unsafePaths: string[]): string {
+    const absolutePath = path.join(this.rootDir, ...unsafePaths);
     if (!absolutePath.startsWith(this.rootDir)) {
-      throw new Error(`Unsafe path! "${unsafePath}" resulted in "${absolutePath}"`);
+      throw new Error(`Unsafe path! "${unsafePaths}" resulted in "${absolutePath}"`);
     }
     return absolutePath;
   }

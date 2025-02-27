@@ -18,7 +18,7 @@ export function AssetListItem({ asset }: AssetListItemProps) {
     >
       <Card className={'flex w-full gap-3 px-2 py-2 shadow-sm'}>
         <img
-          src={'/media/' + asset.fileName.split('.')[0] + '-thumbnail.jpg'} // TODO: Better solution (constant or function to determine path)
+          src={'/media/thumbnails/' + asset.fileName.split('.')[0] + '.jpeg'} // TODO: Better solution (constant or function to determine path)
           alt={asset.description || 'Brak opisu.'}
           className={'aspect-square h-16 rounded-md object-cover'}
         />

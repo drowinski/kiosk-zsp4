@@ -27,42 +27,8 @@ export class AssetService {
     const fileName = this.generateFileName(mimeType);
 
     await this.fileManager.saveFileFromStream(stream, fileName);
-    const filePath = this.fileManager._definePathInsideRootDir(fileName);
 
-    const thumbnailFileName = fileName.split('.')[0] + '-thumbnail.jpg';
-    if (assetType === 'image') {
-      const outputPath = this.fileManager._definePathInsideRootDir(thumbnailFileName);
-      await new Promise<void>((resolve, reject) => {
-        ffmpeg(filePath)
-          .on('end', () => {
-            resolve();
-          })
-          .on('error', (error) => {
-            console.error(error);
-            reject(error);
-          })
-          .outputFormat('mjpeg')
-          .videoFilter('scale=640:-2')
-          .save(outputPath);
-      });
-    } else if (assetType === 'video') {
-      await new Promise<void>((resolve, reject) => {
-        ffmpeg(filePath)
-          .on('end', () => {
-            resolve();
-          })
-          .on('error', (error) => {
-            console.error(error);
-            reject(error);
-          })
-          .thumbnail({
-            filename: thumbnailFileName,
-            folder: this.fileManager._definePathInsideRootDir(''),
-            timestamps: ['5%'],
-            size: '640x?'
-          });
-      });
-    }
+    await this.generateThumbnail(fileName, assetType);
 
     const asset = await this.assetRepository.createAsset({
       fileName: fileName,
@@ -85,6 +51,35 @@ export class AssetService {
       updatedAsset.assetType = this.getAssetTypeFromMimeType(updatedAsset.mimeType);
     }
     return this.assetRepository.updateAsset(updatedAsset);
+  }
+
+  async generateThumbnail(fileName: string, assetType: AssetType): Promise<void> {
+    const originalFilePath = this.fileManager._definePathInsideRootDir(fileName);
+    const thumbnailFileName = fileName.split('.')[0] + '.jpeg';
+    const thumbnailDirectory = 'thumbnails';
+
+    await new Promise<void>((resolve, reject) => {
+      const ffmpegCommand = ffmpeg(originalFilePath)
+        .on('end', () => {
+          resolve();
+        })
+        .on('error', (error) => {
+          console.error(error);
+          reject(error);
+        });
+
+      if (assetType === 'image') {
+        const outputPath = this.fileManager._definePathInsideRootDir(thumbnailDirectory, thumbnailFileName);
+        ffmpegCommand.outputFormat('mjpeg').videoFilter('scale=640:-2').save(outputPath);
+      } else if (assetType === 'video') {
+        ffmpegCommand.thumbnail({
+          filename: thumbnailFileName,
+          folder: this.fileManager._definePathInsideRootDir(thumbnailDirectory),
+          timestamps: ['5%'],
+          size: '640x?'
+        });
+      }
+    });
   }
 
   private generateFileName(mimeType: string): string {
