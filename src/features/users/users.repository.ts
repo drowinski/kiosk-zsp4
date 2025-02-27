@@ -8,6 +8,8 @@ export interface UserRepository {
 
   getUserWithPasswordHashByUsername(username: string): Promise<UserWithPasswordHash | null>;
 
+  getAllUsers(): Promise<User[]>;
+
   createUser(newUser: NewUser): Promise<User | null>;
 
   updateUser(id: number, values: Partial<UserWithPasswordHash>): Promise<User | null>;
@@ -29,6 +31,10 @@ export class DrizzleUserRepository implements UserRepository {
   async getUserWithPasswordHashByUsername(username: string): Promise<UserWithPasswordHash | null> {
     const result = await db.select().from(userTable).where(eq(userTable.username, username));
     return result.at(0) ?? null;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return db.select(this.columnsWithoutPasswordHash).from(userTable);
   }
 
   async createUser(newUser: NewUser): Promise<User | null> {

@@ -16,5 +16,6 @@ export const routes = defineRoutes((route) => {
     route('assets', 'dashboard/assets/list.page.tsx', () => {
       route(':id', 'dashboard/assets/edit.modal.tsx');
     });
+    route('users', 'dashboard/users/list.page.tsx');
   });
 });

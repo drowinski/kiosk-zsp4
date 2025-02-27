@@ -1,7 +1,7 @@
 import { Input } from '@/components/base/input';
 import { Card } from '@/components/base/card';
 import { useSearchParams } from '@/hooks/use-search-params';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/utils/styles';
 import { Label } from '@/components/base/label';
@@ -65,21 +65,21 @@ export function AssetFilters({ className }: AssetFilterProps) {
           onChange={(event) => setDescriptionFilter(event.target.value)}
         />
         <Label>Typy plików</Label>
-        <Label>
+        <Label variant={'horizontal'}>
           <Checkbox
             defaultChecked={searchParams.get('assetType')?.split('_').includes('image')}
             onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('image', checked)}
           />
           Zdjęcia
         </Label>
-        <Label>
+        <Label variant={'horizontal'}>
           <Checkbox
             defaultChecked={searchParams.get('assetType')?.split('_').includes('video')}
             onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('video', checked)}
           />
           Filmy
         </Label>
-        <Label>
+        <Label variant={'horizontal'}>
           <Checkbox
             defaultChecked={searchParams.get('assetType')?.split('_').includes('audio')}
             onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('audio', checked)}

@@ -53,7 +53,11 @@ export default function DashboardLayout() {
           <DashboardNav className={'h-fit'}>
             <DashboardNavItem
               route={'/dashboard/assets'}
-              label={'Zarządzaj zawartością'}
+              label={'Zawartość'}
+            />
+            <DashboardNavItem
+              route={'/dashboard/users'}
+              label={'Użytkownicy'}
             />
             <DashboardNavItem
               route={'/kiosk/gallery'}
