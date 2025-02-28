@@ -1,7 +1,5 @@
-export default function DashboardHomePage() {
-  return (
-    <main className={'p-4'}>
-      Dashboard.
-    </main>
-  )
+import { redirect } from '@remix-run/node';
+
+export function loader() {
+  return redirect('assets');
 }
