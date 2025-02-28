@@ -17,9 +17,6 @@ import { Input, InputMessage } from '@/components/base/input';
 import { Button } from '@/components/base/button';
 import { Asset } from '@/features/assets/components/asset';
 import { Card } from '@/components/base/card';
-import { DatePicker } from '@/components/date-picker';
-import { RadioGroup, RadioInput } from '@/components/base/radio';
-import { DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
 
 export const assetFormSchema = z.object({
   assets: z
@@ -154,35 +151,6 @@ export function AssetUploadFormItem({ fieldName, file, onUpdateFile, onRemoveAss
         defaultValue={file.name.replace(/\.[a-zA-Z0-9]+$/, '')}
       />
       {fieldset.description.errors && <InputMessage>{fieldset.description.errors}</InputMessage>}
-      <input
-        type={'checkbox'}
-        onChange={(event) => {
-          setIsDateEnabled(event.currentTarget.checked);
-        }}
-        checked={isDateEnabled}
-      />
-      <RadioGroup disabled={!isDateEnabled}>
-        {DATE_PRECISION_ARRAY.map((value, index) => (
-          <RadioInput
-            key={value}
-            name={dateFieldset.datePrecision.name}
-            value={value}
-            defaultChecked={index === 0}
-          >{value.at(0)?.toUpperCase() + value.slice(1)}</RadioInput>
-        ))}
-      </RadioGroup>
-      <DatePicker
-        datePrecision={'year'}
-        name={dateFieldset.dateMin.name}
-        defaultValue={undefined}
-        disabled={!isDateEnabled}
-      />
-      <DatePicker
-        datePrecision={'year'}
-        name={dateFieldset.dateMax.name}
-        defaultValue={undefined}
-        disabled={!isDateEnabled}
-      />
     </Card>
   );
 }
