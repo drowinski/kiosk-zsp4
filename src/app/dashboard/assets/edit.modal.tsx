@@ -17,6 +17,8 @@ import { useMemo, useState } from 'react';
 import { getYYYYMMDD } from '@/utils/dates';
 import { InputMessage } from '@/components/base/input';
 import { assetService } from '@/features/assets/assets.service';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { DialogDescription } from '@radix-ui/react-dialog';
 
 const assetEditFormSchema = assetUpdateSchema.pick({
   id: true,
@@ -129,6 +131,9 @@ export default function AssetEditModal() {
               <ModalTitle className={'flex gap-2'}>
                 <PencilIcon /> Edycja zawartości
               </ModalTitle>
+              <VisuallyHidden>
+                <DialogDescription>Edycja metadanych zawartości multimedialnej</DialogDescription>
+              </VisuallyHidden>
             </ModalHeader>
             <div className={'flex max-h-60 max-w-full items-start justify-center'}>
               <Asset

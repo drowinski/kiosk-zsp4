@@ -72,7 +72,7 @@ export default function AssetListPage() {
         <Card className={'flex items-center justify-end gap-2 bg-secondary px-4 py-2 text-secondary-foreground'}>
           <Label>Sortowanie</Label>
           <Select
-            value={searchParams.get('sort') || 'updatedAt_desc'}
+            defaultValue={searchParams.get('sort') || 'updatedAt_desc'}
             onValueChange={(value) =>
               setSearchParams((prev) => {
                 prev.delete('page');

@@ -1,7 +1,7 @@
 import { Asset, AssetType, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import { db } from '@/lib/db/connection';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
-import { and, asc, count, desc, eq, getTableColumns, ilike, inArray, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, lte, sql } from 'drizzle-orm';
 import { PgSelect } from 'drizzle-orm/pg-core';
 
 export interface AssetFiltering {
@@ -87,8 +87,8 @@ export class DrizzleAssetRepository implements AssetRepository {
         and(
           assetType && assetType.length > 0 ? inArray(assetTable.assetType, assetType) : undefined,
           description ? ilike(assetTable.description, `%${description}%`) : undefined,
-          dateMin ? sql<boolean>`${dateMin} < ${dateTable.dateMax}` : undefined,
-          dateMax ? sql<boolean>`${dateMax} > ${dateTable.dateMin}` : undefined
+          dateMin ? gte(dateTable.dateMax, dateMin) : undefined,
+          dateMax ? lte(dateTable.dateMin, dateMax) : undefined
         )
       );
     }
