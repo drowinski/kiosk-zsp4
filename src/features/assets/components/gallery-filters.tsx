@@ -1,12 +1,11 @@
 import { Card } from '@/components/base/card';
 import { cn } from '@/utils/styles';
 import { useSearchParams } from '@remix-run/react';
-import { Slider } from '@/components/base/slider';
-import { useMemo, useState } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/base/popover';
-import { Button } from '@/components/base/button';
+import { useMemo } from 'react';
 import { Label } from '@/components/base/label';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
+import { RangePicker } from '@/components/range-picker';
+import { useDebouncedCallback } from 'use-debounce';
 
 interface GalleryFiltersProps {
   className?: string;
@@ -15,62 +14,31 @@ interface GalleryFiltersProps {
 export function GalleryFilters({ className }: GalleryFiltersProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const defaultMinYear = 1915;
-  const defaultMaxYear = useMemo(() => new Date().getFullYear(), []);
-  const [yearRange, setYearRange] = useState<[number, number]>([
-    parseInt(searchParams.get('minYear') ?? '') || defaultMinYear,
-    parseInt(searchParams.get('maxYear') ?? '') || defaultMaxYear
-  ]);
+  const minYear = 1915;
+  const maxYear = useMemo(() => new Date().getFullYear(), []);
+
+  const updateYearRange = useDebouncedCallback((yearRange: [number, number]) => {
+    setSearchParams((prev) => {
+      if (yearRange[0] === minYear && yearRange[1] === maxYear) {
+        prev.delete('minYear');
+        prev.delete('maxYear');
+      } else {
+        prev.set('minYear', yearRange[0].toString());
+        prev.set('maxYear', yearRange[1].toString());
+      }
+      return prev;
+    });
+  }, 250);
 
   return (
     <Card className={cn('flex gap-1 bg-secondary text-secondary-foreground', className)}>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Label>
-            Zakres dat
-            <Button>
-              {yearRange[0]} &ndash; {yearRange[1]}
-            </Button>
-          </Label>
-        </PopoverTrigger>
-        <PopoverContent
-          align={'start'}
-          className={'flex w-[480px] gap-2'}
-        >
-          <Slider
-            min={defaultMinYear}
-            max={defaultMaxYear}
-            value={yearRange}
-            onValueChange={([minValue, maxValue]) => {
-              setYearRange([minValue, maxValue]);
-            }}
-            onPointerUp={() =>
-              setSearchParams((prev) => {
-                if (yearRange[0] === defaultMinYear && yearRange[1] === defaultMaxYear) {
-                  prev.delete('minYear');
-                  prev.delete('maxYear');
-                } else {
-                  prev.set('minYear', yearRange[0].toString());
-                  prev.set('maxYear', yearRange[1].toString());
-                }
-                return prev;
-              })
-            }
-          />
-          <Button
-            onClick={() => {
-              setYearRange([defaultMinYear, defaultMaxYear]);
-              setSearchParams((prev) => {
-                prev.delete('minYear');
-                prev.delete('maxYear');
-                return prev;
-              });
-            }}
-          >
-            Resetuj
-          </Button>
-        </PopoverContent>
-      </Popover>
+      <RangePicker
+        label={'Zakres lat'}
+        min={minYear}
+        max={maxYear}
+        defaultValue={[minYear, maxYear]}
+        onValueChange={updateYearRange}
+      />
       <Label>
         Sortowanie
         <Select

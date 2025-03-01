@@ -18,13 +18,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const description = url.searchParams.get('description');
   const assetType = url.searchParams.get('assetType');
+  const minYear = parseInt(url.searchParams.get('minYear') ?? '') || undefined;
+  const maxYear = parseInt(url.searchParams.get('maxYear') ?? '') || undefined;
   const sort = url.searchParams.get('sort');
   const page = parseInt(url.searchParams.get('page')!);
   const pageSize = parseInt(url.searchParams.get('pageSize')!);
 
   const filters: AssetFiltering = {
     description: description || undefined,
-    assetType: assetType?.split('_') as AssetType[] || undefined
+    assetType: assetType?.split('_') as AssetType[] || undefined,
+    ...(minYear && { dateMin: new Date(minYear, 0, 1) }),
+    ...(maxYear && { dateMax: new Date(maxYear + 1, 0, 1) })
   };
 
   const assetCount = await assetRepository.getAssetCount({ filters });

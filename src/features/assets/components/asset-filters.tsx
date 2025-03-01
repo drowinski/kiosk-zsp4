@@ -7,6 +7,8 @@ import { cn } from '@/utils/styles';
 import { Label } from '@/components/base/label';
 import { FilterIcon } from '@/components/icons';
 import { Checkbox } from '@/components/base/checkbox';
+import { RangePicker } from '@/components/range-picker';
+import { useDebouncedCallback } from 'use-debounce';
 
 interface AssetFilterProps {
   className?: string;
@@ -15,9 +17,6 @@ interface AssetFilterProps {
 export function AssetFilters({ className }: AssetFilterProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [descriptionFilter, setDescriptionFilter] = useState(searchParams.get('description') || '');
-  const debouncedDescriptionFilter = useDebounce<string>(descriptionFilter);
-
   const setOrDeleteSearchParam = (searchParams: URLSearchParams, key: string, value: string) => {
     if (value) {
       searchParams.set(key, value);
@@ -25,6 +24,9 @@ export function AssetFilters({ className }: AssetFilterProps) {
       searchParams.delete(key);
     }
   };
+
+  const [descriptionFilter, setDescriptionFilter] = useState(searchParams.get('description') || '');
+  const debouncedDescriptionFilter = useDebounce<string>(descriptionFilter);
 
   useEffect(() => {
     setSearchParams((prev) => {
@@ -51,41 +53,68 @@ export function AssetFilters({ className }: AssetFilterProps) {
     });
   };
 
+  const minYear = 1915;
+  const maxYear = 2025;
+
+  const updateYearRange = useDebouncedCallback((range: [number, number]) => {
+    setSearchParams((prev) => {
+      if (range[0] === minYear && range[1] === maxYear) {
+        prev.delete('minYear');
+        prev.delete('maxYear');
+      } else {
+        prev.set('minYear', range[0].toString());
+        prev.set('maxYear', range[1].toString());
+      }
+      return prev;
+    });
+  }, 250);
+
   return (
     <Card className={cn('flex h-fit flex-col gap-2 bg-secondary text-secondary-foreground', className)}>
       <span className={'inline-flex items-center gap-2 font-medium'}>
         <FilterIcon /> Filtrowanie
       </span>
-      <div className={'flex flex-col gap-2'}>
-        <Label>Według opisu</Label>
-        <Input
-          type={'text'}
-          placeholder={'Opis...'}
-          value={descriptionFilter}
-          onChange={(event) => setDescriptionFilter(event.target.value)}
+      <div className={'flex flex-col gap-3'}>
+        <Label>
+          Według opisu
+          <Input
+            type={'text'}
+            placeholder={'Opis...'}
+            value={descriptionFilter}
+            onChange={(event) => setDescriptionFilter(event.target.value)}
+          />
+        </Label>
+        <fieldset className={'flex flex-col gap-2'}>
+          <Label>Typy plików</Label>
+          <Label variant={'horizontal'}>
+            <Checkbox
+              defaultChecked={searchParams.get('assetType')?.split('_').includes('image')}
+              onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('image', checked)}
+            />
+            Zdjęcia
+          </Label>
+          <Label variant={'horizontal'}>
+            <Checkbox
+              defaultChecked={searchParams.get('assetType')?.split('_').includes('video')}
+              onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('video', checked)}
+            />
+            Filmy
+          </Label>
+          <Label variant={'horizontal'}>
+            <Checkbox
+              defaultChecked={searchParams.get('assetType')?.split('_').includes('audio')}
+              onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('audio', checked)}
+            />
+            Audio
+          </Label>
+        </fieldset>
+        <RangePicker
+          label={'Zakres lat'}
+          min={minYear}
+          max={maxYear}
+          defaultValue={[minYear, maxYear]}
+          onValueChange={updateYearRange}
         />
-        <Label>Typy plików</Label>
-        <Label variant={'horizontal'}>
-          <Checkbox
-            defaultChecked={searchParams.get('assetType')?.split('_').includes('image')}
-            onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('image', checked)}
-          />
-          Zdjęcia
-        </Label>
-        <Label variant={'horizontal'}>
-          <Checkbox
-            defaultChecked={searchParams.get('assetType')?.split('_').includes('video')}
-            onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('video', checked)}
-          />
-          Filmy
-        </Label>
-        <Label variant={'horizontal'}>
-          <Checkbox
-            defaultChecked={searchParams.get('assetType')?.split('_').includes('audio')}
-            onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('audio', checked)}
-          />
-          Audio
-        </Label>
       </div>
     </Card>
   );
