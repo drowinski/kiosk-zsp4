@@ -28,7 +28,6 @@ export default function DashboardLayout() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         entry.target.toggleAttribute('data-stuck', entry.intersectionRatio < 1);
-        console.log(entry.intersectionRatio);
       },
       { threshold: [1] }
     );
