@@ -1,7 +1,7 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { assetRepository } from '@/features/assets/assets.repository';
 import { Form, useActionData, useLoaderData, useNavigate, useNavigation } from '@remix-run/react';
-import { useForm, useInputControl } from '@conform-to/react';
+import { useForm } from '@conform-to/react';
 import { AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
 import { Asset } from '@/features/assets/components/asset';
@@ -44,12 +44,10 @@ export async function action({ request }: ActionFunctionArgs) {
   if (submission.status !== 'success') {
     return { lastResult: submission.reply() };
   }
-  console.log('a', submission.value);
   if (!submission.value.date) {
     submission.value.date = null;
   }
   const result = await assetService.updateAsset(submission.value);
-  console.log('update result', result);
   if (!result) {
     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
   }
@@ -65,11 +63,7 @@ export default function AssetEditModal() {
 
   const [form, fields] = useForm({
     lastResult: navigation.state === 'idle' ? actionData?.lastResult || null : null,
-    onValidate: ({ formData }) => {
-      const submission = parseWithZod(formData, { schema: assetEditFormSchema });
-      console.log(submission);
-      return submission;
-    },
+    onValidate: ({ formData }) => parseWithZod(formData, { schema: assetEditFormSchema }),
     constraint: getZodConstraint(assetEditFormSchema),
     shouldRevalidate: 'onInput',
     defaultValue: {
@@ -87,37 +81,27 @@ export default function AssetEditModal() {
   });
 
   const dateFieldset = fields.date.getFieldset();
-  const dateMinControl = useInputControl(dateFieldset.dateMin);
-  const dateMaxControl = useInputControl(dateFieldset.dateMax);
-  const datePrecisionControl = useInputControl(dateFieldset.datePrecision);
 
   const [showDatePicker, setShowDatePicker] = useState<boolean>(asset.date !== null);
 
-  const datePreview = useMemo<string>(() => {
-    if (
-      !showDatePicker ||
-      !dateMinControl.value ||
-      !dateMaxControl.value ||
-      !datePrecisionControl.value
-    ) {
-      return 'Data nieustawiona';
-    }
+  const [dateMin, setDateMin] = useState<string>(dateFieldset.dateMin.initialValue || '');
+  const [dateMax, setDateMax] = useState<string>(dateFieldset.dateMax.initialValue || '');
+  const [datePrecision, setDatePrecision] = useState<AssetDatePrecision>(
+    (dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined) || 'day'
+  );
 
-    if (
-      dateMinControl.value.startsWith('NaN') ||
-      dateMaxControl.value.startsWith('NaN') ||
-      datePrecisionControl.value.startsWith('NaN')
-    ) {
-      return 'Data nieustawiona';
-    }
-
-    return formatDate({
-      dateMin: new Date(dateMinControl.value),
-      dateMax: new Date(dateMaxControl.value),
-      datePrecision: datePrecisionControl.value as AssetDatePrecision,
-      dateIsRange: false
-    });
-  }, [dateMinControl.value, dateMaxControl.value, datePrecisionControl.value, showDatePicker]);
+  const datePreview = useMemo(
+    () =>
+      dateMin.length > 0 && dateMax.length > 0
+        ? formatDate({
+            dateMin: new Date(dateMin),
+            dateMax: new Date(dateMax),
+            datePrecision: datePrecision,
+            dateIsRange: false
+          })
+        : undefined,
+    [dateMin, dateMax, datePrecision]
+  );
 
   return (
     <ClientOnly>
@@ -164,7 +148,7 @@ export default function AssetEditModal() {
               />
               <Label>Data</Label>
               <InputMessage>{fields.date.errors}</InputMessage>
-              <span className={'font-medium'}>{datePreview}</span>
+              {datePreview && <span className={'font-medium'}>{datePreview}</span>}
               {showDatePicker ? (
                 <>
                   <input
@@ -175,28 +159,27 @@ export default function AssetEditModal() {
                   <AssetDatePicker
                     dateMin={{
                       name: dateFieldset.dateMin.name,
-                      defaultValue: new Date(dateFieldset.dateMin.initialValue || new Date()),
-                      value: new Date(dateMinControl.value || new Date()),
-                      onChange: (value) => dateMinControl.change(getYYYYMMDD(value))
+                      defaultValue: dateFieldset.dateMin.initialValue,
+                      onChange: (value) => setDateMin(value)
                     }}
                     dateMax={{
                       name: dateFieldset.dateMax.name,
-                      defaultValue: new Date(dateFieldset.dateMax.initialValue || new Date()),
-                      value: new Date(dateMaxControl.value || new Date()),
-                      onChange: (value) => dateMaxControl.change(getYYYYMMDD(value))
+                      defaultValue: dateFieldset.dateMax.initialValue,
+                      onChange: (value) => setDateMax(value)
                     }}
                     datePrecision={{
                       name: dateFieldset.datePrecision.name,
-                      defaultValue:
-                        (dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined) || 'day',
-                      value: (datePrecisionControl.value as AssetDatePrecision | undefined) || 'year',
-                      onChange: (value) => datePrecisionControl.change(value)
+                      defaultValue: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
+                      onChange: (value) => setDatePrecision(value)
                     }}
                   />
                   <Button
                     className={'w-fit'}
                     onClick={() => {
                       setShowDatePicker(false);
+                      setDateMin('');
+                      setDateMax('');
+                      setDatePrecision('day');
                     }}
                   >
                     Usuń datę

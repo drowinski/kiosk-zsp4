@@ -1,36 +1,39 @@
-import { NewAssetDate, AssetDatePrecision } from '@/features/assets/assets.validation';
-import React, { useEffect, useMemo, useState } from 'react';
-import { DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
-import { MONTHS_IN_POLISH } from '@/lib/constants';
-import { getYYYYMMDD } from '@/utils/dates';
-import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
+import { AssetDatePrecision, NewAssetDate } from '@/features/assets/assets.validation';
+import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
+import { DATE_PRECISION_ARRAY, DATE_PRECISION_ARRAY_IN_POLISH, MONTHS_IN_POLISH } from '@/lib/constants';
+import { useEffect, useState } from 'react';
 import { Input } from '@/components/base/input';
-import { SelectOption, Select, SelectContent, SelectTrigger } from '@/components/base/select';
 import { cn } from '@/utils/styles';
+import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
 
 export interface AssetDatePrecisionComboboxProps {
-  name: string;
-  defaultValue: AssetDatePrecision;
-  value: AssetDatePrecision;
-  onChange: (value: AssetDatePrecision) => void;
+  name?: string;
+  defaultValue?: AssetDatePrecision;
+  value?: AssetDatePrecision;
+  onValueChange?: (value: AssetDatePrecision) => void;
 }
 
-export function AssetDatePrecisionCombobox({ name, defaultValue, value, onChange }: AssetDatePrecisionComboboxProps) {
+export function AssetDatePrecisionCombobox({
+  name,
+  defaultValue,
+  value,
+  onValueChange
+}: AssetDatePrecisionComboboxProps) {
   return (
     <Select
       name={name}
       defaultValue={defaultValue}
       value={value}
-      onValueChange={(value) => onChange(value as AssetDatePrecision)}
+      onValueChange={(value) => onValueChange?.(value as AssetDatePrecision)}
     >
       <SelectTrigger />
       <SelectContent>
-        {DATE_PRECISION_ARRAY.map((precision) => (
+        {DATE_PRECISION_ARRAY.map((precision, index) => (
           <SelectOption
             key={precision}
             value={precision}
           >
-            {precision}
+            {DATE_PRECISION_ARRAY_IN_POLISH[index]}
           </SelectOption>
         ))}
       </SelectContent>
@@ -39,20 +42,44 @@ export function AssetDatePrecisionCombobox({ name, defaultValue, value, onChange
 }
 
 export interface DatePickerProps {
-  precision: AssetDatePrecision;
-  name: string;
-  defaultValue: Date;
-  value: Date;
-  onChange: (value: Date) => void;
+  name?: string;
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
+  precision?: AssetDatePrecision;
   hidden?: boolean;
 }
 
-export function DatePicker({ precision, name, defaultValue, value, onChange, hidden = false }: DatePickerProps) {
-  const [yearString, setYearString] = useState<string>(defaultValue.getFullYear().toString());
+export function DatePicker({
+  name,
+  value,
+  defaultValue,
+  onValueChange,
+  precision = 'day',
+  hidden = false
+}: DatePickerProps) {
+  const [date, setDate] = useState<string>(defaultValue ?? value ?? '');
 
   useEffect(() => {
-    setYearString(value.getFullYear().toString());
+    setDate(value ?? '');
   }, [value]);
+
+  const year = date.split('-').at(0) || '';
+  const month = date.split('-').at(1) || '';
+
+  const updateDate = ({ year, month, day }: { [key: string]: string }) => {
+    setDate((prev) => {
+      const prevSplit = prev.split('-');
+      const values = [
+        year || prevSplit.at(0) || defaultValue?.split('-')?.at(0) || new Date().getUTCFullYear(),
+        month || prevSplit.at(1) || '01',
+        day || prevSplit.at(2) || '01'
+      ];
+      const date = values.join('-');
+      onValueChange?.(date);
+      return date;
+    });
+  };
 
   return (
     <div
@@ -62,26 +89,35 @@ export function DatePicker({ precision, name, defaultValue, value, onChange, hid
       <Input
         name={name}
         type={'date'}
-        value={getYYYYMMDD(value)}
+        value={date}
         onChange={(event) => {
-          onChange(new Date(event.currentTarget.value));
+          setDate(event.target.value);
+          onValueChange?.(event.target.value);
+        }}
+        onBlur={(event) => {
+          if (date === '') {
+            event.currentTarget.value = '';
+          }
         }}
         hidden={precision !== 'day'}
         aria-hidden={precision !== 'day'}
       />
       {precision === 'month' && (
         <Select
-          value={value.getMonth().toString()}
+          value={month ? parseInt(month).toString() : ''}
           onValueChange={(monthIndex) => {
-            onChange(new Date(value.getFullYear(), parseInt(monthIndex), value.getDate()));
+            updateDate({ month: parseInt(monthIndex).toString().padStart(2, '0') });
           }}
         >
-          <SelectTrigger className={'rounded-r-none'} />
+          <SelectTrigger
+            className={'rounded-r-none'}
+            placeholder={'miesiąc'}
+          />
           <SelectContent>
             {MONTHS_IN_POLISH.map((value, index) => (
               <SelectOption
-                key={index}
-                value={index.toString()}
+                key={index + 1}
+                value={String(index + 1)}
               >
                 {value}
               </SelectOption>
@@ -92,16 +128,13 @@ export function DatePicker({ precision, name, defaultValue, value, onChange, hid
       {['year', 'month'].includes(precision) && (
         <Input
           type={'number'}
+          placeholder={'rok'}
+          min={0}
+          max={9999}
           maxLength={4}
-          min={1800}
-          max={new Date().getFullYear()}
-          value={yearString}
+          value={parseInt(year).toString()}
           onChange={(event) => {
-            const year = event.target.value;
-            setYearString((prev) => (year.length <= 4 ? year : prev));
-            if (year.length === 4) {
-              onChange(new Date(parseInt(year), value.getMonth(), value.getDate()));
-            }
+            updateDate({ year: event.target.value.padStart(4, '0') });
           }}
           className={cn(precision === 'month' && 'rounded-l-none')}
         />
@@ -110,90 +143,90 @@ export function DatePicker({ precision, name, defaultValue, value, onChange, hid
   );
 }
 
-type AssetDatePickerProp<K extends keyof NewAssetDate> = {
-  name: string;
-  defaultValue: NewAssetDate[K];
-  value: NewAssetDate[K];
-  onChange: (value: NewAssetDate[K]) => void;
+type StringifiedNewAssetDate = Omit<Omit<NewAssetDate, 'dateMin'>, 'dateMax'> & { dateMin: string; dateMax: string };
+
+type AssetDatePickerProp<K extends keyof StringifiedNewAssetDate> = {
+  name?: string;
+  defaultValue?: StringifiedNewAssetDate[K];
+  value?: StringifiedNewAssetDate[K];
+  onChange?: (value: StringifiedNewAssetDate[K]) => void;
 };
 
 export interface AssetDatePickerProps {
-  dateMin: AssetDatePickerProp<'dateMin'>;
-  dateMax: AssetDatePickerProp<'dateMax'>;
-  datePrecision: AssetDatePickerProp<'datePrecision'>;
-  // dateIsRange: AssetDatePickerProp<'dateIsRange'>;
+  dateMin?: AssetDatePickerProp<'dateMin'>;
+  dateMax?: AssetDatePickerProp<'dateMax'>;
+  datePrecision?: AssetDatePickerProp<'datePrecision'>;
 }
 
 export function AssetDatePicker({ dateMin, dateMax, datePrecision }: AssetDatePickerProps) {
-  const [precision, setPrecision] = React.useState<AssetDatePrecision>(datePrecision.value || 'day');
-  const [isMinMaxDate, setIsMinMaxDate] = React.useState(dateMin.value.toDateString() != dateMax.value.toDateString());
-  const [lastMaxDate, setLastMaxDate] = React.useState<Date | null>(dateMax.defaultValue);
+  const [precision, setPrecision] = useState<AssetDatePrecision>(
+    datePrecision?.defaultValue || datePrecision?.value || 'day'
+  );
+  const [isRange, setIsRange] = useState<boolean>(dateMin?.defaultValue !== dateMax?.defaultValue);
+  const [minDate, setMinDate] = useState<string>(dateMin?.defaultValue || dateMin?.value || '');
+  const [maxDate, setMaxDate] = useState<string>(dateMax?.defaultValue || dateMax?.value || '');
+  const [latestMaxDate, setLatestMaxDate] = useState<string>(maxDate);
 
-  const Picker = useMemo(() => {
-    if (['year', 'month', 'day'].includes(precision)) {
-      return DatePicker;
+  const toggleIsRange = () => {
+    if (!isRange) {
+      setMaxDate(latestMaxDate);
+      dateMax?.onChange?.(latestMaxDate);
+      setIsRange(true);
     } else {
-      return DatePicker;
+      setLatestMaxDate(maxDate);
+      setIsRange(false);
+      setMaxDate(minDate);
+      dateMax?.onChange?.(minDate);
     }
-  }, [precision]);
-
-  const toggleIsMinMaxDate = () => {
-    const _isMinMaxDate = !isMinMaxDate;
-    if (_isMinMaxDate) {
-      dateMax.onChange(lastMaxDate || dateMin.value);
-      setLastMaxDate(null);
-    } else {
-      setLastMaxDate(dateMax.value);
-      dateMax.onChange(dateMin.value);
-    }
-    setIsMinMaxDate(_isMinMaxDate);
   };
 
   return (
-    <div className={'flex flex-col gap-2'}>
-      <div className={'flex items-center gap-2'}>
-        <Picker
-          name={dateMin.name}
-          defaultValue={dateMin.defaultValue}
-          value={dateMin.value}
-          onChange={(value) => {
-            if (!isMinMaxDate) {
-              dateMax.onChange(value);
+    <div className={'flex flex-col gap-1'}>
+      <div className={'flex items-center gap-1'}>
+        {/* TODO: hidden ID input */}
+        <DatePicker
+          name={dateMin?.name}
+          value={minDate}
+          onValueChange={(value) => {
+            setMinDate(value);
+            dateMin?.onChange?.(value);
+            if (!isRange) {
+              setMaxDate(value);
+              dateMax?.onChange?.(value);
             }
-            dateMin.onChange(value);
           }}
           precision={precision}
         />
-        {isMinMaxDate && <span>&mdash;</span>}
-        <Picker
-          name={dateMax.name}
-          defaultValue={dateMax.defaultValue}
-          value={dateMax.value}
-          onChange={dateMax.onChange}
+        <DatePicker
+          name={dateMax?.name}
+          value={maxDate}
+          onValueChange={(value) => {
+            setMaxDate(value);
+            dateMax?.onChange?.(value);
+          }}
           precision={precision}
-          hidden={!isMinMaxDate}
+          hidden={!isRange}
         />
         <div
           role={'checkbox'}
-          aria-checked={isMinMaxDate}
+          aria-checked={isRange}
           tabIndex={0}
-          onClick={toggleIsMinMaxDate}
-          onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && toggleIsMinMaxDate()}
+          onClick={toggleIsRange}
+          onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && toggleIsRange()}
           className={cn(
             'flex h-full items-center justify-center rounded-xl bg-accent p-2 text-sm',
             'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary'
           )}
         >
-          {isMinMaxDate ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          {isRange ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </div>
       </div>
       <AssetDatePrecisionCombobox
-        name={datePrecision.name}
-        defaultValue={datePrecision.defaultValue}
-        value={datePrecision.value}
-        onChange={(precision) => {
-          setPrecision(precision);
-          datePrecision.onChange(precision);
+        name={datePrecision?.name}
+        value={precision}
+        onValueChange={(value) => {
+          setPrecision(value);
+          datePrecision?.onChange?.(value);
         }}
       />
     </div>

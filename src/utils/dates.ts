@@ -1,7 +1,7 @@
 export const getYYYYMMDD = (date: Date) => {
-  const year = date.getFullYear();
-  let month = String(date.getMonth() + 1);
-  let day = String(date.getDate());
+  const year = date.getUTCFullYear();
+  let month = String(date.getUTCMonth() + 1);
+  let day = String(date.getUTCDate());
 
   if (month.length < 2) {
     month = '0' + month;

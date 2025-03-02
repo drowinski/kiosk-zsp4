@@ -12,18 +12,21 @@ const dateFormatters: Record<AssetDatePrecision, DateFormatter> = {
   day: new Intl.DateTimeFormat(DATE_TIME_LOCALE, {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    timeZone: 'UTC'
   }),
   month: new Intl.DateTimeFormat(DATE_TIME_LOCALE, {
     year: 'numeric',
-    month: 'long'
+    month: 'long',
+    timeZone: 'UTC'
   }),
   year: new Intl.DateTimeFormat(DATE_TIME_LOCALE, {
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'UTC'
   }),
   decade: {
     format(date: Date) {
-      const year = date.getFullYear().toString();
+      const year = date.getUTCFullYear().toString();
       if (year.startsWith('19')) {
         return 'lata ' + year.at(-2) + '0';
       } else {
@@ -71,9 +74,9 @@ export function formatDate({
 }
 
 export function truncateDate(date: Date, precision: AssetDatePrecision): Date {
-  let year = date.getFullYear();
-  let month = date.getMonth();
-  let day = date.getDate();
+  let year = date.getUTCFullYear();
+  let month = date.getUTCMonth();
+  let day = date.getUTCDate();
   switch (precision) {
     case 'day':
       break;
