@@ -1,10 +1,11 @@
-import { AssetDatePrecision, NewAssetDate } from '@/features/assets/assets.validation';
+import { AssetDatePrecision, UpdatedAssetDate } from '@/features/assets/assets.validation';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 import { DATE_PRECISION_ARRAY, DATE_PRECISION_ARRAY_IN_POLISH, MONTHS_IN_POLISH } from '@/lib/constants';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/base/input';
 import { cn } from '@/utils/styles';
 import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
+import { Button } from '@/components/base/button';
 
 export interface AssetDatePrecisionComboboxProps {
   name?: string;
@@ -43,8 +44,8 @@ export function AssetDatePrecisionCombobox({
 
 export interface DatePickerProps {
   name?: string;
-  value?: string;
   defaultValue?: string;
+  value?: string;
   onValueChange?: (value: string) => void;
   precision?: AssetDatePrecision;
   hidden?: boolean;
@@ -60,9 +61,9 @@ export function DatePicker({
 }: DatePickerProps) {
   const [date, setDate] = useState<string>(defaultValue ?? value ?? '');
 
-  useEffect(() => {
-    setDate(value ?? '');
-  }, [value]);
+  if (value !== undefined && value !== date) {
+    setDate(value);
+  }
 
   const year = date.split('-').at(0) || '';
   const month = date.split('-').at(1) || '';
@@ -143,92 +144,151 @@ export function DatePicker({
   );
 }
 
-type StringifiedNewAssetDate = Omit<Omit<NewAssetDate, 'dateMin'>, 'dateMax'> & { dateMin: string; dateMax: string };
+type StringifiedUpdatedAssetDate = Omit<Omit<Omit<UpdatedAssetDate, 'dateMin'>, 'dateMax'>, 'id'> & {
+  id: string;
+  dateMin: string;
+  dateMax: string;
+};
 
-type AssetDatePickerProp<K extends keyof StringifiedNewAssetDate> = {
+type AssetDatePickerProp<K extends keyof StringifiedUpdatedAssetDate> = {
   name?: string;
-  defaultValue?: StringifiedNewAssetDate[K];
-  value?: StringifiedNewAssetDate[K];
-  onChange?: (value: StringifiedNewAssetDate[K]) => void;
+  defaultValue?: StringifiedUpdatedAssetDate[K];
+  value?: StringifiedUpdatedAssetDate[K];
+  onValueChange?: (value: StringifiedUpdatedAssetDate[K]) => void;
 };
 
 export interface AssetDatePickerProps {
+  id?: Omit<Omit<AssetDatePickerProp<'id'>, 'onValueChange'>, 'defaultValue'>;
   dateMin?: AssetDatePickerProp<'dateMin'>;
   dateMax?: AssetDatePickerProp<'dateMax'>;
   datePrecision?: AssetDatePickerProp<'datePrecision'>;
+  enabled?: boolean;
+  onEnabledChange?: (enabled: boolean) => void;
 }
 
-export function AssetDatePicker({ dateMin, dateMax, datePrecision }: AssetDatePickerProps) {
+export function AssetDatePicker({
+  id,
+  dateMin,
+  dateMax,
+  datePrecision,
+  enabled = false,
+  onEnabledChange
+}: AssetDatePickerProps) {
+  const [isEnabled, setIsEnabled] = useState<boolean>(enabled);
   const [precision, setPrecision] = useState<AssetDatePrecision>(
     datePrecision?.defaultValue || datePrecision?.value || 'day'
   );
-  const [isRange, setIsRange] = useState<boolean>(dateMin?.defaultValue !== dateMax?.defaultValue);
+  const [isRange, setIsRange] = useState<boolean>(
+    (dateMin?.defaultValue !== undefined &&
+      dateMax?.defaultValue !== undefined &&
+      dateMin.defaultValue !== dateMax.defaultValue) ||
+      (dateMin?.value !== undefined && dateMax?.value !== undefined && dateMin.value !== dateMax.value)
+  );
   const [minDate, setMinDate] = useState<string>(dateMin?.defaultValue || dateMin?.value || '');
   const [maxDate, setMaxDate] = useState<string>(dateMax?.defaultValue || dateMax?.value || '');
   const [latestMaxDate, setLatestMaxDate] = useState<string>(maxDate);
 
+  if (enabled !== isEnabled) {
+    setIsEnabled(enabled);
+  }
+
+  if (datePrecision?.value !== undefined && datePrecision.value !== precision) {
+    setPrecision(datePrecision?.value);
+  }
+
   const toggleIsRange = () => {
     if (!isRange) {
       setMaxDate(latestMaxDate);
-      dateMax?.onChange?.(latestMaxDate);
+      dateMax?.onValueChange?.(latestMaxDate);
       setIsRange(true);
     } else {
       setLatestMaxDate(maxDate);
       setIsRange(false);
       setMaxDate(minDate);
-      dateMax?.onChange?.(minDate);
+      dateMax?.onValueChange?.(minDate);
     }
   };
 
   return (
-    <div className={'flex flex-col gap-1'}>
-      <div className={'flex items-center gap-1'}>
-        {/* TODO: hidden ID input */}
-        <DatePicker
-          name={dateMin?.name}
-          value={minDate}
-          onValueChange={(value) => {
-            setMinDate(value);
-            dateMin?.onChange?.(value);
-            if (!isRange) {
-              setMaxDate(value);
-              dateMax?.onChange?.(value);
-            }
-          }}
-          precision={precision}
-        />
-        <DatePicker
-          name={dateMax?.name}
-          value={maxDate}
-          onValueChange={(value) => {
-            setMaxDate(value);
-            dateMax?.onChange?.(value);
-          }}
-          precision={precision}
-          hidden={!isRange}
-        />
-        <div
-          role={'checkbox'}
-          aria-checked={isRange}
-          tabIndex={0}
-          onClick={toggleIsRange}
-          onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && toggleIsRange()}
-          className={cn(
-            'flex h-full items-center justify-center rounded-xl bg-accent p-2 text-sm',
-            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary'
-          )}
-        >
-          {isRange ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+    <>
+      {isEnabled ? (
+        <div className={'flex flex-col gap-1'}>
+          <div className={'flex items-center gap-1'}>
+            {id && (
+              <input
+                type={'hidden'}
+                name={id.name}
+                value={id.value}
+                readOnly
+              />
+            )}
+            <DatePicker
+              name={dateMin?.name}
+              value={minDate}
+              onValueChange={(value) => {
+                setMinDate(value);
+                dateMin?.onValueChange?.(value);
+                if (!isRange) {
+                  setMaxDate(value);
+                  dateMax?.onValueChange?.(value);
+                }
+              }}
+              precision={precision}
+            />
+            <DatePicker
+              name={dateMax?.name}
+              value={maxDate}
+              onValueChange={(value) => {
+                setMaxDate(value);
+                dateMax?.onValueChange?.(value);
+              }}
+              precision={precision}
+              hidden={!isRange}
+            />
+            <div
+              role={'checkbox'}
+              aria-checked={isRange}
+              tabIndex={0}
+              onClick={toggleIsRange}
+              onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && toggleIsRange()}
+              className={cn(
+                'flex h-full items-center justify-center rounded-xl bg-accent p-2 text-sm',
+                'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary'
+              )}
+            >
+              {isRange ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            </div>
+          </div>
+          <AssetDatePrecisionCombobox
+            name={datePrecision?.name}
+            value={precision}
+            onValueChange={(value) => {
+              setPrecision(value);
+              datePrecision?.onValueChange?.(value);
+            }}
+          />
+          <Button
+            className={'w-fit'}
+            onClick={() => {
+              setIsEnabled(false);
+              onEnabledChange?.(false);
+            }}
+          >
+            Usuń datę
+          </Button>
         </div>
-      </div>
-      <AssetDatePrecisionCombobox
-        name={datePrecision?.name}
-        value={precision}
-        onValueChange={(value) => {
-          setPrecision(value);
-          datePrecision?.onChange?.(value);
-        }}
-      />
-    </div>
+      ) : (
+        <Button
+          variant={'secondary'}
+          className={'w-fit'}
+          onClick={() => {
+            setIsEnabled(true);
+            onEnabledChange?.(true);
+          }}
+        >
+          Dodaj datę
+        </Button>
+      )}
+    </>
   );
 }

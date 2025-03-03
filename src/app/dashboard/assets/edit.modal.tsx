@@ -92,7 +92,7 @@ export default function AssetEditModal() {
 
   const datePreview = useMemo(
     () =>
-      dateMin.length > 0 && dateMax.length > 0
+      showDatePicker && dateMin.length > 0 && dateMax.length > 0
         ? formatDate({
             dateMin: new Date(dateMin),
             dateMax: new Date(dateMax),
@@ -100,7 +100,7 @@ export default function AssetEditModal() {
             dateIsRange: false
           })
         : undefined,
-    [dateMin, dateMax, datePrecision]
+    [showDatePicker, dateMin, dateMax, datePrecision]
   );
 
   return (
@@ -149,53 +149,29 @@ export default function AssetEditModal() {
               <Label>Data</Label>
               <InputMessage>{fields.date.errors}</InputMessage>
               {datePreview && <span className={'font-medium'}>{datePreview}</span>}
-              {showDatePicker ? (
-                <>
-                  <input
-                    type={'hidden'}
-                    name={dateFieldset.id.name}
-                    value={dateFieldset.id.value}
-                  />
-                  <AssetDatePicker
-                    dateMin={{
-                      name: dateFieldset.dateMin.name,
-                      defaultValue: dateFieldset.dateMin.initialValue,
-                      onChange: (value) => setDateMin(value)
-                    }}
-                    dateMax={{
-                      name: dateFieldset.dateMax.name,
-                      defaultValue: dateFieldset.dateMax.initialValue,
-                      onChange: (value) => setDateMax(value)
-                    }}
-                    datePrecision={{
-                      name: dateFieldset.datePrecision.name,
-                      defaultValue: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
-                      onChange: (value) => setDatePrecision(value)
-                    }}
-                  />
-                  <Button
-                    className={'w-fit'}
-                    onClick={() => {
-                      setShowDatePicker(false);
-                      setDateMin('');
-                      setDateMax('');
-                      setDatePrecision('day');
-                    }}
-                  >
-                    Usuń datę
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant={'secondary'}
-                  className={'w-fit'}
-                  onClick={() => {
-                    setShowDatePicker(true);
-                  }}
-                >
-                  Dodaj datę
-                </Button>
-              )}
+              <AssetDatePicker
+                enabled={showDatePicker}
+                onEnabledChange={setShowDatePicker}
+                id={{
+                  name: dateFieldset.id.name,
+                  value: dateFieldset.id.value
+                }}
+                dateMin={{
+                  name: dateFieldset.dateMin.name,
+                  value: dateFieldset.dateMin.value,
+                  onValueChange: (value) => setDateMin(value)
+                }}
+                dateMax={{
+                  name: dateFieldset.dateMax.name,
+                  value: dateFieldset.dateMax.value,
+                  onValueChange: (value) => setDateMax(value)
+                }}
+                datePrecision={{
+                  name: dateFieldset.datePrecision.name,
+                  value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
+                  onValueChange: (value) => setDatePrecision(value)
+                }}
+              />
               <Button
                 type={'submit'}
                 className={'flex gap-2 bg-green-600'}
