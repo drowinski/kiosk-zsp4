@@ -112,7 +112,10 @@ export function AssetFilters({ className }: AssetFilterProps) {
           label={'Zakres lat'}
           min={minYear}
           max={maxYear}
-          defaultValue={[minYear, maxYear]}
+          defaultValue={[
+            searchParams.get('minYear') ? parseInt(searchParams.get('minYear')!) : minYear,
+            searchParams.get('maxYear') ? parseInt(searchParams.get('maxYear')!) : maxYear,
+          ]}
           onValueChange={updateYearRange}
         />
       </div>
