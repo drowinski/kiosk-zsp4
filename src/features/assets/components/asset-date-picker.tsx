@@ -1,10 +1,10 @@
 import { AssetDatePrecision, UpdatedAssetDate } from '@/features/assets/assets.validation';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 import { DATE_PRECISION_ARRAY, DATE_PRECISION_ARRAY_IN_POLISH, MONTHS_IN_POLISH } from '@/lib/constants';
-import { useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Input } from '@/components/base/input';
 import { cn } from '@/utils/styles';
-import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon } from '@/components/icons';
 import { Button } from '@/components/base/button';
 
 export interface AssetDatePrecisionComboboxProps {
@@ -82,6 +82,8 @@ export function DatePicker({
     });
   };
 
+  const ConditionalDiv = precision === 'year' ? Fragment : 'div';
+
   return (
     <div
       hidden={hidden}
@@ -103,43 +105,45 @@ export function DatePicker({
         hidden={precision !== 'day'}
         aria-hidden={precision !== 'day'}
       />
-      {precision === 'month' && (
-        <Select
-          value={month ? parseInt(month).toString() : ''}
-          onValueChange={(monthIndex) => {
-            updateDate({ month: parseInt(monthIndex).toString().padStart(2, '0') });
-          }}
-        >
-          <SelectTrigger
-            className={'rounded-r-none'}
-            placeholder={'miesiąc'}
+      <ConditionalDiv className={'flex flex-nowrap'}>
+        {precision === 'month' && (
+          <Select
+            value={month ? parseInt(month).toString() : ''}
+            onValueChange={(monthIndex) => {
+              updateDate({ month: parseInt(monthIndex).toString().padStart(2, '0') });
+            }}
+          >
+            <SelectTrigger
+              className={'rounded-r-none'}
+              placeholder={'miesiąc'}
+            />
+            <SelectContent>
+              {MONTHS_IN_POLISH.map((value, index) => (
+                <SelectOption
+                  key={index + 1}
+                  value={String(index + 1)}
+                >
+                  {value}
+                </SelectOption>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {['year', 'month'].includes(precision) && (
+          <Input
+            type={'number'}
+            placeholder={'rok'}
+            min={0}
+            max={9999}
+            maxLength={4}
+            value={parseInt(year).toString()}
+            onChange={(event) => {
+              updateDate({ year: event.target.value.padStart(4, '0') });
+            }}
+            className={cn(precision === 'month' && 'rounded-l-none')}
           />
-          <SelectContent>
-            {MONTHS_IN_POLISH.map((value, index) => (
-              <SelectOption
-                key={index + 1}
-                value={String(index + 1)}
-              >
-                {value}
-              </SelectOption>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-      {['year', 'month'].includes(precision) && (
-        <Input
-          type={'number'}
-          placeholder={'rok'}
-          min={0}
-          max={9999}
-          maxLength={4}
-          value={parseInt(year).toString()}
-          onChange={(event) => {
-            updateDate({ year: event.target.value.padStart(4, '0') });
-          }}
-          className={cn(precision === 'month' && 'rounded-l-none')}
-        />
-      )}
+        )}
+      </ConditionalDiv>
     </div>
   );
 }
@@ -164,6 +168,7 @@ export interface AssetDatePickerProps {
   datePrecision?: AssetDatePickerProp<'datePrecision'>;
   enabled?: boolean;
   onEnabledChange?: (enabled: boolean) => void;
+  orientation?: 'horizontal' | 'vertical';
 }
 
 export function AssetDatePicker({
@@ -172,7 +177,8 @@ export function AssetDatePicker({
   dateMax,
   datePrecision,
   enabled = false,
-  onEnabledChange
+  onEnabledChange,
+  orientation = 'horizontal'
 }: AssetDatePickerProps) {
   const [isEnabled, setIsEnabled] = useState<boolean>(enabled);
   const [precision, setPrecision] = useState<AssetDatePrecision>(
@@ -188,13 +194,14 @@ export function AssetDatePicker({
   const [maxDate, setMaxDate] = useState<string>(dateMax?.defaultValue || dateMax?.value || '');
   const [latestMaxDate, setLatestMaxDate] = useState<string>(maxDate);
 
-  if (enabled !== isEnabled) {
+  useEffect(() => {
     setIsEnabled(enabled);
-  }
+  }, [enabled]);
 
-  if (datePrecision?.value !== undefined && datePrecision.value !== precision) {
-    setPrecision(datePrecision?.value);
-  }
+  useEffect(() => {
+    if (!datePrecision?.value) return;
+    setPrecision(datePrecision.value);
+  }, [datePrecision?.value]);
 
   const toggleIsRange = () => {
     if (!isRange) {
@@ -213,7 +220,7 @@ export function AssetDatePicker({
     <>
       {isEnabled ? (
         <div className={'flex flex-col gap-1'}>
-          <div className={'flex items-center gap-1'}>
+          <div className={cn('flex items-center gap-1', orientation === 'vertical' && 'w-fit flex-col')}>
             {id && (
               <input
                 type={'hidden'}
@@ -253,10 +260,12 @@ export function AssetDatePicker({
               onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && toggleIsRange()}
               className={cn(
                 'flex h-full items-center justify-center rounded-xl bg-accent p-2 text-sm',
-                'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary'
+                'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
+                orientation === 'vertical' && 'h-fit w-full flex-col'
               )}
             >
-              {isRange ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+              {orientation === 'horizontal' && (isRange ? <ChevronLeftIcon /> : <ChevronRightIcon />)}
+              {orientation === 'vertical' && (isRange ? <ChevronUpIcon /> : <ChevronDownIcon />)}
             </div>
           </div>
           <AssetDatePrecisionCombobox

@@ -1,5 +1,5 @@
 import { z } from '@/lib/zod';
-import { assetCreateSchema } from '@/features/assets/assets.validation';
+import { assetCreateSchema, AssetDatePrecision } from '@/features/assets/assets.validation';
 import {
   FieldName,
   FormId,
@@ -17,6 +17,7 @@ import { Input, InputMessage } from '@/components/base/input';
 import { Button } from '@/components/base/button';
 import { Asset } from '@/features/assets/components/asset';
 import { Card } from '@/components/base/card';
+import { AssetDatePicker } from '@/features/assets/components/asset-date-picker';
 
 export const assetFormSchema = z.object({
   assets: z
@@ -95,8 +96,6 @@ export function AssetUploadFormItem({ fieldName, file, onUpdateFile, onRemoveAss
     };
   }, [file]);
 
-  const [isDateEnabled, setIsDateEnabled] = useState<boolean>(false);
-
   return (
     <Card
       key={field.key}
@@ -151,6 +150,21 @@ export function AssetUploadFormItem({ fieldName, file, onUpdateFile, onRemoveAss
         defaultValue={file.name.replace(/\.[a-zA-Z0-9]+$/, '')}
       />
       {fieldset.description.errors && <InputMessage>{fieldset.description.errors}</InputMessage>}
+      <AssetDatePicker
+        dateMin={{
+          name: dateFieldset.dateMin.name,
+          value: dateFieldset.dateMin.value,
+        }}
+        dateMax={{
+          name: dateFieldset.dateMax.name,
+          value: dateFieldset.dateMax.value,
+        }}
+        datePrecision={{
+          name: dateFieldset.datePrecision.name,
+          value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
+        }}
+        orientation={'vertical'}
+      />
     </Card>
   );
 }
