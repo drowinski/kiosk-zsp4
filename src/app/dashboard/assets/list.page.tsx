@@ -54,8 +54,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { assets, assetCount };
 }
 
-export function shouldRevalidate({ currentUrl, nextUrl, defaultShouldRevalidate }: ShouldRevalidateFunctionArgs) {
-  if (currentUrl.pathname !== nextUrl.pathname) {
+export function shouldRevalidate({
+  nextUrl,
+  actionResult,
+  defaultShouldRevalidate
+}: ShouldRevalidateFunctionArgs) {
+  if (!nextUrl.pathname.endsWith('assets')) {
+    return false;
+  }
+
+  if (actionResult) {
     return false;
   }
 
@@ -120,7 +128,7 @@ export default function AssetListPage() {
               <Link
                 key={asset.id}
                 to={asset.id.toString()}
-                state={{ previousPath: location.pathname + location.search }}
+                state={{ previousPathname: location.pathname, previousSearch: location.search }}
               >
                 <AssetListItem asset={asset} />
               </Link>

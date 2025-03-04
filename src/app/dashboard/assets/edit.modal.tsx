@@ -1,6 +1,14 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { assetRepository } from '@/features/assets/assets.repository';
-import { Form, useActionData, useLoaderData, useLocation, useNavigate, useNavigation } from '@remix-run/react';
+import {
+  Form,
+  ShouldRevalidateFunctionArgs,
+  useActionData,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  useNavigation
+} from '@remix-run/react';
 import { useForm } from '@conform-to/react';
 import { AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
@@ -54,6 +62,10 @@ export async function action({ request }: ActionFunctionArgs) {
   return { lastResult: submission.reply({ resetForm: true }) };
 }
 
+// export function shouldRevalidate({ }: ShouldRevalidateFunctionArgs) {
+//
+// }
+
 export default function AssetEditModal() {
   const { asset } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -105,7 +117,9 @@ export default function AssetEditModal() {
 
   return (
     <Modal
-      onOpenChange={(open) => !open && navigate(location.state?.previousPath || '..')}
+      onOpenChange={(open) =>
+        !open && navigate(location.state?.previousPathname + location.state?.previousSearch || '..')
+      }
       defaultOpen
     >
       <ModalContent>
@@ -129,6 +143,7 @@ export default function AssetEditModal() {
           onSubmit={form.onSubmit}
           noValidate
           className={'flex grow flex-col gap-2'}
+          state={{ previousPathname: location.state?.previousPathname, previousSearch: location.state?.previousSearch }}
         >
           <input
             type={'hidden'}
