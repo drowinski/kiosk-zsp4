@@ -25,6 +25,9 @@ export default {
           DEFAULT: 'hsl(var(--color-accent))',
           foreground: 'hsl(var(--color-accent-foreground))'
         },
+        muted: {
+          DEFAULT: 'hsl(var(--color-muted))',
+        },
         card: {
           DEFAULT: 'hsl(var(--color-card))',
           foreground: 'hsl(var(--color-card-foreground))'

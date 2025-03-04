@@ -26,7 +26,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const filters: AssetFiltering = {
     description: description || undefined,
-    assetType: assetType?.split('_') as AssetType[] || undefined,
+    assetType: (assetType?.split('_') as AssetType[]) || undefined,
     ...(minYear && { dateMin: new Date(minYear, 0, 1) }),
     ...(maxYear && { dateMax: new Date(maxYear + 1, 0, 1) })
   };
@@ -74,32 +74,34 @@ export default function AssetListPage() {
       </div>
       <div className={'flex grow flex-col gap-1'}>
         <Card className={'flex items-center justify-end gap-2 bg-secondary px-4 py-2 text-secondary-foreground'}>
-          <Label>Sortowanie</Label>
-          <Select
-            defaultValue={searchParams.get('sort') || 'updatedAt_desc'}
-            onValueChange={(value) =>
-              setSearchParams((prev) => {
-                prev.delete('page');
-                prev.set('sort', value);
-                return prev;
-              })
-            }
-          >
-            <SelectTrigger className={'min-w-64'} />
-            <SelectContent
-              position={'popper'}
-              className={'min-w-64'}
+          <Label variant={'horizontal'} className={'gap-2'}>
+            Sortowanie
+            <Select
+              defaultValue={searchParams.get('sort') || 'updatedAt_desc'}
+              onValueChange={(value) =>
+                setSearchParams((prev) => {
+                  prev.delete('page');
+                  prev.set('sort', value);
+                  return prev;
+                })
+              }
             >
-              <SelectOption value={'description_asc'}>Opis: od A do Z</SelectOption>
-              <SelectOption value={'description_desc'}>Opis: od Z do A</SelectOption>
-              <SelectOption value={'updatedAt_desc'}>Data modyfikacji: od najnowszych</SelectOption>
-              <SelectOption value={'updatedAt_asc'}>Data modyfikacji: od najstarszych</SelectOption>
-              <SelectOption value={'createdAt_desc'}>Data utworzenia: od najnowszych</SelectOption>
-              <SelectOption value={'createdAt_asc'}>Data utworzenia: od najstarszych</SelectOption>
-              <SelectOption value={'date_desc'}>Data: od najnowszych</SelectOption>
-              <SelectOption value={'date_asc'}>Data: od najstarszych</SelectOption>
-            </SelectContent>
-          </Select>
+              <SelectTrigger className={'min-w-64'} />
+              <SelectContent
+                position={'popper'}
+                className={'min-w-64'}
+              >
+                <SelectOption value={'description_asc'}>Opis: od A do Z</SelectOption>
+                <SelectOption value={'description_desc'}>Opis: od Z do A</SelectOption>
+                <SelectOption value={'updatedAt_desc'}>Data modyfikacji: od najnowszych</SelectOption>
+                <SelectOption value={'updatedAt_asc'}>Data modyfikacji: od najstarszych</SelectOption>
+                <SelectOption value={'createdAt_desc'}>Data utworzenia: od najnowszych</SelectOption>
+                <SelectOption value={'createdAt_asc'}>Data utworzenia: od najstarszych</SelectOption>
+                <SelectOption value={'date_desc'}>Data: od najnowszych</SelectOption>
+                <SelectOption value={'date_asc'}>Data: od najstarszych</SelectOption>
+              </SelectContent>
+            </Select>
+          </Label>
         </Card>
         {assetCount > 0 ? (
           <AssetList>
@@ -111,7 +113,7 @@ export default function AssetListPage() {
             ))}
           </AssetList>
         ) : (
-          <div className={'flex items-center justify-center p-4 font-medium opacity-60'}>Brak wyników</div>
+          <div className={'text-muted flex items-center justify-center p-4 font-medium'}>Brak wyników</div>
         )}
         <div>
           <ParamPagination

@@ -6,6 +6,7 @@ import { Input } from '@/components/base/input';
 import { cn } from '@/utils/styles';
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon } from '@/components/icons';
 import { Button } from '@/components/base/button';
+import { Label } from '@/components/base/label';
 
 export interface AssetDatePrecisionComboboxProps {
   name?: string;
@@ -49,6 +50,7 @@ export interface DatePickerProps {
   onValueChange?: (value: string) => void;
   precision?: AssetDatePrecision;
   hidden?: boolean;
+  ariaLabel?: string;
 }
 
 export function DatePicker({
@@ -57,7 +59,8 @@ export function DatePicker({
   defaultValue,
   onValueChange,
   precision = 'day',
-  hidden = false
+  hidden = false,
+  ariaLabel
 }: DatePickerProps) {
   const [date, setDate] = useState<string>(defaultValue ?? value ?? '');
   const [normalizedDate, setNormalizedDate] = useState<string>(date);
@@ -134,6 +137,7 @@ export function DatePicker({
           }}
           hidden={precision !== 'day'}
           aria-hidden={precision !== 'day'}
+          aria-label={ariaLabel}
         />
       )}
       <ConditionalDiv {...(ConditionalDiv === 'div' ? { className: 'flex flex-nowrap' } : undefined)}>
@@ -147,6 +151,7 @@ export function DatePicker({
             <SelectTrigger
               className={'rounded-r-none'}
               placeholder={'miesiąc'}
+              aria-label={ariaLabel ? ariaLabel + ' (miesiąc)' : undefined}
             />
             <SelectContent>
               {MONTHS_IN_POLISH.map((value, index) => (
@@ -164,6 +169,7 @@ export function DatePicker({
           <Input
             type={'number'}
             placeholder={'rok'}
+            aria-label={ariaLabel ? ariaLabel + ' (rok)' : undefined}
             min={0}
             max={9999}
             maxLength={4}
@@ -272,7 +278,9 @@ export function AssetDatePicker({
                 }
               }}
               precision={precision}
+              ariaLabel={isRange ? 'data minimalna okresu' : 'data'}
             />
+            {isRange && <span>&ndash;</span>}
             <DatePicker
               name={dateMax?.name}
               value={maxDate}
@@ -282,6 +290,7 @@ export function AssetDatePicker({
               }}
               precision={precision}
               hidden={!isRange}
+              ariaLabel={'data maksymalna okresu'}
             />
             <div
               role={'checkbox'}
@@ -299,14 +308,17 @@ export function AssetDatePicker({
               {orientation === 'vertical' && (isRange ? <ChevronUpIcon /> : <ChevronDownIcon />)}
             </div>
           </div>
-          <AssetDatePrecisionCombobox
-            name={datePrecision?.name}
-            value={precision}
-            onValueChange={(value) => {
-              setPrecision(value);
-              datePrecision?.onValueChange?.(value);
-            }}
-          />
+          <Label variant={'horizontal'}>
+            Precyzja daty:
+            <AssetDatePrecisionCombobox
+              name={datePrecision?.name}
+              value={precision}
+              onValueChange={(value) => {
+                setPrecision(value);
+                datePrecision?.onValueChange?.(value);
+              }}
+            />
+          </Label>
           <Button
             className={'w-fit'}
             onClick={() => {

@@ -12,6 +12,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return null;
 }
 
+export function meta() {
+  return [
+    { title: 'Kiosk Izby Pamięci ZSP4 - Panel sterowania'}
+  ];
+}
+
 export default function DashboardLayout() {
   const headerRef = useRef<HTMLDivElement>(null);
 

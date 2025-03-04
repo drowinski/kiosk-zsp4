@@ -13,11 +13,13 @@ import { cn } from '@/utils/styles';
 import { Form } from '@remix-run/react';
 import { parseWithZod } from '@conform-to/zod';
 import { useEffect, useState } from 'react';
-import { Input, InputMessage } from '@/components/base/input';
+import { InputMessage } from '@/components/base/input';
 import { Button } from '@/components/base/button';
 import { Asset } from '@/features/assets/components/asset';
 import { Card } from '@/components/base/card';
 import { AssetDatePicker } from '@/features/assets/components/asset-date-picker';
+import { TextArea } from '@/components/base/text-area';
+import { Label } from '@/components/base/label';
 
 export const assetFormSchema = z.object({
   assets: z
@@ -44,7 +46,10 @@ export function AssetUploadFormToolbar({ formId, onAddFiles }: AssetUploadFormTo
   return (
     <div className={'sticky left-0 right-0 top-0'}>
       <Card className={'flex gap-2'}>
-        <Button asChild>
+        <Button
+          className={'cursor-pointer'}
+          asChild
+        >
           <label>
             <input
               type={'file'}
@@ -143,25 +148,31 @@ export function AssetUploadFormItem({ fieldName, file, onUpdateFile, onRemoveAss
           Usuń
         </Button>
       </div>
-      <Input
-        type={'text'}
-        name={fieldset.description.name}
-        placeholder={'Opis'}
-        defaultValue={file.name.replace(/\.[a-zA-Z0-9]+$/, '')}
-      />
+      <Label className={'w-full'}>
+        Opis
+        <TextArea
+          key={fieldset.description.key}
+          name={fieldset.description.name}
+          placeholder={'Opis'}
+          className={'h-32 resize-none'}
+          maxLength={512}
+          defaultValue={file.name.replace(/\.[a-zA-Z0-9]+$/, '')}
+        />
+      </Label>
       {fieldset.description.errors && <InputMessage>{fieldset.description.errors}</InputMessage>}
+      <Label asChild>Data</Label>
       <AssetDatePicker
         dateMin={{
           name: dateFieldset.dateMin.name,
-          value: dateFieldset.dateMin.value,
+          value: dateFieldset.dateMin.value
         }}
         dateMax={{
           name: dateFieldset.dateMax.name,
-          value: dateFieldset.dateMax.value,
+          value: dateFieldset.dateMax.value
         }}
         datePrecision={{
           name: dateFieldset.datePrecision.name,
-          value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
+          value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined
         }}
         orientation={'vertical'}
       />
@@ -227,15 +238,21 @@ export function AssetUploadForm({ lastSubmissionResult, className }: AssetUpload
           onAddFiles={(files) => createAssetFields(files)}
         />
         <div className={'grid grid-cols-3 gap-2'}>
-          {assetFields.map((assetField, index) => (
-            <AssetUploadFormItem
-              key={assetField.key}
-              fieldName={assetField.name}
-              file={files[index]}
-              onUpdateFile={(file) => updateFile(index, file)}
-              onRemoveAsset={() => removeAssetField(index)}
-            />
-          ))}
+          {assetFields.length > 0 ? (
+            assetFields.map((assetField, index) => (
+              <AssetUploadFormItem
+                key={assetField.key}
+                fieldName={assetField.name}
+                file={files[index]}
+                onUpdateFile={(file) => updateFile(index, file)}
+                onRemoveAsset={() => removeAssetField(index)}
+              />
+            ))
+          ) : (
+            <Card className={'text-muted col-span-3 flex justify-center font-medium'}>
+              Kliknij &#34;Dodaj pliki...&#34; aby rozpocząć.
+            </Card>
+          )}
         </div>
       </Form>
     </FormProvider>

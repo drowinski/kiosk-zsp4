@@ -57,7 +57,7 @@ export const PaginationLink = ({
         variant: isActive ? 'default' : 'ghost',
         size
       }),
-      isDisabled && 'pointer-events-none opacity-50',
+      isDisabled && 'pointer-events-none text-muted',
       className
     )}
     {...props}
