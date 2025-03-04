@@ -1,13 +1,12 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { assetRepository } from '@/features/assets/assets.repository';
-import { Form, useActionData, useLoaderData, useNavigate, useNavigation } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useLocation, useNavigate, useNavigation } from '@remix-run/react';
 import { useForm } from '@conform-to/react';
 import { AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
 import { Asset } from '@/features/assets/components/asset';
 import { Button } from '@/components/base/button';
 import { CheckIcon, PencilIcon } from '@/components/icons';
-import { ClientOnly } from 'remix-utils/client-only';
 import { Modal, ModalContent, ModalHeader, ModalTitle } from '@/components/base/modal';
 import { Label } from '@/components/base/label';
 import { TextArea } from '@/components/base/text-area';
@@ -60,6 +59,7 @@ export default function AssetEditModal() {
   const actionData = useActionData<typeof action>();
   const navigate = useNavigate();
   const navigation = useNavigation();
+  const location = useLocation();
 
   const [form, fields] = useForm({
     lastResult: navigation.state === 'idle' ? actionData?.lastResult || null : null,
@@ -104,84 +104,80 @@ export default function AssetEditModal() {
   );
 
   return (
-    <ClientOnly>
-      {() => (
-        <Modal
-          onOpenChange={(open) => !open && navigate(-1)}
-          defaultOpen
+    <Modal
+      onOpenChange={(open) => !open && navigate(location.state?.previousPath || '..')}
+      defaultOpen
+    >
+      <ModalContent>
+        <ModalHeader>
+          <ModalTitle className={'flex gap-2'}>
+            <PencilIcon /> Edycja zawartości
+          </ModalTitle>
+          <VisuallyHidden>
+            <DialogDescription>Edycja metadanych zawartości multimedialnej</DialogDescription>
+          </VisuallyHidden>
+        </ModalHeader>
+        <div className={'flex max-h-60 max-w-full items-start justify-center'}>
+          <Asset
+            assetType={asset.assetType}
+            fileName={asset.fileName}
+          />
+        </div>
+        <Form
+          method={'post'}
+          id={form.id}
+          onSubmit={form.onSubmit}
+          noValidate
+          className={'flex grow flex-col gap-2'}
         >
-          <ModalContent>
-            <ModalHeader>
-              <ModalTitle className={'flex gap-2'}>
-                <PencilIcon /> Edycja zawartości
-              </ModalTitle>
-              <VisuallyHidden>
-                <DialogDescription>Edycja metadanych zawartości multimedialnej</DialogDescription>
-              </VisuallyHidden>
-            </ModalHeader>
-            <div className={'flex max-h-60 max-w-full items-start justify-center'}>
-              <Asset
-                assetType={asset.assetType}
-                fileName={asset.fileName}
-              />
-            </div>
-            <Form
-              method={'post'}
-              id={form.id}
-              onSubmit={form.onSubmit}
-              noValidate
-              className={'flex grow flex-col gap-2'}
-            >
-              <input
-                type={'hidden'}
-                name={fields.id.name}
-                value={fields.id.value}
-              />
-              <Label htmlFor={fields.description.name}>Opis</Label>
-              <TextArea
-                key={fields.description.key}
-                name={fields.description.name}
-                defaultValue={fields.description.initialValue}
-                placeholder={'Opis'}
-                className={'h-32 resize-none'}
-                maxLength={512}
-              />
-              <Label>Data</Label>
-              <InputMessage>{fields.date.errors}</InputMessage>
-              {datePreview && <span className={'font-medium'}>{datePreview}</span>}
-              <AssetDatePicker
-                enabled={showDatePicker}
-                onEnabledChange={setShowDatePicker}
-                id={{
-                  name: dateFieldset.id.name,
-                  value: dateFieldset.id.value
-                }}
-                dateMin={{
-                  name: dateFieldset.dateMin.name,
-                  value: dateFieldset.dateMin.value,
-                  onValueChange: (value) => setDateMin(value)
-                }}
-                dateMax={{
-                  name: dateFieldset.dateMax.name,
-                  value: dateFieldset.dateMax.value,
-                  onValueChange: (value) => setDateMax(value)
-                }}
-                datePrecision={{
-                  name: dateFieldset.datePrecision.name,
-                  value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
-                  onValueChange: (value) => setDatePrecision(value)
-                }}
-              />
-              <Button
-                type={'submit'}
-                className={'flex gap-2 bg-green-600'}
-              >
-                <CheckIcon /> Zatwierdź zmiany
-              </Button>
-            </Form>
-          </ModalContent>
-        </Modal>
-      )}
-    </ClientOnly>
+          <input
+            type={'hidden'}
+            name={fields.id.name}
+            value={fields.id.value}
+          />
+          <Label htmlFor={fields.description.name}>Opis</Label>
+          <TextArea
+            key={fields.description.key}
+            name={fields.description.name}
+            defaultValue={fields.description.initialValue}
+            placeholder={'Opis'}
+            className={'h-32 resize-none'}
+            maxLength={512}
+          />
+          <Label>Data</Label>
+          <InputMessage>{fields.date.errors}</InputMessage>
+          {datePreview && <span className={'font-medium'}>{datePreview}</span>}
+          <AssetDatePicker
+            enabled={showDatePicker}
+            onEnabledChange={setShowDatePicker}
+            id={{
+              name: dateFieldset.id.name,
+              value: dateFieldset.id.value
+            }}
+            dateMin={{
+              name: dateFieldset.dateMin.name,
+              value: dateFieldset.dateMin.value,
+              onValueChange: (value) => setDateMin(value)
+            }}
+            dateMax={{
+              name: dateFieldset.dateMax.name,
+              value: dateFieldset.dateMax.value,
+              onValueChange: (value) => setDateMax(value)
+            }}
+            datePrecision={{
+              name: dateFieldset.datePrecision.name,
+              value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
+              onValueChange: (value) => setDatePrecision(value)
+            }}
+          />
+          <Button
+            type={'submit'}
+            className={'flex gap-2 bg-green-600'}
+          >
+            <CheckIcon /> Zatwierdź zmiany
+          </Button>
+        </Form>
+      </ModalContent>
+    </Modal>
   );
 }

@@ -1,5 +1,12 @@
 import { AssetFiltering, assetRepository } from '@/features/assets/assets.repository';
-import { Link, Outlet, ShouldRevalidateFunctionArgs, useLoaderData, useSearchParams } from '@remix-run/react';
+import {
+  Link,
+  Outlet,
+  ShouldRevalidateFunctionArgs,
+  useLoaderData,
+  useLocation,
+  useSearchParams
+} from '@remix-run/react';
 import { AssetList, AssetListItem } from '@/features/assets/components/asset-list';
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { AssetFilters } from '@/features/assets/components/asset-filters';
@@ -58,6 +65,7 @@ export function shouldRevalidate({ currentUrl, nextUrl, defaultShouldRevalidate 
 export default function AssetListPage() {
   const { assets, assetCount } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
 
   return (
     <main className={'flex h-full gap-2'}>
@@ -74,7 +82,10 @@ export default function AssetListPage() {
       </div>
       <div className={'flex grow flex-col gap-1'}>
         <Card className={'flex items-center justify-end gap-2 bg-secondary px-4 py-2 text-secondary-foreground'}>
-          <Label variant={'horizontal'} className={'gap-2'}>
+          <Label
+            variant={'horizontal'}
+            className={'gap-2'}
+          >
             Sortowanie
             <Select
               defaultValue={searchParams.get('sort') || 'updatedAt_desc'}
@@ -106,10 +117,13 @@ export default function AssetListPage() {
         {assetCount > 0 ? (
           <AssetList>
             {assets.map((asset) => (
-              <AssetListItem
+              <Link
                 key={asset.id}
-                asset={asset}
-              />
+                to={asset.id.toString()}
+                state={{ previousPath: location.pathname + location.search }}
+              >
+                <AssetListItem asset={asset} />
+              </Link>
             ))}
           </AssetList>
         ) : (
