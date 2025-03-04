@@ -20,7 +20,14 @@ export function DashboardNavItem({ route, label, newTab = false, className }: Da
       variant={isActive ? 'accent' : 'ghost'}
       className={className}
     >
-      <Link to={route} target={newTab ? '_blank' : '_self'} rel={'noreferrer'}>{label}</Link>
+      <Link
+        to={route}
+        target={newTab ? '_blank' : '_self'}
+        rel={'noreferrer'}
+        reloadDocument // TODO: better fix for better search param and filter component sync
+      >
+        {label}
+      </Link>
     </Button>
   );
 }
