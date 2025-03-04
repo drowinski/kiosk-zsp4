@@ -60,6 +60,7 @@ export function DatePicker({
   hidden = false
 }: DatePickerProps) {
   const [date, setDate] = useState<string>(defaultValue ?? value ?? '');
+  const [normalizedDate, setNormalizedDate] = useState<string>(date);
 
   if (value !== undefined && value !== date) {
     setDate(value);
@@ -82,6 +83,27 @@ export function DatePicker({
     });
   };
 
+  useEffect(() => {
+    if (precision === 'day') {
+      setNormalizedDate(date);
+      return;
+    }
+    const splitDate = date.split('-');
+    if (splitDate.length !== 3) {
+      setNormalizedDate(date);
+      return;
+    }
+
+    const [year, month, _] = splitDate;
+    let newNormalizedDate = '';
+    if (precision === 'year') {
+      newNormalizedDate = `${year}-01-01`;
+    } else if (precision === 'month') {
+      newNormalizedDate = `${year}-${month}-01`;
+    }
+    setNormalizedDate(newNormalizedDate);
+  }, [date, precision]);
+
   const ConditionalDiv = precision === 'year' ? Fragment : 'div';
 
   return (
@@ -89,23 +111,32 @@ export function DatePicker({
       hidden={hidden}
       aria-hidden={hidden}
     >
-      <Input
+      <input
         name={name}
         type={'date'}
-        value={date}
-        onChange={(event) => {
-          setDate(event.target.value);
-          onValueChange?.(event.target.value);
-        }}
-        onBlur={(event) => {
-          if (date === '') {
-            event.currentTarget.value = '';
-          }
-        }}
-        hidden={precision !== 'day'}
-        aria-hidden={precision !== 'day'}
+        value={normalizedDate}
+        readOnly
+        hidden
+        aria-hidden
       />
-      <ConditionalDiv className={'flex flex-nowrap'}>
+      {precision === 'day' && (
+        <Input
+          type={'date'}
+          value={date}
+          onChange={(event) => {
+            setDate(event.target.value);
+            onValueChange?.(event.target.value);
+          }}
+          onBlur={(event) => {
+            if (date === '') {
+              event.currentTarget.value = '';
+            }
+          }}
+          hidden={precision !== 'day'}
+          aria-hidden={precision !== 'day'}
+        />
+      )}
+      <ConditionalDiv {...(ConditionalDiv === 'div' ? { className: 'flex flex-nowrap' } : undefined)}>
         {precision === 'month' && (
           <Select
             value={month ? parseInt(month).toString() : ''}
@@ -129,7 +160,7 @@ export function DatePicker({
             </SelectContent>
           </Select>
         )}
-        {['year', 'month'].includes(precision) && (
+        {(precision === 'year' || precision === 'month') && (
           <Input
             type={'number'}
             placeholder={'rok'}
