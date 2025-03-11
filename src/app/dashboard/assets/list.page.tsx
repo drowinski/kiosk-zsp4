@@ -116,8 +116,8 @@ export default function AssetListPage() {
                 <SelectOption value={'date_asc'}>Data: od najstarszych</SelectOption>
                 <SelectOption value={'updatedAt_desc'}>Data modyfikacji: od najnowszych</SelectOption>
                 <SelectOption value={'updatedAt_asc'}>Data modyfikacji: od najstarszych</SelectOption>
-                <SelectOption value={'createdAt_desc'}>Data utworzenia: od najnowszych</SelectOption>
-                <SelectOption value={'createdAt_asc'}>Data utworzenia: od najstarszych</SelectOption>
+                <SelectOption value={'createdAt_desc'}>Data dodania: od najnowszych</SelectOption>
+                <SelectOption value={'createdAt_asc'}>Data dodania: od najstarszych</SelectOption>
               </SelectContent>
             </Select>
           </Label>
