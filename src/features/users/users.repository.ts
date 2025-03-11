@@ -1,4 +1,4 @@
-import { NewUser, User, UserWithPasswordHash } from '@/features/users/users.validation';
+import { NewUser, UpdatedUserWithPasswordHash, User, UserWithPasswordHash } from '@/features/users/users.validation';
 import { db } from '@/lib/db/connection';
 import { userTable } from '@/features/users/users.db';
 import { eq, getTableColumns } from 'drizzle-orm';
@@ -12,7 +12,7 @@ export interface UserRepository {
 
   createUser(newUser: NewUser): Promise<User | null>;
 
-  updateUser(id: number, values: Partial<UserWithPasswordHash>): Promise<User | null>;
+  updateUser(updatedUser: UpdatedUserWithPasswordHash): Promise<User | null>;
 }
 
 export class DrizzleUserRepository implements UserRepository {
@@ -42,7 +42,8 @@ export class DrizzleUserRepository implements UserRepository {
     return result.at(0) ?? null;
   }
 
-  async updateUser(id: number, values: Partial<User>): Promise<User | null> {
+  async updateUser(updatedUser: UpdatedUserWithPasswordHash): Promise<User | null> {
+    const { id, ...values } = updatedUser;
     const result = await db
       .update(userTable)
       .set(values)

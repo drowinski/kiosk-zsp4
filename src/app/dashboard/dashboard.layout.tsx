@@ -1,7 +1,7 @@
 import { Outlet } from '@remix-run/react';
 import { Button } from '@/components/base/button';
 import { LoaderFunctionArgs } from '@remix-run/node';
-import { requireSession } from '@/features/sessions/sessions.utils';
+import { requireSession } from '@/features/sessions/sessions.server-utils';
 import { DashboardNav, DashboardNavItem } from '@/app/dashboard/_components/dashboard-nav';
 import { Card } from '@/components/base/card';
 import { useEffect, useRef } from 'react';

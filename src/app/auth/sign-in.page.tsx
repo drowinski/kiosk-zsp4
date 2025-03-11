@@ -6,7 +6,7 @@ import { userPasswordSchema, userSchema } from '@/features/users/users.validatio
 import { parseWithZod } from '@conform-to/zod';
 import { userService } from '@/features/users/users.service';
 import { sessionStorage } from '@/features/sessions/sessions.storage';
-import { getSession } from '@/features/sessions/sessions.utils';
+import { getSession } from '@/features/sessions/sessions.server-utils';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
 import { Input } from '@/components/base/input';

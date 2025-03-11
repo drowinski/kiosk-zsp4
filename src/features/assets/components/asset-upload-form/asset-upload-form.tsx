@@ -13,7 +13,7 @@ import { cn } from '@/utils/styles';
 import { Form } from '@remix-run/react';
 import { parseWithZod } from '@conform-to/zod';
 import { useEffect, useState } from 'react';
-import { InputMessage } from '@/components/base/input';
+import { InputErrorMessage } from '@/components/base/input';
 import { Button } from '@/components/base/button';
 import { Asset } from '@/features/assets/components/asset';
 import { Card } from '@/components/base/card';
@@ -140,7 +140,7 @@ export function AssetUploadFormItem({ fieldName, file, onUpdateFile, onRemoveAss
             Zmień plik...
           </label>
         </Button>
-        {fieldset.file.errors && <InputMessage>{fieldset.file.errors}</InputMessage>}
+        {fieldset.file.errors && <InputErrorMessage>{fieldset.file.errors}</InputErrorMessage>}
         <Button
           type={'button'}
           onClick={onRemoveAsset}
@@ -159,7 +159,7 @@ export function AssetUploadFormItem({ fieldName, file, onUpdateFile, onRemoveAss
           defaultValue={file.name.replace(/\.[a-zA-Z0-9]+$/, '')}
         />
       </Label>
-      {fieldset.description.errors && <InputMessage>{fieldset.description.errors}</InputMessage>}
+      {fieldset.description.errors && <InputErrorMessage>{fieldset.description.errors}</InputErrorMessage>}
       <Label asChild>Data</Label>
       <AssetDatePicker
         dateMin={{

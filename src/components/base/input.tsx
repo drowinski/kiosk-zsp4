@@ -1,7 +1,21 @@
 import React from 'react';
 import { cn } from '@/utils/styles';
 
-export const InputMessage = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
+export const InputDescription = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
+  ({ children, ...props }, ref) => (
+    <span
+      ref={ref}
+      className={'text-sm text-muted'}
+      hidden={!children}
+      {...props}
+    >
+      {children}
+    </span>
+  )
+);
+InputDescription.displayName = 'InputDescription';
+
+export const InputErrorMessage = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
   ({ children, ...props }, ref) => (
     <span
       ref={ref}
@@ -13,7 +27,7 @@ export const InputMessage = React.forwardRef<HTMLSpanElement, React.HTMLAttribut
     </span>
   )
 );
-InputMessage.displayName = 'InputError';
+InputErrorMessage.displayName = 'InputErrorMessage';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   errorMessages?: string[] | string;

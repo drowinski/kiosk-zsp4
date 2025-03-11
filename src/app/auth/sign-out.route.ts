@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, redirect } from '@remix-run/node';
-import { getSession } from '@/features/sessions/sessions.utils';
+import { getSession } from '@/features/sessions/sessions.server-utils';
 import { sessionStorage } from '@/features/sessions/sessions.storage';
 
 export async function action({ request }: ActionFunctionArgs) {

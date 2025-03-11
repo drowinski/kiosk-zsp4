@@ -2,7 +2,6 @@ import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { assetRepository } from '@/features/assets/assets.repository';
 import {
   Form,
-  ShouldRevalidateFunctionArgs,
   useActionData,
   useLoaderData,
   useLocation,
@@ -22,7 +21,7 @@ import { AssetDatePicker } from '@/features/assets/components/asset-date-picker'
 import { formatDate } from '@/features/assets/assets.utils';
 import { useMemo, useState } from 'react';
 import { getYYYYMMDD } from '@/utils/dates';
-import { InputMessage } from '@/components/base/input';
+import { InputErrorMessage } from '@/components/base/input';
 import { assetService } from '@/features/assets/assets.service';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DialogDescription } from '@radix-ui/react-dialog';
@@ -160,7 +159,7 @@ export default function AssetEditModal() {
             maxLength={512}
           />
           <Label>Data</Label>
-          <InputMessage>{fields.date.errors}</InputMessage>
+          <InputErrorMessage>{fields.date.errors}</InputErrorMessage>
           {datePreview && <span className={'font-medium'}>{datePreview}</span>}
           <AssetDatePicker
             enabled={showDatePicker}

@@ -1,5 +1,5 @@
 import { userRepository, UserRepository } from '@/features/users/users.repository';
-import { User } from '@/features/users/users.validation';
+import { UpdatedUser, User } from '@/features/users/users.validation';
 import { hashPassword, verifyPassword } from '@/lib/crypto';
 
 export class UserService {
@@ -29,6 +29,14 @@ export class UserService {
     }
 
     return user;
+  }
+
+  async updateUser(updatedUser: UpdatedUser): Promise<User | null> {
+    const passwordHash = updatedUser.password ? await hashPassword(updatedUser.password) : null;
+    return await this.userRepository.updateUser({
+      ...updatedUser,
+      ...(passwordHash && { passwordHash })
+    });
   }
 }
 

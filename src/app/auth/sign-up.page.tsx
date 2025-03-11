@@ -5,7 +5,7 @@ import { parseWithZod } from '@conform-to/zod';
 import { z } from '@/lib/zod';
 import { userPasswordSchema, userSchema } from '@/features/users/users.validation';
 import { userService } from '@/features/users/users.service';
-import { getSession } from '@/features/sessions/sessions.utils';
+import { getSession } from '@/features/sessions/sessions.server-utils';
 import { sessionStorage } from '@/features/sessions/sessions.storage';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
