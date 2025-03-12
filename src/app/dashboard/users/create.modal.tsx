@@ -1,10 +1,9 @@
 import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from '@/components/base/modal';
-import { Form, useActionData, useLoaderData, useLocation, useNavigate } from '@remix-run/react';
-import { updateUserSchema } from '@/features/users/users.validation';
+import { Form, useActionData, useLocation, useNavigate } from '@remix-run/react';
+import { createUserSchema } from '@/features/users/users.validation';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { userRepository } from '@/features/users/users.repository';
 import { Input, InputDescription, InputErrorMessage } from '@/components/base/input';
 import { Label } from '@/components/base/label';
 import { Button } from '@/components/base/button';
@@ -13,46 +12,40 @@ import { getSession } from '@/features/sessions/sessions.server-utils';
 import { userService } from '@/features/users/users.service';
 import { Checkbox } from '@/components/base/checkbox';
 
-const userEditFormSchema = updateUserSchema
-  .extend({ repeatPassword: updateUserSchema.shape.password })
+const userCreateFormSchema = createUserSchema
+  .extend({ repeatPassword: createUserSchema.shape.password })
   .refine(({ password, repeatPassword }) => password === repeatPassword, {
     path: ['repeatPassword'],
     message: 'Hasła muszą być takie same.'
   });
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
   await requireSuperuser(session.data.userId);
-
-  const userId = parseInt(params.id || '');
-  if (!userId) {
-    throw new Response(null, { status: 404, statusText: 'Not Found' });
-  }
-  const user = await userRepository.getUserById(userId);
-  if (!user) {
-    throw new Response(null, { status: 404, statusText: 'Not Found' });
-  }
-  return { user };
+  return null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request);
   await requireSuperuser(session.data.userId);
   const formData = await request.formData();
-  const submission = await parseWithZod(formData, { schema: userEditFormSchema, async: true });
+  const submission = await parseWithZod(formData, { schema: userCreateFormSchema, async: true });
   console.log(submission);
   if (submission.status !== 'success') {
     return { lastResult: submission.reply() };
   }
-  const result = await userService.updateUser(submission.value);
+  const result = await userService.registerUser(
+    submission.value.username,
+    submission.value.password,
+    submission.value.isSuperuser
+  );
   if (!result) {
-    return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
+    return { lastResult: submission.reply({ formErrors: ['Wystąpił błąd.'] }) };
   }
   return { lastResult: submission.reply({ resetForm: true }) };
 }
 
-export default function UserEditModal() {
-  const { user } = useLoaderData<typeof loader>();
+export default function UserCreateModal() {
   const actionData = useActionData<typeof action>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,18 +53,16 @@ export default function UserEditModal() {
   const [form, fields] = useForm({
     lastResult: actionData?.lastResult ?? null,
     onValidate: ({ formData }) => {
-      const res = parseWithZod(formData, { schema: userEditFormSchema });
+      const res = parseWithZod(formData, { schema: userCreateFormSchema });
       console.log(res);
       return res;
     },
     defaultValue: {
-      id: user.id,
-      username: user.username,
+      username: '',
       password: '',
       repeatPassword: '',
-      isSuperuser: user.isSuperuser
-    },
-    shouldDirtyConsider: (name) => name !== 'isSuperuser'
+      isSuperuser: ''
+    }
   });
 
   return (
@@ -83,14 +74,8 @@ export default function UserEditModal() {
     >
       <ModalContent className={'w-fit max-w-72'}>
         <ModalHeader>
-          <ModalTitle>
-            <span>
-              Edycja użytkownika
-              <br />
-              <span className={'font-bold'}>{user.username}</span>
-            </span>
-          </ModalTitle>
-          <ModalDescription className={'sr-only'}>Edytuj użytkownika</ModalDescription>
+          <ModalTitle>Dodawanie użytkownika</ModalTitle>
+          <ModalDescription className={'sr-only'}>Dodaj użytkownika</ModalDescription>
         </ModalHeader>
         <Form
           method={'post'}
@@ -98,13 +83,8 @@ export default function UserEditModal() {
           onSubmit={form.onSubmit}
           noValidate
           className={'flex grow flex-col gap-2'}
+          navigate={true}
         >
-          <input
-            type="hidden"
-            name={fields.id.name}
-            defaultValue={fields.id.initialValue}
-            readOnly
-          />
           <Label className={'w-full'}>
             Nazwa użytkownika
             <Input
@@ -118,7 +98,7 @@ export default function UserEditModal() {
           </Label>
           <InputErrorMessage id={fields.username.errorId}>{fields.username.errors}</InputErrorMessage>
           <Label className={'w-full'}>
-            Nowe hasło
+            Hasło
             <Input
               type={'password'}
               name={fields.password.name}
@@ -129,7 +109,7 @@ export default function UserEditModal() {
           </Label>
           <InputErrorMessage id={fields.password.errorId}>{fields.password.errors}</InputErrorMessage>
           <Label className={'w-full'}>
-            Powtórz nowe hasło
+            Powtórz hasło
             <Input
               type={'password'}
               name={fields.repeatPassword.name}
@@ -144,8 +124,8 @@ export default function UserEditModal() {
             Superużytkownik?
             <Checkbox
               name={fields.isSuperuser.name}
-              id={fields.isSuperuser.id}
-              defaultChecked={fields.isSuperuser.initialValue === 'on'}
+              defaultChecked={false}
+              defaultValue={fields.isSuperuser.initialValue}
               aria-invalid={fields.isSuperuser.errors ? true : undefined}
               aria-errormessage={fields.isSuperuser.errors ? fields.isSuperuser.errorId : undefined}
               aria-describedby={fields.isSuperuser.descriptionId}
@@ -158,6 +138,7 @@ export default function UserEditModal() {
           <Button
             type={'submit'}
             className={'bg-green-600 text-white'}
+            disabled={!(fields.username.dirty && fields.password.dirty && fields.repeatPassword.dirty)}
           >
             Zapisz zmiany
           </Button>

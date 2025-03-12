@@ -2,7 +2,7 @@ import { userRepository } from '@/features/users/users.repository';
 import { Link, Outlet, useLoaderData, useLocation, useSubmit } from '@remix-run/react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/base/table';
 import { Button } from '@/components/base/button';
-import { CheckIcon, EditIcon, XIcon } from '@/components/icons';
+import { CheckIcon, EditIcon, PlusIcon, XIcon } from '@/components/icons';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { getSession } from '@/features/sessions/sessions.server-utils';
 import { requireSuperuser } from '@/features/users/users.server-utils';
@@ -43,7 +43,15 @@ export default function UserListPage() {
   const submit = useSubmit();
 
   return (
-    <main>
+    <main className={'flex flex-col gap-1'}>
+      <Button
+        className={'flex items-center gap-2'}
+        asChild
+      >
+        <Link to={'create'}>
+          <PlusIcon /> Dodaj użytkownika
+        </Link>
+      </Button>
       <Table>
         <TableHeader className={'bg-secondary text-secondary-foreground'}>
           <TableRow className={'text-nowrap'}>
@@ -57,7 +65,7 @@ export default function UserListPage() {
             <TableRow key={user.id}>
               <TableCell>{user.username}</TableCell>
               <TableCell>{user.isSuperuser ? <CheckIcon /> : <XIcon />}</TableCell>
-              <TableCell className={'w-full'}>
+              <TableCell>
                 <div className={'inline-flex gap-1'}>
                   <Button
                     size={'icon'}

@@ -9,11 +9,12 @@ export class UserService {
     this.userRepository = userRepository;
   }
 
-  async registerUser(username: string, password: string): Promise<User | null> {
+  async registerUser(username: string, password: string, isSuperuser: boolean = false): Promise<User | null> {
     const passwordHash = await hashPassword(password);
     return await this.userRepository.createUser({
       username: username,
-      passwordHash: passwordHash
+      passwordHash: passwordHash,
+      isSuperuser: isSuperuser
     });
   }
 

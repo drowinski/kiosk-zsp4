@@ -7,7 +7,6 @@ export const routes = defineRoutes((route) => {
       route(':id', 'kiosk/gallery/gallery-detail.modal.tsx');
     });
   });
-  route('auth/sign-up', 'auth/sign-up.page.tsx');
   route('auth/sign-in', 'auth/sign-in.page.tsx');
   route('auth/sign-out', 'auth/sign-out.route.ts');
   route('dashboard', 'dashboard/dashboard.layout.tsx', () => {
@@ -18,6 +17,7 @@ export const routes = defineRoutes((route) => {
     });
     route('users', 'dashboard/users/list.page.tsx', () => {
       route(':id', 'dashboard/users/edit.modal.tsx');
+      route('create', 'dashboard/users/create.modal.tsx');
     });
   });
 });

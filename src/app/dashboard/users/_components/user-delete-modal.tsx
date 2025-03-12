@@ -1,4 +1,4 @@
-import { Modal, ModalContent, ModalHeader, ModalTitle, ModalTrigger } from '@/components/base/modal';
+import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle, ModalTrigger } from '@/components/base/modal';
 import { Button } from '@/components/base/button';
 import { TrashIcon } from '@/components/icons';
 import { useState } from 'react';
@@ -17,7 +17,7 @@ export function UserDeleteModal({ userId, username, onDelete }: UserDeleteModalP
       open={isOpen}
       onOpenChange={(open) => setIsOpen(open)}
     >
-      <ModalTrigger>
+      <ModalTrigger asChild>
         <Button
           size={'icon'}
           className={'gap-1'}
@@ -28,16 +28,13 @@ export function UserDeleteModal({ userId, username, onDelete }: UserDeleteModalP
       <ModalContent className={'w-fit max-w-72'}>
         <ModalHeader>
           <ModalTitle className={'inline-flex items-center gap-2'}>
-            <TrashIcon /> Potwierdź usunięcie użytkownika
+            <TrashIcon /> <span>Czy na pewno chcesz usunąć użytkownika <span className={'font-bold'}>{username}?</span></span>
           </ModalTitle>
+          <ModalDescription className={'text-danger'}>Ta czynność jest nieodwracalna.</ModalDescription>
         </ModalHeader>
-        <span>
-          Czy na pewno chcesz usunąć użytkownika <span className={'font-bold'}>{username}?</span>{' '}
-        </span>{' '}
-        <span className={'text-danger'}>Ta czynność jest nieodwracalna.</span>
         <div className={'flex justify-end gap-1'}>
-          <Button onClick={() => onDelete(userId)}>Usuń</Button>
           <Button variant={'secondary'} onClick={() => setIsOpen(false)}>Anuluj</Button>
+          <Button onClick={() => onDelete(userId)}>Usuń</Button>
         </div>
       </ModalContent>
     </Modal>

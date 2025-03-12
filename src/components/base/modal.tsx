@@ -13,6 +13,8 @@ const ModalPortal = DialogPrimitive.Portal;
 
 export const ModalClose = DialogPrimitive.Close;
 
+export const ModalDescription = DialogPrimitive.Description;
+
 const ModalOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>

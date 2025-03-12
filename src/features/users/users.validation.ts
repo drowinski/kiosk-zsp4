@@ -17,13 +17,15 @@ export const userWithPasswordHashSchema = userBaseSchema.extend({
 });
 export type UserWithPasswordHash = z.output<typeof userWithPasswordHashSchema>;
 
-export const createUserSchema = userWithPasswordHashSchema.omit({ id: true });
+export const createUserSchema = userBaseSchema.omit({ id: true }).extend({ password: userPasswordSchema });
 export type NewUser = z.input<typeof createUserSchema>;
+
+export const createUserWithPasswordHashSchema = userWithPasswordHashSchema.omit({ id: true });
+export type NewUserWithPasswordHash = z.input<typeof createUserWithPasswordHashSchema>;
 
 export const updateUserSchema = userBaseSchema.extend({ password: userPasswordSchema }).partial({
   username: true,
-  password: true,
-  isSuperuser: true
+  password: true
 });
 export type UpdatedUser = z.input<typeof updateUserSchema>;
 
