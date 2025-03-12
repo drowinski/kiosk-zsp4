@@ -1,13 +1,17 @@
 import { userRepository } from '@/features/users/users.repository';
-import { Link, Outlet, useLoaderData, useLocation } from '@remix-run/react';
+import { Link, Outlet, useLoaderData, useLocation, useSubmit } from '@remix-run/react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/base/table';
 import { Button } from '@/components/base/button';
 import { CheckIcon, EditIcon, XIcon } from '@/components/icons';
-import { LoaderFunctionArgs } from '@remix-run/node';
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { getSession } from '@/features/sessions/sessions.server-utils';
 import { requireSuperuser } from '@/features/users/users.server-utils';
+import { UserDeleteModal } from '@/app/dashboard/users/_components/user-delete-modal';
+import { updateUserSchema } from '@/features/users/users.validation';
 
-export async function loader({request}: LoaderFunctionArgs) {
+const userDeleteRequestSchema = updateUserSchema.pick({ id: true });
+
+export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
   await requireSuperuser(session.data.userId);
 
@@ -16,9 +20,27 @@ export async function loader({request}: LoaderFunctionArgs) {
   return { users };
 }
 
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await getSession(request);
+  await requireSuperuser(session.data.userId);
+
+  if (request.method === 'DELETE') {
+    const formData = await request.json();
+    const { data, success } = await userDeleteRequestSchema.safeParseAsync(formData);
+    if (!success) {
+      return new Response(null, { status: 400, statusText: 'Bad Request' });
+    }
+    await userRepository.deleteUser(data.id);
+    return new Response(null, { status: 200, statusText: 'OK' });
+  } else {
+    return null;
+  }
+}
+
 export default function UserListPage() {
   const { users } = useLoaderData<typeof loader>();
   const location = useLocation();
+  const submit = useSubmit();
 
   return (
     <main>
@@ -34,7 +56,7 @@ export default function UserListPage() {
           {users.map((user) => (
             <TableRow key={user.id}>
               <TableCell>{user.username}</TableCell>
-              <TableCell>{user.isSuperuser ? <CheckIcon/> : <XIcon/>}</TableCell>
+              <TableCell>{user.isSuperuser ? <CheckIcon /> : <XIcon />}</TableCell>
               <TableCell className={'w-full'}>
                 <div className={'inline-flex gap-1'}>
                   <Button
@@ -43,10 +65,18 @@ export default function UserListPage() {
                     className={'gap-1'}
                     asChild
                   >
-                    <Link to={user.id.toString()} state={{previousPathname: location.pathname, previousSearch: location.search}}>
+                    <Link
+                      to={user.id.toString()}
+                      state={{ previousPathname: location.pathname, previousSearch: location.search }}
+                    >
                       <EditIcon /> Edytuj
                     </Link>
                   </Button>
+                  <UserDeleteModal
+                    userId={user.id}
+                    username={user.username}
+                    onDelete={() => submit({ id: user.id }, { method: 'DELETE', encType: 'application/json' })}
+                  />
                 </div>
               </TableCell>
             </TableRow>

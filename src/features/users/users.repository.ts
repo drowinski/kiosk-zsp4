@@ -13,6 +13,8 @@ export interface UserRepository {
   createUser(newUser: NewUser): Promise<User | null>;
 
   updateUser(updatedUser: UpdatedUserWithPasswordHash): Promise<User | null>;
+
+  deleteUser(id: number): Promise<User | null>;
 }
 
 export class DrizzleUserRepository implements UserRepository {
@@ -49,6 +51,11 @@ export class DrizzleUserRepository implements UserRepository {
       .set(values)
       .where(eq(userTable.id, id))
       .returning(this.columnsWithoutPasswordHash);
+    return result.at(0) ?? null;
+  }
+
+  async deleteUser(id: number): Promise<User | null> {
+    const result = await db.delete(userTable).where(eq(userTable.id, id)).returning(this.columnsWithoutPasswordHash);
     return result.at(0) ?? null;
   }
 }

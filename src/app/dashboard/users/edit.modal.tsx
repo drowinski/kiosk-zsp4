@@ -21,8 +21,6 @@ const userEditFormSchema = updateUserSchema
     message: 'Hasła muszą być takie same'
   });
 
-const userDeleteRequestSchema = updateUserSchema.pick({ id: true });
-
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const session = await getSession(request);
   await requireSuperuser(session.data.userId);
@@ -41,21 +39,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const session = await getSession(request);
   await requireSuperuser(session.data.userId);
-
-  if (request.method === 'POST') {
-    const formData = await request.formData();
-    const submission = await parseWithZod(formData, { schema: userEditFormSchema, async: true });
-    if (submission.status !== 'success') {
-      return { lastResult: submission.reply() };
-    }
-    const result = await userService.updateUser(submission.value);
-    if (!result) {
-      return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
-    }
-    return { lastResult: submission.reply({ resetForm: true }) };
-  } else if (request.method === 'DELETE') {
-    // TODO: delete
+  const formData = await request.formData();
+  const submission = await parseWithZod(formData, { schema: userEditFormSchema, async: true });
+  if (submission.status !== 'success') {
+    return { lastResult: submission.reply() };
   }
+  const result = await userService.updateUser(submission.value);
+  if (!result) {
+    return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
+  }
+  return { lastResult: submission.reply({ resetForm: true }) };
 }
 
 export default function UserEditModal() {
@@ -153,7 +146,9 @@ export default function UserEditModal() {
               aria-describedby={fields.isSuperuser.descriptionId}
             />
           </Label>
-          <InputDescription id={fields.isSuperuser.descriptionId}>Superużytkownicy mogą zarządzać innymi użytkownikami</InputDescription>
+          <InputDescription id={fields.isSuperuser.descriptionId}>
+            Superużytkownicy mogą zarządzać innymi użytkownikami
+          </InputDescription>
           <InputErrorMessage id={fields.isSuperuser.errorId}>{fields.isSuperuser.errors}</InputErrorMessage>
           <Button
             type={'submit'}
