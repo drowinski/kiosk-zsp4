@@ -18,12 +18,19 @@ import { InputErrorMessage } from '@/components/base/input';
 import { assetService } from '@/features/assets/assets.service';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DialogDescription } from '@radix-ui/react-dialog';
+import { TagSelector } from '@/features/tags/components/tag-selector';
+import { z } from '@/lib/zod';
+import { tagSchema } from '@/features/tags/tags.validation';
 
-const assetEditFormSchema = assetUpdateSchema.pick({
-  id: true,
-  description: true,
-  date: true
-});
+const assetEditFormSchema = assetUpdateSchema
+  .pick({
+    id: true,
+    description: true,
+    date: true
+  })
+  .extend({
+    tags: z.array(tagSchema.shape.id)
+  });
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const assetId = parseInt(params.id || '');
@@ -46,8 +53,11 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!submission.value.date) {
     submission.value.date = null;
   }
-  const result = await assetService.updateAsset(submission.value);
-  if (!result) {
+
+  try {
+    await assetService.updateAsset(submission.value);
+  } catch (error) {
+    console.error(error);
     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
   }
 
@@ -59,7 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
 // }
 
 export default function AssetEditModal() {
-  const { asset } = useLoaderData<typeof loader>();
+  const { asset: { tags, ...asset } } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigate = useNavigate();
   const navigation = useNavigation();
@@ -67,7 +77,11 @@ export default function AssetEditModal() {
 
   const [form, fields] = useForm({
     lastResult: navigation.state === 'idle' ? actionData?.lastResult || null : null,
-    onValidate: ({ formData }) => parseWithZod(formData, { schema: assetEditFormSchema }),
+    onValidate: ({ formData }) => {
+      const result = parseWithZod(formData, { schema: assetEditFormSchema });
+      console.log(result);
+      return result;
+    },
     constraint: getZodConstraint(assetEditFormSchema),
     shouldRevalidate: 'onInput',
     defaultValue: {
@@ -176,6 +190,11 @@ export default function AssetEditModal() {
               value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
               onValueChange: (value) => setDatePrecision(value)
             }}
+          />
+          <TagSelector
+            allTags={tags}
+            initialSelectedTags={tags}
+            name={fields.tags.name}
           />
           <Button
             type={'submit'}

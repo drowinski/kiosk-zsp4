@@ -3,6 +3,8 @@ import { db } from '@/lib/db/connection';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
 import { and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, lte, sql } from 'drizzle-orm';
 import { PgSelect } from 'drizzle-orm/pg-core';
+import { assetTagJunctionTable, tagTable } from '@/features/tags/tags.db';
+import { Tag } from '@/features/tags/tags.validation';
 
 export interface AssetFiltering {
   assetType?: AssetType[];
@@ -34,9 +36,9 @@ export interface AssetRepository {
 
   getAssetCount(options?: AssetOptions): Promise<number>;
 
-  createAsset(newAsset: NewAsset): Promise<Asset | null>;
+  createAsset(newAsset: NewAsset): Promise<void>;
 
-  updateAsset(updatedAsset: UpdatedAsset): Promise<Asset | null>;
+  updateAsset(updatedAsset: UpdatedAsset): Promise<void>;
 }
 
 export class DrizzleAssetRepository implements AssetRepository {
@@ -46,11 +48,16 @@ export class DrizzleAssetRepository implements AssetRepository {
         ...getTableColumns(assetTable),
         date: {
           ...getTableColumns(dateTable)
-        }
+        },
+        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as('tags')
       })
       .from(assetTable)
-      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id))
+      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
+      .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
+      .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
+      .groupBy(assetTable.id, dateTable.id)
       .where(eq(assetTable.id, id));
+
     return assets.at(0) ?? null;
   }
 
@@ -60,10 +67,14 @@ export class DrizzleAssetRepository implements AssetRepository {
         ...getTableColumns(assetTable),
         date: {
           ...getTableColumns(dateTable)
-        }
+        },
+        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as('tags')
       })
       .from(assetTable)
-      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id))
+      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
+      .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
+      .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
+      .groupBy(assetTable.id, dateTable.id)
       .orderBy(desc(assetTable.id));
 
     return options ? this.buildQueryWithOptions(query.$dynamic(), options) : query;
@@ -113,10 +124,10 @@ export class DrizzleAssetRepository implements AssetRepository {
     return query;
   }
 
-  async createAsset(newAsset: NewAsset): Promise<Asset | null> {
+  async createAsset(newAsset: NewAsset): Promise<void> {
     const { date: dateValues, ...assetValues } = newAsset;
 
-    return db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       let resultDate;
       if (dateValues) {
         resultDate = (await tx.insert(dateTable).values(dateValues).returning()).at(0);
@@ -150,10 +161,10 @@ export class DrizzleAssetRepository implements AssetRepository {
     });
   }
 
-  async updateAsset(updatedAsset: UpdatedAsset): Promise<Asset | null> {
+  async updateAsset(updatedAsset: UpdatedAsset): Promise<void> {
     const { date: dateValues, ...assetValues } = updatedAsset;
     console.log(dateValues);
-    return db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       let resultDate;
       if (dateValues) {
         const { id: dateId, ...dateValuesWithoutId } = dateValues;

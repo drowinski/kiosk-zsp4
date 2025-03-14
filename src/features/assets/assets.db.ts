@@ -1,6 +1,7 @@
 import { boolean, check, date, integer, pgEnum, pgTable, timestamp, varchar } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { ASSET_TYPE_ARRAY, DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
+import { assetTagJunctionTable } from '@/features/tags/tags.db';
 
 export const assetTypeEnum = pgEnum('asset_type', ASSET_TYPE_ARRAY);
 
@@ -12,8 +13,19 @@ export const assetTable = pgTable('assets', {
   description: varchar('description', { length: 512 }),
   dateId: integer('date_id').references(() => dateTable.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp('updated_at')
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date())
 });
+
+export const assetRelations = relations(assetTable, ({ one, many }) => ({
+  date: one(dateTable, {
+    fields: [assetTable.dateId],
+    references: [dateTable.id]
+  }),
+  tags: many(assetTagJunctionTable)
+}));
 
 export const datePrecisionEnum = pgEnum('date_precision', DATE_PRECISION_ARRAY);
 
@@ -30,3 +42,7 @@ export const dateTable = pgTable(
     dateMinDateMaxCheck: check('assets_date_min_date_max_check', sql`${table.dateMin} <= ${table.dateMax}`)
   })
 );
+
+export const dateRelations = relations(dateTable, ({ one }) => ({
+  asset: one(assetTable)
+}));

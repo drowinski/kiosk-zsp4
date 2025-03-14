@@ -45,12 +45,12 @@ export class AssetService {
     return asset;
   }
 
-  async updateAsset(updatedAsset: UpdatedAsset): Promise<Asset | null> {
+  async updateAsset(updatedAsset: UpdatedAsset): Promise<void> {
     if (updatedAsset.mimeType !== undefined) {
       updatedAsset.mimeType = this.normalizeMimeType(updatedAsset.mimeType);
       updatedAsset.assetType = this.getAssetTypeFromMimeType(updatedAsset.mimeType);
     }
-    return this.assetRepository.updateAsset(updatedAsset);
+    await this.assetRepository.updateAsset(updatedAsset);
   }
 
   async generateThumbnail(fileName: string, assetType: AssetType): Promise<void> {
