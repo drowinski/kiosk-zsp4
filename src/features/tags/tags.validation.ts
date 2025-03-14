@@ -1,0 +1,12 @@
+import { z } from '@/lib/zod';
+
+export const baseTagSchema = z.object({
+  id: z.number().positive().int(),
+  name: z.string().min(1).max(128)
+});
+
+export const tagSchema = baseTagSchema;
+export type Tag = z.output<typeof tagSchema>;
+
+export const createTagSchema = baseTagSchema.omit({ id: true });
+export type NewTag = z.input<typeof tagSchema>;

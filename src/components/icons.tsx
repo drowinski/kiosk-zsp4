@@ -13,7 +13,7 @@ import {
   FaFilm, FaFilter,
   FaImage,
   FaPause,
-  FaPlay, FaPlus,
+  FaPlay, FaPlus, FaSearch,
   FaSpinner,
   FaTrash
 } from 'react-icons/fa';
@@ -108,6 +108,10 @@ export function CircleExclamationIcon(props: IconProps) {
 
 export function FilterIcon(props: IconProps) {
   return <FaFilter {...props} />;
+}
+
+export function SearchIcon(props: IconProps) {
+  return <FaSearch {...props} />;
 }
 
 export function EllipsisIcon(props: IconProps) {
