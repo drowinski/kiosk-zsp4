@@ -10,3 +10,8 @@ export type Tag = z.output<typeof tagSchema>;
 
 export const createTagSchema = baseTagSchema.omit({ id: true });
 export type NewTag = z.input<typeof tagSchema>;
+
+export const updateTagSchema = baseTagSchema.partial({
+  name: true
+});
+export type UpdatedTag = z.input<typeof updateTagSchema>;
