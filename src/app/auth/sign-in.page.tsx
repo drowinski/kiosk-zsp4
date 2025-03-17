@@ -1,4 +1,4 @@
-import { Form, useActionData } from '@remix-run/react';
+import { Form, useActionData, useNavigation } from '@remix-run/react';
 import { useForm } from '@conform-to/react';
 import { ActionFunctionArgs, json, LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { z } from '@/lib/zod';
@@ -51,6 +51,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function SignInPage() {
   const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
+
   const [form, fields] = useForm({
     lastResult: actionData?.lastResult ?? null,
     onValidate: ({ formData }) => {
@@ -63,7 +65,7 @@ export default function SignInPage() {
   return (
     <main className={'flex h-full flex-col items-center justify-center'}>
       <Card className={'flex flex-col gap-3'}>
-        <span className={'text-primary text-xl uppercase'}>Logowanie</span>
+        <span className={'text-xl uppercase text-primary'}>Logowanie</span>
         <Form
           method={'post'}
           id={form.id}
@@ -88,7 +90,13 @@ export default function SignInPage() {
             placeholder={'Hasło'}
             errorMessages={fields.password.errors}
           />
-          <Button variant={'default'} type={'submit'}>Zaloguj się</Button>
+          <Button
+            variant={'default'}
+            type={'submit'}
+            disabled={navigation.state !== 'idle'}
+          >
+            Zaloguj się
+          </Button>
         </Form>
       </Card>
     </main>

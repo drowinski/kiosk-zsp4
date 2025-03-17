@@ -1,5 +1,5 @@
 import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from '@/components/base/modal';
-import { Form, useActionData, useLoaderData, useLocation, useNavigate } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useLocation, useNavigate, useNavigation } from '@remix-run/react';
 import { updateUserSchema } from '@/features/users/users.validation';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
@@ -54,6 +54,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function UserEditModal() {
   const { user } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -158,6 +159,7 @@ export default function UserEditModal() {
           <Button
             type={'submit'}
             className={'bg-green-600 text-white'}
+            disabled={navigation.state !== 'idle'}
           >
             Zapisz zmiany
           </Button>

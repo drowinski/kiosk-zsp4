@@ -1,5 +1,5 @@
 import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from '@/components/base/modal';
-import { Form, useActionData, useLocation, useNavigate } from '@remix-run/react';
+import { Form, useActionData, useLocation, useNavigate, useNavigation } from '@remix-run/react';
 import { createUserSchema } from '@/features/users/users.validation';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
@@ -47,6 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function UserCreateModal() {
   const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -138,7 +139,10 @@ export default function UserCreateModal() {
           <Button
             type={'submit'}
             className={'bg-green-600 text-white'}
-            disabled={!(fields.username.dirty && fields.password.dirty && fields.repeatPassword.dirty)}
+            disabled={
+              !(fields.username.dirty && fields.password.dirty && fields.repeatPassword.dirty) ||
+              navigation.state !== 'idle'
+            }
           >
             Zapisz zmiany
           </Button>

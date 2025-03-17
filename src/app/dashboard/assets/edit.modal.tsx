@@ -222,6 +222,7 @@ export default function AssetEditModal() {
           <Button
             type={'submit'}
             className={'flex gap-2 bg-green-600'}
+            disabled={navigation.state !== 'idle'}
           >
             <CheckIcon /> Zatwierdź zmiany
           </Button>
