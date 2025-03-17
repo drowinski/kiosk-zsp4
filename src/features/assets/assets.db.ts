@@ -30,7 +30,7 @@ export const assetRelations = relations(assetTable, ({ one, many }) => ({
 export const datePrecisionEnum = pgEnum('date_precision', DATE_PRECISION_ARRAY);
 
 export const dateTable = pgTable(
-  'date_table',
+  'dates',
   {
     id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
     dateMin: date('date_min', { mode: 'date' }).notNull(),
