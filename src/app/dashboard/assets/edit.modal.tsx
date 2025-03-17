@@ -19,29 +19,42 @@ import { assetService } from '@/features/assets/assets.service';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { TagSelector } from '@/features/tags/components/tag-selector';
-import { z } from '@/lib/zod';
-import { tagSchema } from '@/features/tags/tags.validation';
+import { tagRepository } from '@/features/tags/tags.repository';
 
 const assetEditFormSchema = assetUpdateSchema
   .pick({
     id: true,
     description: true,
-    date: true
+    date: true,
+    tagIds: true
   })
-  .extend({
-    tags: z.array(tagSchema.shape.id)
-  });
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const assetId = parseInt(params.id || '');
   if (!assetId) {
     throw new Response(null, { status: 404, statusText: 'Not Found' });
   }
-  const asset = await assetRepository.getAssetById(assetId);
+
+  let asset;
+  try {
+    asset = await assetRepository.getAssetById(assetId);
+  } catch (error) {
+    console.log(error);
+    throw new Response(null, { status: 500, statusText: 'Server Error' });
+  }
   if (!asset) {
     throw new Response(null, { status: 404, statusText: 'Not Found' });
   }
-  return { asset };
+
+  let availableTags;
+  try {
+    availableTags = await tagRepository.getAllTags();
+  } catch (error) {
+    console.log(error);
+    throw new Response(null, { status: 500, statusText: 'Server Error' });
+  }
+
+  return { asset, availableTags };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -50,8 +63,12 @@ export async function action({ request }: ActionFunctionArgs) {
   if (submission.status !== 'success') {
     return { lastResult: submission.reply() };
   }
-  if (!submission.value.date) {
+
+  if (submission.value.date === undefined) {
     submission.value.date = null;
+  }
+  if (submission.value.tagIds === undefined) {
+    submission.value.tagIds = [];
   }
 
   try {
@@ -64,12 +81,11 @@ export async function action({ request }: ActionFunctionArgs) {
   return { lastResult: submission.reply({ resetForm: true }) };
 }
 
-// export function shouldRevalidate({ }: ShouldRevalidateFunctionArgs) {
-//
-// }
-
 export default function AssetEditModal() {
-  const { asset: { tags, ...asset } } = useLoaderData<typeof loader>();
+  const {
+    asset: { tags, ...asset },
+    availableTags
+  } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigate = useNavigate();
   const navigation = useNavigation();
@@ -151,20 +167,32 @@ export default function AssetEditModal() {
           className={'flex grow flex-col gap-2'}
           state={{ previousPathname: location.state?.previousPathname, previousSearch: location.state?.previousSearch }}
         >
+          <InputErrorMessage>{form.errors}</InputErrorMessage>
           <input
             type={'hidden'}
             name={fields.id.name}
             value={fields.id.value}
           />
-          <Label htmlFor={fields.description.name}>Opis</Label>
+          <Label htmlFor={fields.description.id}>Opis</Label>
           <TextArea
             key={fields.description.key}
+            id={fields.description.id}
             name={fields.description.name}
             defaultValue={fields.description.initialValue}
             placeholder={'Opis'}
             className={'h-32 resize-none'}
             maxLength={512}
           />
+          <div role={'group'} className={'flex flex-col gap-1'}>
+            <Label asChild>
+              <legend className={'appearance-none'}>Tagi</legend>
+            </Label>
+            <TagSelector
+              allTags={availableTags}
+              initialSelectedTags={tags}
+              name={fields.tagIds.name}
+            />
+          </div>
           <Label>Data</Label>
           <InputErrorMessage>{fields.date.errors}</InputErrorMessage>
           {datePreview && <span className={'font-medium'}>{datePreview}</span>}
@@ -190,11 +218,6 @@ export default function AssetEditModal() {
               value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
               onValueChange: (value) => setDatePrecision(value)
             }}
-          />
-          <TagSelector
-            allTags={tags}
-            initialSelectedTags={tags}
-            name={fields.tags.name}
           />
           <Button
             type={'submit'}

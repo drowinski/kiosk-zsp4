@@ -54,7 +54,7 @@ export const assetBaseSchema = z.object({
   fileName: z.string().max(2048),
   mimeType: z.string().max(255),
   assetType: assetTypeSchema,
-  description: z.string().max(512).nullable().optional(),
+  description: z.string().max(512).nullable().optional()
 });
 
 export const assetSchema = assetBaseSchema.extend({
@@ -70,15 +70,15 @@ export const assetCreateSchema = assetBaseSchema.omit({ id: true }).extend({
 });
 export type NewAsset = z.input<typeof assetCreateSchema>;
 
-export const assetUpdateSchema = z
-  .object({
-    id: assetBaseSchema.shape.id,
-    fileName: assetBaseSchema.shape.fileName.optional(),
-    mimeType: assetBaseSchema.shape.mimeType.optional(),
-    assetType: assetBaseSchema.shape.assetType.optional(),
-    description: assetBaseSchema.shape.description.optional()
+export const assetUpdateSchema = assetBaseSchema
+  .partial({
+    fileName: true,
+    mimeType: true,
+    assetType: true,
+    description: true
   })
   .extend({
-    date: assetDateUpdateSchema.nullable().optional()
+    date: assetDateUpdateSchema.nullable().optional(),
+    tagIds: z.array(tagSchema.shape.id).optional()
   });
 export type UpdatedAsset = z.input<typeof assetUpdateSchema>;

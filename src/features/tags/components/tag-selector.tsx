@@ -108,7 +108,7 @@ export function TagSelector({ allTags, initialSelectedTags, name }: TagSelectorP
                 const nextElementId = nextTagId ? `tag-${nextTagId}-${uniqueString}` : `add-tag-${uniqueString}`;
                 document.getElementById(nextElementId)?.focus();
               }}
-              aria-label={`Usuń tag ${tag.name}`}
+              aria-label={`Tag "${tag.name}" - naciśnij, aby usunąć`}
             >
               {tag.name}
             </Button>
