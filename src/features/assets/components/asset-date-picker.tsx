@@ -278,7 +278,7 @@ export function AssetDatePicker({
                 }
               }}
               precision={precision}
-              ariaLabel={isRange ? 'data minimalna okresu' : 'data'}
+              ariaLabel={isRange ? 'data minimalna zakresu' : 'data'}
             />
             {isRange && <span>&ndash;</span>}
             <DatePicker
@@ -290,11 +290,12 @@ export function AssetDatePicker({
               }}
               precision={precision}
               hidden={!isRange}
-              ariaLabel={'data maksymalna okresu'}
+              ariaLabel={'data maksymalna zakresu'}
             />
             <div
               role={'checkbox'}
               aria-checked={isRange}
+              aria-label={'zakres dat włączony'}
               tabIndex={0}
               onClick={toggleIsRange}
               onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && toggleIsRange()}

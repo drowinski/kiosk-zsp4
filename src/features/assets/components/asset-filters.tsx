@@ -74,7 +74,11 @@ export function AssetFilters({ className }: AssetFilterProps) {
       <span className={'inline-flex items-center gap-2 font-medium'}>
         <FilterIcon /> Filtrowanie
       </span>
-      <div className={'flex flex-col gap-3'}>
+      <div
+        role={'group'}
+        aria-label={'filtry'}
+        className={'flex flex-col gap-3'}
+      >
         <Label>
           Według opisu
           <Input
@@ -84,8 +88,13 @@ export function AssetFilters({ className }: AssetFilterProps) {
             onChange={(event) => setDescriptionFilter(event.target.value)}
           />
         </Label>
-        <fieldset className={'flex flex-col gap-2'}>
-          <Label>Typy plików</Label>
+        <div
+          role={'group'}
+          className={'flex flex-col gap-2'}
+        >
+          <Label asChild>
+            <legend>Typy plików</legend>
+          </Label>
           <Label variant={'horizontal'}>
             <Checkbox
               defaultChecked={searchParams.get('assetType')?.split('_').includes('image')}
@@ -107,14 +116,14 @@ export function AssetFilters({ className }: AssetFilterProps) {
             />
             Audio
           </Label>
-        </fieldset>
+        </div>
         <RangePicker
           label={'Zakres lat'}
           min={minYear}
           max={maxYear}
           defaultValue={[
             searchParams.get('minYear') ? parseInt(searchParams.get('minYear')!) : minYear,
-            searchParams.get('maxYear') ? parseInt(searchParams.get('maxYear')!) : maxYear,
+            searchParams.get('maxYear') ? parseInt(searchParams.get('maxYear')!) : maxYear
           ]}
           onValueChange={updateYearRange}
         />

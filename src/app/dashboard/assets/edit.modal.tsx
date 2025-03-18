@@ -39,7 +39,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   try {
     asset = await assetRepository.getAssetById(assetId);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     throw new Response(null, { status: 500, statusText: 'Server Error' });
   }
   if (!asset) {
@@ -50,7 +50,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   try {
     availableTags = await tagRepository.getAllTags();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     throw new Response(null, { status: 500, statusText: 'Server Error' });
   }
 

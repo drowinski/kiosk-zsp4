@@ -129,6 +129,7 @@ export default function AssetListPage() {
                 key={asset.id}
                 to={asset.id.toString()}
                 state={{ previousPathname: location.pathname, previousSearch: location.search }}
+                aria-label={asset.description ?? 'Nieopisany zasób'}
               >
                 <AssetListItem asset={asset} />
               </Link>
