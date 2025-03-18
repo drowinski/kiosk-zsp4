@@ -99,6 +99,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
             <Checkbox
               defaultChecked={searchParams.get('assetType')?.split('_').includes('image')}
               onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('image', checked)}
+              aria-label={'pokaż zdjęcia'}
             />
             Zdjęcia
           </Label>
@@ -106,6 +107,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
             <Checkbox
               defaultChecked={searchParams.get('assetType')?.split('_').includes('video')}
               onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('video', checked)}
+              aria-label={'pokaż filmy'}
             />
             Filmy
           </Label>
@@ -113,6 +115,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
             <Checkbox
               defaultChecked={searchParams.get('assetType')?.split('_').includes('audio')}
               onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('audio', checked)}
+              aria-label={'pokaż dźwięki'}
             />
             Audio
           </Label>
