@@ -5,10 +5,11 @@ import {
   ShouldRevalidateFunctionArgs,
   useLoaderData,
   useLocation,
-  useSearchParams
+  useSearchParams,
+  useSubmit
 } from '@remix-run/react';
 import { AssetList, AssetListItem } from '@/features/assets/components/asset-list';
-import { LoaderFunctionArgs } from '@remix-run/node';
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { AssetFilters } from '@/features/assets/components/asset-filters';
 import { ParamPagination } from '@/components/param-pagination';
 import { Label } from '@/components/base/label';
@@ -16,7 +17,12 @@ import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
 import { PlusIcon } from '@/components/icons';
-import { AssetType } from '@/features/assets/assets.validation';
+import { Asset, assetSchema, AssetType } from '@/features/assets/assets.validation';
+import { useState } from 'react';
+import { AssetDeleteModal } from '@/app/dashboard/assets/_components/asset-delete-modal';
+import { Checkbox } from '@/components/base/checkbox';
+import { requireSession } from '@/features/sessions/sessions.server-utils';
+import { z } from '@/lib/zod';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -54,11 +60,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { assets, assetCount };
 }
 
-export function shouldRevalidate({
-  nextUrl,
-  actionResult,
-  defaultShouldRevalidate
-}: ShouldRevalidateFunctionArgs) {
+const assetsDeleteSchema = z.object({
+  ids: z.array(assetSchema.shape.id)
+});
+
+export async function action({ request }: ActionFunctionArgs) {
+  await requireSession(request);
+
+  if (request.method === 'DELETE') {
+    const formData = await request.json();
+    const { data, success } = await assetsDeleteSchema.safeParseAsync(formData);
+    if (!success) {
+      return new Response(null, { status: 400, statusText: 'Bad Request' });
+    }
+    console.log('deleting these assets:', data.ids);
+    return new Response(null, { status: 204, statusText: 'No Content' });
+  } else {
+    return null;
+  }
+}
+
+export function shouldRevalidate({ nextUrl, actionResult, defaultShouldRevalidate }: ShouldRevalidateFunctionArgs) {
   if (!nextUrl.pathname.endsWith('assets')) {
     return false;
   }
@@ -74,6 +96,9 @@ export default function AssetListPage() {
   const { assets, assetCount } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const submit = useSubmit();
+
+  const [selectedAssetIds, setSelectedAssetIds] = useState<Set<Asset['id']>>(new Set());
 
   return (
     <main className={'flex h-full gap-2'}>
@@ -89,10 +114,40 @@ export default function AssetListPage() {
         <AssetFilters />
       </div>
       <div className={'flex grow flex-col gap-1'}>
-        <Card className={'flex items-center justify-end gap-2 bg-secondary px-4 py-2 text-secondary-foreground'}>
+        <Card className={'flex items-center gap-2 bg-secondary px-4 py-2 text-secondary-foreground'}>
+          <Checkbox
+            checked={
+              (assets.length > 0 && selectedAssetIds.size === assets.length) ||
+              (selectedAssetIds.size > 0 && 'indeterminate')
+            }
+            onCheckedChange={(checked) => {
+              if (checked === true) {
+                setSelectedAssetIds(assets.reduce((set, asset) => set.add(asset.id), new Set<number>()));
+              } else if (checked === false) {
+                setSelectedAssetIds(new Set());
+              }
+            }}
+            aria-label={'zaznacz wszystkie'}
+          />
+          {selectedAssetIds.size > 0 && (
+            <div className={'flex gap-1'}>
+              <AssetDeleteModal
+                assetIds={selectedAssetIds}
+                onDelete={() =>
+                  submit(
+                    { ids: Array.from(selectedAssetIds) },
+                    {
+                      method: 'DELETE',
+                      encType: 'application/json'
+                    }
+                  )
+                }
+              />
+            </div>
+          )}
           <Label
             variant={'horizontal'}
-            className={'gap-2'}
+            className={'ml-auto gap-2'}
           >
             Sortowanie
             <Select
@@ -125,18 +180,28 @@ export default function AssetListPage() {
         {assetCount > 0 ? (
           <AssetList>
             {assets.map((asset) => (
-              <Link
+              <AssetListItem
                 key={asset.id}
-                to={asset.id.toString()}
-                state={{ previousPathname: location.pathname, previousSearch: location.search }}
-                aria-label={asset.description ?? 'Nieopisany zasób'}
-              >
-                <AssetListItem asset={asset} />
-              </Link>
+                asset={asset}
+                linkTo={asset.id.toString()}
+                linkState={{ previousPathname: location.pathname, previousSearch: location.search }}
+                isSelected={selectedAssetIds.has(asset.id)}
+                onSelectedChange={(selected) =>
+                  setSelectedAssetIds((prev) => {
+                    const newSet = new Set(prev);
+                    if (selected) {
+                      newSet.add(asset.id);
+                    } else {
+                      newSet.delete(asset.id);
+                    }
+                    return newSet;
+                  })
+                }
+              />
             ))}
           </AssetList>
         ) : (
-          <div className={'text-muted flex items-center justify-center p-4 font-medium'}>Brak wyników</div>
+          <div className={'flex items-center justify-center p-4 font-medium text-muted'}>Brak wyników</div>
         )}
         <div>
           <ParamPagination

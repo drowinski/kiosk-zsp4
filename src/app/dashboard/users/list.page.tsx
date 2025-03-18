@@ -34,7 +34,7 @@ export async function action({ request }: ActionFunctionArgs) {
       return new Response(null, { status: 400, statusText: 'Bad Request' });
     }
     await userRepository.deleteUser(data.id);
-    return new Response(null, { status: 200, statusText: 'OK' });
+    return new Response(null, { status: 204, statusText: 'No Content' });
   } else {
     return null;
   }
