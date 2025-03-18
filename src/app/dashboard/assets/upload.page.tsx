@@ -5,7 +5,7 @@ import { assetUploadFormAction } from '@/features/assets/components/asset-upload
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  return assetUploadFormAction(formData);
+  return assetUploadFormAction(formData, '/dashboard/assets');
 }
 
 export default function AssetUploadPage() {

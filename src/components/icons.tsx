@@ -10,12 +10,16 @@ import {
   FaChevronRight,
   FaChevronUp,
   FaEdit,
-  FaFilm, FaFilter,
+  FaFilm,
+  FaFilter,
   FaImage,
   FaPause,
-  FaPlay, FaPlus, FaSearch,
+  FaPlay,
+  FaPlus,
+  FaSearch,
   FaSpinner,
-  FaTrash
+  FaTrash,
+  FaUpload
 } from 'react-icons/fa';
 import { FaCircleExclamation, FaEllipsis, FaPencil, FaX } from 'react-icons/fa6';
 import React from 'react';
@@ -116,4 +120,8 @@ export function SearchIcon(props: IconProps) {
 
 export function EllipsisIcon(props: IconProps) {
   return <FaEllipsis {...props} />;
+}
+
+export function UploadIcon(props: IconProps) {
+  return <FaUpload {...props} />;
 }

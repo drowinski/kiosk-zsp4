@@ -10,7 +10,7 @@ import {
   useFormMetadata
 } from '@conform-to/react';
 import { cn } from '@/utils/styles';
-import { Form } from '@remix-run/react';
+import { Form, useNavigation } from '@remix-run/react';
 import { parseWithZod } from '@conform-to/zod';
 import { useEffect, useState } from 'react';
 import { InputErrorMessage } from '@/components/base/input';
@@ -20,6 +20,8 @@ import { Card } from '@/components/base/card';
 import { AssetDatePicker } from '@/features/assets/components/asset-date-picker';
 import { TextArea } from '@/components/base/text-area';
 import { Label } from '@/components/base/label';
+import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from '@/components/base/modal';
+import { PlusIcon, SpinnerIcon, UploadIcon } from '@/components/icons';
 
 export const assetFormSchema = z.object({
   assets: z
@@ -36,9 +38,10 @@ export const assetFormSchema = z.object({
 export interface AssetUploadFormToolbarProps {
   formId: FormId<z.infer<typeof assetFormSchema>>;
   onAddFiles: (files: File[]) => void;
+  isUploading?: boolean;
 }
 
-export function AssetUploadFormToolbar({ formId, onAddFiles }: AssetUploadFormToolbarProps) {
+export function AssetUploadFormToolbar({ formId, onAddFiles, isUploading = false }: AssetUploadFormToolbarProps) {
   const form = useFormMetadata(formId);
   const fields = form.getFieldset();
   const assetFields = fields.assets.getFieldList();
@@ -48,9 +51,10 @@ export function AssetUploadFormToolbar({ formId, onAddFiles }: AssetUploadFormTo
       <Card className={'flex gap-2'}>
         <Button
           className={'cursor-pointer'}
-          asChild
+          disabled={isUploading}
+          asChild={!isUploading}
         >
-          <label>
+          <label className={'inline-flex gap-1 items-center'}>
             <input
               type={'file'}
               accept={'image/jpeg, image/png, video/mp4'}
@@ -62,16 +66,18 @@ export function AssetUploadFormToolbar({ formId, onAddFiles }: AssetUploadFormTo
               }}
               multiple
               className={'hidden'}
+              disabled={isUploading}
             />
+            <PlusIcon />
             {assetFields.length === 0 ? 'Dodaj pliki...' : 'Dodaj więcej plików...'}
           </label>
         </Button>
         <Button
           type={'submit'}
-          disabled={assetFields.length === 0}
-          className={'ml-auto'}
+          disabled={assetFields.length === 0 || isUploading}
+          className={'ml-auto inline-flex items-center gap-1'}
         >
-          Prześlij
+          <UploadIcon /> Prześlij
         </Button>
       </Card>
     </div>
@@ -176,6 +182,7 @@ export function AssetUploadFormItem({ fieldName, file, onUpdateFile, onRemoveAss
         }}
         orientation={'vertical'}
       />
+      {fieldset.date.errors && <InputErrorMessage>{fieldset.date.errors}</InputErrorMessage>}
     </Card>
   );
 }
@@ -186,6 +193,9 @@ export interface AssetUploadFormProps {
 }
 
 export function AssetUploadForm({ lastSubmissionResult, className }: AssetUploadFormProps) {
+  const navigation = useNavigation();
+  const isUploading = navigation.state !== 'idle';
+
   const [form, fields] = useForm({
     lastResult: lastSubmissionResult,
     onValidate: ({ formData }) => {
@@ -225,36 +235,55 @@ export function AssetUploadForm({ lastSubmissionResult, className }: AssetUpload
   };
 
   return (
-    <FormProvider context={form.context}>
-      <Form
-        method={'post'}
-        id={form.id}
-        onSubmit={form.onSubmit}
-        encType="multipart/form-data"
-        className={cn('flex flex-col gap-3', className)}
-      >
-        <AssetUploadFormToolbar
-          formId={form.id}
-          onAddFiles={(files) => createAssetFields(files)}
-        />
-        <div className={'grid grid-cols-3 gap-2'}>
-          {assetFields.length > 0 ? (
-            assetFields.map((assetField, index) => (
-              <AssetUploadFormItem
-                key={assetField.key}
-                fieldName={assetField.name}
-                file={files[index]}
-                onUpdateFile={(file) => updateFile(index, file)}
-                onRemoveAsset={() => removeAssetField(index)}
-              />
-            ))
-          ) : (
-            <Card className={'text-muted col-span-3 flex justify-center font-medium'}>
-              Kliknij &#34;Dodaj pliki...&#34; aby rozpocząć.
-            </Card>
-          )}
-        </div>
-      </Form>
-    </FormProvider>
+    <>
+      <FormProvider context={form.context}>
+        <Form
+          method={'post'}
+          id={form.id}
+          onSubmit={form.onSubmit}
+          encType="multipart/form-data"
+          className={cn('flex flex-col gap-3', className)}
+        >
+          <AssetUploadFormToolbar
+            formId={form.id}
+            onAddFiles={(files) => createAssetFields(files)}
+            isUploading={isUploading}
+          />
+          <div className={'grid grid-cols-3 gap-2'}>
+            {assetFields.length > 0 ? (
+              assetFields.map((assetField, index) => (
+                <AssetUploadFormItem
+                  key={assetField.key}
+                  fieldName={assetField.name}
+                  file={files[index]}
+                  onUpdateFile={(file) => updateFile(index, file)}
+                  onRemoveAsset={() => removeAssetField(index)}
+                />
+              ))
+            ) : (
+              <Card className={'col-span-3 flex justify-center font-medium text-muted'}>
+                Kliknij &#34;Dodaj pliki...&#34; aby rozpocząć.
+              </Card>
+            )}
+          </div>
+        </Form>
+      </FormProvider>
+      <Modal open={isUploading}>
+        <ModalContent
+          className={'h-fit w-fit'}
+          hideCloseButton
+        >
+          <ModalHeader>
+            <ModalTitle className={'inline-flex items-center gap-2'}>
+              <UploadIcon /> Przesyłanie plików
+            </ModalTitle>
+            <ModalDescription>Trwa przesyłanie, nie zamykaj tej strony!</ModalDescription>
+          </ModalHeader>
+          <div className={'flex justify-center'}>
+            <SpinnerIcon className={'animate-spin text-xl'} />
+          </div>
+        </ModalContent>
+      </Modal>
+    </>
   );
 }
