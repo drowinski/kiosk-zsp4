@@ -66,7 +66,10 @@ export default function UserListPage() {
         <TableBody className={'bg-accent'}>
           {users.map((user) => (
             <TableRow key={user.id}>
-              <TableCell>{user.username}</TableCell>
+              <TableCell>
+                {user.username}
+                {session.userId === user.id && <span className={'font-bold text-muted'}> (twoje konto)</span>}
+              </TableCell>
               <TableCell>{user.isSuperuser ? <CheckIcon /> : <XIcon />}</TableCell>
               <TableCell>
                 <div className={'inline-flex gap-1'}>
