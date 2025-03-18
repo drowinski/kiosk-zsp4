@@ -17,7 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const users = await userRepository.getAllUsers();
 
-  return { users };
+  return { users, session: session.data };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -30,6 +30,9 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!success) {
       return new Response(null, { status: 400, statusText: 'Bad Request' });
     }
+    if (data.id === session.data.userId) {
+      return new Response(null, { status: 400, statusText: 'Bad Request' });
+    }
     await userRepository.deleteUser(data.id);
     return new Response(null, { status: 200, statusText: 'OK' });
   } else {
@@ -38,7 +41,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function UserListPage() {
-  const { users } = useLoaderData<typeof loader>();
+  const { users, session } = useLoaderData<typeof loader>();
   const location = useLocation();
   const submit = useSubmit();
 
@@ -80,11 +83,13 @@ export default function UserListPage() {
                       <EditIcon /> Edytuj
                     </Link>
                   </Button>
-                  <UserDeleteModal
-                    userId={user.id}
-                    username={user.username}
-                    onDelete={() => submit({ id: user.id }, { method: 'DELETE', encType: 'application/json' })}
-                  />
+                  {session.userId !== user.id && (
+                    <UserDeleteModal
+                      userId={user.id}
+                      username={user.username}
+                      onDelete={() => submit({ id: user.id }, { method: 'DELETE', encType: 'application/json' })}
+                    />
+                  )}
                 </div>
               </TableCell>
             </TableRow>
