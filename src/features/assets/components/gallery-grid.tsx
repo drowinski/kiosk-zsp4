@@ -1,7 +1,7 @@
 import { cn } from '@/utils/styles';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Asset } from '@/features/assets/assets.validation';
-import { formatDate } from '@/features/assets/assets.utils';
+import { formatDate } from '@/features/assets/utils/dates';
 import { CircleExclamationIcon, SpinnerIcon } from '@/components/icons';
 
 export interface GalleryGridItemProps extends React.HTMLAttributes<HTMLDivElement> {

@@ -23,6 +23,7 @@ import { AssetDeleteModal } from '@/app/dashboard/assets/_components/asset-delet
 import { Checkbox } from '@/components/base/checkbox';
 import { requireSession } from '@/features/sessions/sessions.server-utils';
 import { z } from '@/lib/zod';
+import { assetService } from '@/features/assets/assets.service';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -45,7 +46,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   };
 
   const assetCount = await assetRepository.getAssetCount({ filters });
-  const assets = await assetRepository.getAllAssets({
+  const assets = await assetRepository.getAssets({
     pagination: {
       page: page || 0,
       pageSize: pageSize || DEFAULT_PAGE_SIZE
@@ -73,7 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!success) {
       return new Response(null, { status: 400, statusText: 'Bad Request' });
     }
-    console.log('deleting these assets:', data.ids);
+    await assetService.deleteAssets(...data.ids);
     return new Response(null, { status: 204, statusText: 'No Content' });
   } else {
     return null;
@@ -133,15 +134,16 @@ export default function AssetListPage() {
             <div className={'flex gap-1'}>
               <AssetDeleteModal
                 assetIds={selectedAssetIds}
-                onDelete={() =>
+                onDelete={() => {
                   submit(
                     { ids: Array.from(selectedAssetIds) },
                     {
                       method: 'DELETE',
                       encType: 'application/json'
                     }
-                  )
-                }
+                  );
+                  setSelectedAssetIds(new Set());
+                }}
               />
             </div>
           )}

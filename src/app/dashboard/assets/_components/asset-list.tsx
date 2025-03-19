@@ -3,7 +3,7 @@ import React from 'react';
 import { cn } from '@/utils/styles';
 import { Card } from '@/components/base/card';
 import { ImageIcon, FilmIcon } from '@/components/icons';
-import { formatDate } from '@/features/assets/assets.utils';
+import { formatDate } from '@/features/assets/utils/dates';
 import { Checkbox } from '@/components/base/checkbox';
 import { Link } from '@remix-run/react';
 import { RemixLinkProps } from '@remix-run/react/dist/components';

@@ -11,7 +11,7 @@ import { Modal, ModalContent, ModalHeader, ModalTitle } from '@/components/base/
 import { Label } from '@/components/base/label';
 import { TextArea } from '@/components/base/text-area';
 import { AssetDatePicker } from '@/features/assets/components/asset-date-picker';
-import { formatDate } from '@/features/assets/assets.utils';
+import { formatDate } from '@/features/assets/utils/dates';
 import { useMemo, useState } from 'react';
 import { getYYYYMMDD } from '@/utils/dates';
 import { InputErrorMessage } from '@/components/base/input';

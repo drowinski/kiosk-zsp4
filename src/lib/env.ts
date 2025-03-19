@@ -6,6 +6,7 @@ export const envSchema = z.object({
   APP_PORT: z.number().default(3000),
   DB_URL: z.string().url().min(1),
   ASSET_ROOT_DIR: z.string().min(1),
+  ASSET_THUMBNAIL_DIR_NAME: z.string().min(1).default('thumbnails'),
   ASSET_URL_PATH: z.string().min(1).default('/media')
 });
 

@@ -11,7 +11,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const maxYear = parseInt(url.searchParams.get('maxYear') ?? '') || undefined;
   const sort = url.searchParams.get('sort');
 
-  const assets = await assetRepository.getAllAssets({
+  const assets = await assetRepository.getAssets({
     filters: {
       ...(minYear && { dateMin: new Date(minYear, 0, 1) }),
       ...(maxYear && { dateMax: new Date(maxYear + 1, 0, 1) })

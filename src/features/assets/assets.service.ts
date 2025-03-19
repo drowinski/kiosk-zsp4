@@ -6,19 +6,22 @@ import * as crypto from 'node:crypto';
 import { AssetType, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import * as mime from 'mime-types';
 import ffmpeg from 'fluent-ffmpeg';
+import * as path from 'node:path';
 
 export class AssetService {
   private readonly assetRepository: AssetRepository;
   private readonly fileManager: FileManager;
+  private readonly thumbnailDirectory: string;
   private readonly mimeTypeToAssetTypeMap = new Map<string, AssetType>([
     ['image', 'image'],
     ['video', 'video'],
     ['audio', 'audio']
   ]);
 
-  constructor(assetRepository: AssetRepository, fileManager: FileManager) {
+  constructor(assetRepository: AssetRepository, fileManager: FileManager, thumbnailDirectory: string) {
     this.assetRepository = assetRepository;
     this.fileManager = fileManager;
+    this.thumbnailDirectory = thumbnailDirectory;
   }
 
   async uploadAsset(stream: ReadStream, assetData: Omit<NewAsset, 'fileName' | 'assetType'>): Promise<void> {
@@ -68,10 +71,36 @@ export class AssetService {
     }
   }
 
+  async deleteAssets(...ids: number[]): Promise<void> {
+    let assets;
+    try {
+      assets = await this.assetRepository.deleteAssets(...ids);
+    } catch (error) {
+      console.error(error);
+      throw new Error('An error occurred while deleting assets.');
+    }
+
+    for (const asset of assets) {
+      const thumbnailFilePath = this.getThumbnailFilePath(asset.fileName);
+      try {
+        await this.fileManager.deleteFile(thumbnailFilePath);
+      } catch (error) {
+        console.error(error);
+        throw new Error(`An error occurred while deleting asset thumbnail file. File name: ${thumbnailFilePath}`);
+      }
+
+      try {
+        await this.fileManager.deleteFile(asset.fileName);
+      } catch (error) {
+        console.error(error);
+        throw new Error(`An error occurred while deleting asset file. File name: ${asset.fileName}`);
+      }
+    }
+  }
+
   async generateThumbnail(fileName: string, assetType: AssetType): Promise<void> {
     const originalFilePath = this.fileManager._definePathInsideRootDir(fileName);
-    const thumbnailFileName = fileName.split('.')[0] + '.jpeg';
-    const thumbnailDirectory = 'thumbnails';
+    const thumbnailFileName = this.getThumbnailFileName(fileName);
 
     await new Promise<void>((resolve, reject) => {
       const ffmpegCommand = ffmpeg(originalFilePath)
@@ -84,12 +113,12 @@ export class AssetService {
         });
 
       if (assetType === 'image') {
-        const outputPath = this.fileManager._definePathInsideRootDir(thumbnailDirectory, thumbnailFileName);
+        const outputPath = this.fileManager._definePathInsideRootDir(this.thumbnailDirectory, thumbnailFileName);
         ffmpegCommand.outputFormat('mjpeg').videoFilter('scale=640:-2').save(outputPath);
       } else if (assetType === 'video') {
         ffmpegCommand.thumbnail({
           filename: thumbnailFileName,
-          folder: this.fileManager._definePathInsideRootDir(thumbnailDirectory),
+          folder: this.fileManager._definePathInsideRootDir(this.thumbnailDirectory),
           timestamps: ['5%'],
           size: '640x?'
         });
@@ -99,6 +128,14 @@ export class AssetService {
 
   private generateFileName(mimeType: string): string {
     return crypto.randomUUID() + '.' + mime.extension(mimeType);
+  }
+
+  private getThumbnailFileName(assetFileName: string): string {
+    return assetFileName.split('.')[0] + '.jpeg';
+  }
+
+  private getThumbnailFilePath(assetFilePath: string): string {
+    return path.join(this.thumbnailDirectory, this.getThumbnailFileName(assetFilePath));
   }
 
   private normalizeMimeType(mimeType: string): string {
@@ -124,5 +161,5 @@ export class AssetService {
 }
 
 export const assetService: Readonly<AssetService> = Object.freeze(
-  new AssetService(assetRepository, new FileManager(env.ASSET_ROOT_DIR))
+  new AssetService(assetRepository, new FileManager(env.ASSET_ROOT_DIR), env.ASSET_THUMBNAIL_DIR_NAME)
 );

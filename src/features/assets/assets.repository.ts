@@ -1,4 +1,4 @@
-import { Asset, AssetType, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
+import { Asset, AssetType, BaseAsset, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import { db } from '@/lib/db/connection';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
 import { and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, lte, notInArray, sql } from 'drizzle-orm';
@@ -32,13 +32,17 @@ export interface AssetOptions {
 export interface AssetRepository {
   getAssetById(id: number): Promise<Asset | null>;
 
-  getAllAssets(options?: AssetOptions): Promise<Asset[]>;
+  getAssetsByIds(...ids: number[]): Promise<Asset[]>;
+
+  getAssets(options?: AssetOptions): Promise<Asset[]>;
 
   getAssetCount(options?: AssetOptions): Promise<number>;
 
   createAsset(newAsset: NewAsset): Promise<void>;
 
   updateAsset(updatedAsset: UpdatedAsset): Promise<void>;
+
+  deleteAssets(...ids: number[]): Promise<BaseAsset[]>;
 }
 
 export class DrizzleAssetRepository implements AssetRepository {
@@ -63,7 +67,26 @@ export class DrizzleAssetRepository implements AssetRepository {
     return assets.at(0) ?? null;
   }
 
-  async getAllAssets(options?: AssetOptions): Promise<Asset[]> {
+  async getAssetsByIds(...ids: number[]): Promise<Asset[]> {
+    return db
+      .select({
+        ...getTableColumns(assetTable),
+        date: {
+          ...getTableColumns(dateTable)
+        },
+        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+          'tags'
+        )
+      })
+      .from(assetTable)
+      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
+      .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
+      .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
+      .groupBy(assetTable.id, dateTable.id)
+      .where(inArray(assetTable.id, ids));
+  }
+
+  async getAssets(options?: AssetOptions): Promise<Asset[]> {
     const query = db
       .select({
         ...getTableColumns(assetTable),
@@ -230,6 +253,22 @@ export class DrizzleAssetRepository implements AssetRepository {
       if (!resultAsset) {
         return tx.rollback();
       }
+    });
+  }
+
+  async deleteAssets(...ids: number[]): Promise<BaseAsset[]> {
+    return db.transaction(async (tx) => {
+      const assets = await tx.delete(assetTable).where(inArray(assetTable.id, ids)).returning();
+      await tx.delete(dateTable).where(
+        inArray(
+          dateTable.id,
+          assets.reduce<number[]>((array, asset) => {
+            if (asset.dateId) array.push(asset.dateId);
+            return array;
+          }, [])
+        )
+      );
+      return assets;
     });
   }
 }

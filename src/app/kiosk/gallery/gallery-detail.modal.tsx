@@ -2,7 +2,7 @@ import { useNavigate, useOutletContext, useParams } from '@remix-run/react';
 import { Card } from '@/components/base/card';
 import { Asset as AssetComponent } from '@/features/assets/components/asset';
 import { type Asset } from '@/features/assets/assets.validation';
-import { formatDate } from '@/features/assets/assets.utils';
+import { formatDate } from '@/features/assets/utils/dates';
 import { Button } from '@/components/base/button';
 import { XIcon } from '@/components/icons';
 

@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import * as nstream from 'node:stream';
 
@@ -23,6 +24,11 @@ export class FileManager {
     return new Promise<void>((resolve, reject) => {
       stream.pipe(writeStream).on('error', reject).on('finish', resolve);
     });
+  }
+
+  async deleteFile(fileName: string): Promise<void> {
+    const filePath = this._definePathInsideRootDir(fileName);
+    await fsp.unlink(filePath);
   }
 
   _definePathInsideRootDir(...unsafePaths: string[]): string {

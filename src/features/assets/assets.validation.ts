@@ -1,6 +1,6 @@
 import { z } from '@/lib/zod';
 import { ASSET_TYPE_ARRAY, DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
-import { truncateDate } from '@/features/assets/assets.utils';
+import { truncateDate } from '@/features/assets/utils/dates';
 import { tagSchema } from '@/features/tags/tags.validation';
 
 // Asset Date
@@ -56,6 +56,7 @@ export const assetBaseSchema = z.object({
   assetType: assetTypeSchema,
   description: z.string().max(512).nullable().optional()
 });
+export type BaseAsset = z.output<typeof assetBaseSchema>;
 
 export const assetSchema = assetBaseSchema.extend({
   date: assetDateSchema.nullable().optional(),
