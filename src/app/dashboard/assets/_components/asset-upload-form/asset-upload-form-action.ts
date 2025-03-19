@@ -2,7 +2,7 @@ import { parseWithZod } from '@conform-to/zod';
 import { assetService } from '@/features/assets/assets.service';
 import { ReadStream } from 'node:fs';
 import { ReadableStream as NodeReadableStream } from 'node:stream/web';
-import { assetFormSchema } from '@/features/assets/components/asset-upload-form/asset-upload-form';
+import { assetFormSchema } from '@/app/dashboard/assets/_components/asset-upload-form/asset-upload-form';
 import { redirect } from '@remix-run/node';
 
 export async function assetUploadFormAction(formData: FormData, redirectUrl?: string) {

@@ -1,7 +1,7 @@
 import { ActionFunctionArgs } from '@remix-run/node';
 import { useActionData } from '@remix-run/react';
-import { AssetUploadForm } from '@/features/assets/components/asset-upload-form/asset-upload-form';
-import { assetUploadFormAction } from '@/features/assets/components/asset-upload-form/asset-upload-form-action';
+import { AssetUploadForm } from '@/app/dashboard/assets/_components/asset-upload-form/asset-upload-form';
+import { assetUploadFormAction } from '@/app/dashboard/assets/_components/asset-upload-form/asset-upload-form-action';
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();

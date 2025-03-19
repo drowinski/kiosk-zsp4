@@ -8,9 +8,9 @@ import {
   useSearchParams,
   useSubmit
 } from '@remix-run/react';
-import { AssetList, AssetListItem } from '@/features/assets/components/asset-list';
+import { AssetList, AssetListItem } from '@/app/dashboard/assets/_components/asset-list';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { AssetFilters } from '@/features/assets/components/asset-filters';
+import { AssetFilters } from '@/app/dashboard/assets/_components/asset-filters';
 import { ParamPagination } from '@/components/param-pagination';
 import { Label } from '@/components/base/label';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
