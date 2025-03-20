@@ -1,7 +1,7 @@
 import { Timeline, TimelineItem } from '@/features/timeline/components/timeline';
 import { useLoaderData } from '@remix-run/react';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
-import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
+import { getAssetUri } from '@/features/assets/utils/uris';
 import { getYYYYMMDD } from '@/utils/dates';
 
 export async function loader() {
@@ -18,10 +18,11 @@ export default function TimelinePage() {
       {timelineRanges.map((range) => (
         <TimelineItem
           key={range.id}
-          coverUri={range.coverAsset ? getAssetThumbnailUri(range.coverAsset.fileName) : ''}
+          coverUri={range.coverAsset ? getAssetUri(range.coverAsset.fileName) : ''}
           itemTitle={
             range.caption ||
-            `${range.minDate ? range.minDate.getUTCFullYear() : 'przeszłość'} – ${range.maxDate ? range.maxDate.getUTCFullYear() : 'teraźniejszość'}`
+            (range.minDate ? range.minDate.getUTCFullYear().toString() + ' – ' : 'do ') +
+              (range.maxDate ? range.maxDate.getUTCFullYear().toString() : 'teraz')
           }
           onClickUri={(() => {
             const searchParams = new URLSearchParams();
