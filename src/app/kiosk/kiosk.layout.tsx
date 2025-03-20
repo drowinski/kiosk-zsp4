@@ -16,7 +16,7 @@ export function Layout({ children }: Layout) {
           <Button
             variant={'ghost'}
             size={'icon'}
-            onClick={() => navigate('..')}
+            onClick={() => navigate(-1)}
           >
             <ArrowLeftIcon />
           </Button>

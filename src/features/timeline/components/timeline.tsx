@@ -32,11 +32,12 @@ export const TimelineItem = React.forwardRef<HTMLDivElement, TimelineItemProps>(
           tabIndex={-1}
           onClick={() => onClickUri && navigate(onClickUri)}
           onKeyDown={() => onClickUri && navigate(onClickUri)}
+          aria-label={itemTitle}
         >
           <img
             src={coverUri}
-            alt={'TODO'} // TODO
-            className={'scale-125 object-cover'}
+            alt={'okładka'}
+            className={'h-full w-full scale-125 object-cover'}
           />
         </div>
         <div
@@ -47,7 +48,7 @@ export const TimelineItem = React.forwardRef<HTMLDivElement, TimelineItemProps>(
             'group-[[data-selected=true]]:drop-shadow-xl'
           )}
         >
-          <span className={'text-3xl font-bold'}>{itemTitle?.replaceAll('-', '–')}</span>
+          <span className={'text-3xl font-bold'}>{itemTitle}</span>
         </div>
         <div
           className={cn(

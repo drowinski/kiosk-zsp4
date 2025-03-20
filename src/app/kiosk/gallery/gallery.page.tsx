@@ -9,12 +9,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const minYear = parseInt(url.searchParams.get('minYear') ?? '') || undefined;
   const maxYear = parseInt(url.searchParams.get('maxYear') ?? '') || undefined;
+  const minDate = url.searchParams.get('minDate');
+  const maxDate = url.searchParams.get('maxDate');
   const sort = url.searchParams.get('sort');
 
   const assets = await assetRepository.getAssets({
     filters: {
       ...(minYear && { dateMin: new Date(minYear, 0, 1) }),
-      ...(maxYear && { dateMax: new Date(maxYear + 1, 0, 1) })
+      ...(maxYear && { dateMax: new Date(maxYear + 1, 0, 1) }),
+      ...(minDate && { dateMin: new Date(minDate) }),
+      ...(maxDate && { dateMax: new Date(maxDate) }),
     },
     sorting: {
       property: (sort?.split('_').at(0) as AssetSorting['property'] | null) || 'date',

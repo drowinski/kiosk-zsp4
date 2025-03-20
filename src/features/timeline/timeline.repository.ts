@@ -1,7 +1,7 @@
 import { TimelineRange } from '@/features/timeline/timeline.validation';
 import { db } from '@/lib/db/connection';
 import { timelineRangesTable } from '@/features/timeline/timeline.db';
-import { desc, eq, getTableColumns } from 'drizzle-orm';
+import { asc, eq, getTableColumns } from 'drizzle-orm';
 import { assetTable } from '@/features/assets/assets.db';
 
 export interface TimelineRepository {
@@ -35,7 +35,7 @@ export class DrizzleTimelineRepository implements TimelineRepository {
       })
       .from(timelineRangesTable)
       .leftJoin(assetTable, eq(assetTable.id, timelineRangesTable.coverAssetId))
-      .orderBy(desc(timelineRangesTable.minDate));
+      .orderBy(asc(timelineRangesTable.minDate));
   }
 }
 
