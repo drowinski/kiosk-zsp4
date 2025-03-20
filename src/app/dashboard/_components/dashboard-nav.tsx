@@ -1,33 +1,22 @@
 import { cn } from '@/utils/styles';
-import { Link, useLocation } from '@remix-run/react';
+import { NavLink } from '@remix-run/react';
 import React from 'react';
 import { Button } from '@/components/base/button';
 
-export interface DashboardNavItemProps {
-  route: string;
-  label: string;
-  newTab?: boolean;
-  className?: string;
-}
+export interface DashboardNavItemProps extends React.ComponentProps<typeof NavLink> {}
 
-export function DashboardNavItem({ route, label, newTab = false, className }: DashboardNavItemProps) {
-  const location = useLocation();
-  const isActive = location.pathname.startsWith(route);
-
+export function DashboardNavItem({ className, ...props }: DashboardNavItemProps) {
   return (
     <Button
       asChild
-      variant={isActive ? 'accent' : 'ghost'}
-      className={className}
+      variant={'ghost'}
+      className={cn('[&.active]:bg-accent [&.active]:text-accent-foreground', className)}
     >
-      <Link
-        to={route}
-        target={newTab ? '_blank' : '_self'}
+      <NavLink
+        {...props}
         rel={'noreferrer'}
         reloadDocument // TODO: better fix for better search param and filter component sync
-      >
-        {label}
-      </Link>
+      />
     </Button>
   );
 }
@@ -37,5 +26,12 @@ export interface DashboardSideNavProps extends React.PropsWithChildren {
 }
 
 export function DashboardNav({ children, className }: DashboardSideNavProps) {
-  return <nav className={cn('flex gap-1', className)}>{children}</nav>;
+  return (
+    <nav
+      aria-label={'Główna'}
+      className={cn('flex gap-1', className)}
+    >
+      {children}
+    </nav>
+  );
 }

@@ -6,7 +6,7 @@ import { CheckIcon, EditIcon, PlusIcon, XIcon } from '@/components/icons';
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { getSession } from '@/features/sessions/sessions.server-utils';
 import { requireSuperuser } from '@/features/users/users.server-utils';
-import { UserDeleteModal } from '@/app/dashboard/users/_components/user-delete-modal';
+import { UserDeleteModal } from '@/app/dashboard/settings/users/_components/user-delete-modal';
 import { updateUserSchema } from '@/features/users/users.validation';
 
 const userDeleteRequestSchema = updateUserSchema.pick({ id: true });
@@ -46,7 +46,7 @@ export default function UserListPage() {
   const submit = useSubmit();
 
   return (
-    <main className={'flex flex-col gap-1'}>
+    <main className={'flex flex-col gap-1 p-2'}>
       <Button
         className={'flex items-center gap-2'}
         asChild

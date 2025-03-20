@@ -13,9 +13,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export function meta() {
-  return [
-    { title: 'Kiosk Izby Pamięci ZSP4 - Panel sterowania'}
-  ];
+  return [{ title: 'Kiosk Izby Pamięci ZSP4 - Panel sterowania' }];
 }
 
 export default function DashboardLayout() {
@@ -56,19 +54,14 @@ export default function DashboardLayout() {
         >
           <span className={'text-xl font-bold'}>Kiosk Izby Pamięci ZSP4</span>
           <DashboardNav className={'h-fit'}>
+            <DashboardNavItem to={'/dashboard/assets'}>Edycja zawartości</DashboardNavItem>
+            <DashboardNavItem to={'/dashboard/settings'}>Ustawienia</DashboardNavItem>
             <DashboardNavItem
-              route={'/dashboard/assets'}
-              label={'Zawartość'}
-            />
-            <DashboardNavItem
-              route={'/dashboard/users'}
-              label={'Użytkownicy'}
-            />
-            <DashboardNavItem
-              route={'/kiosk/gallery'}
-              label={'Podgląd kiosku'}
-              newTab
-            />
+              to={'/kiosk/gallery'}
+              target={'_blank'}
+            >
+              Podgląd kiosku
+            </DashboardNavItem>
           </DashboardNav>
           <Button
             onClick={signOut}

@@ -16,9 +16,12 @@ export const routes = defineRoutes((route) => {
     route('assets', 'dashboard/assets/list.page.tsx', () => {
       route(':id', 'dashboard/assets/edit.modal.tsx');
     });
-    route('users', 'dashboard/users/list.page.tsx', () => {
-      route(':id', 'dashboard/users/edit.modal.tsx');
-      route('create', 'dashboard/users/create.modal.tsx');
+    route('settings', 'dashboard/settings/settings.layout.tsx', () => {
+      route('', 'dashboard/settings/timeline/timeline.page.tsx', { index: true });
+      route('users', 'dashboard/settings/users/list.page.tsx', () => {
+        route(':id', 'dashboard/settings/users/edit.modal.tsx');
+        route('create', 'dashboard/settings/users/create.modal.tsx');
+      });
     });
   });
 });
