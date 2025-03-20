@@ -1,7 +1,6 @@
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
 import { assetRepository, AssetSorting } from '@/features/assets/assets.repository';
 import { Outlet, useLoaderData, useNavigate } from '@remix-run/react';
-import { GalleryFilters } from '@/features/assets/components/gallery-filters';
 import { LoaderFunctionArgs } from '@remix-run/node';
 
 export async function loader({ request }: LoaderFunctionArgs) {
