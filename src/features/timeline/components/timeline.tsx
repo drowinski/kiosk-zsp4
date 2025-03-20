@@ -31,7 +31,7 @@ export const TimelineItem = React.forwardRef<HTMLDivElement, TimelineItemProps>(
             'group-[[data-selected=true]]:shadow-xl'
           )}
           role={'link'}
-          tabIndex={-1}
+          tabIndex={0}
           onClick={() => onClickUri && navigate(onClickUri)}
           onKeyDown={() => onClickUri && navigate(onClickUri)}
           aria-label={itemTitle}

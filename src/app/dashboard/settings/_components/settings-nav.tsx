@@ -21,7 +21,7 @@ export interface SettingsNavProps extends React.HTMLAttributes<HTMLDivElement> {
 export function SettingsNav({ className, children, ...props }: SettingsNavProps) {
   return (
     <nav
-      className={cn('flex w-1/4 flex-col gap-1 border-r bg-primary p-2 text-primary-foreground', className)}
+      className={cn('flex flex-col gap-1 border-r bg-primary p-2 text-primary-foreground', className)}
       {...props}
     >
       <h1 className={'mb-1 ml-2 text-xl font-bold'}>Ustawienia</h1>

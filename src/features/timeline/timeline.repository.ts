@@ -1,13 +1,18 @@
 import { TimelineRange } from '@/features/timeline/timeline.validation';
 import { db } from '@/lib/db/connection';
 import { timelineRangesTable } from '@/features/timeline/timeline.db';
-import { asc, eq, getTableColumns, sql } from 'drizzle-orm';
-import { assetTable } from '@/features/assets/assets.db';
+import { and, asc, eq, getTableColumns, gte, lte, sql } from 'drizzle-orm';
+import { assetTable, dateTable } from '@/features/assets/assets.db';
+import { Asset } from '@/features/assets/assets.validation';
+import { assetTagJunctionTable, tagTable } from '@/features/tags/tags.db';
+import { Tag } from '@/features/tags/tags.validation';
 
 export interface TimelineRepository {
   getTimelineRangeById(id: number): Promise<TimelineRange | null>;
 
   getAllTimelineRanges(): Promise<TimelineRange[]>;
+
+  getAllAssetsInTimelineRangeById(id: number): Promise<Asset[]>;
 }
 
 export class DrizzleTimelineRepository implements TimelineRepository {
@@ -36,6 +41,28 @@ export class DrizzleTimelineRepository implements TimelineRepository {
       .from(timelineRangesTable)
       .leftJoin(assetTable, eq(assetTable.id, timelineRangesTable.coverAssetId))
       .orderBy(sql`${asc(timelineRangesTable.minDate)} nulls first`);
+  }
+
+  async getAllAssetsInTimelineRangeById(id: number): Promise<Asset[]> {
+    const timelineRangeWith = db
+      .$with('timelineRangeWith')
+      .as(db.select().from(timelineRangesTable).where(eq(timelineRangesTable.id, id)));
+
+    return db
+      .with(timelineRangeWith)
+      .select({
+        ...getTableColumns(assetTable),
+        date: getTableColumns(dateTable),
+        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+          'tags'
+        )
+      })
+      .from(assetTable)
+      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
+      .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
+      .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
+      .leftJoin(timelineRangeWith, and(gte(dateTable.dateMax, timelineRangeWith.minDate), lte(dateTable.dateMin, timelineRangeWith.maxDate)))
+      .groupBy(assetTable.id, dateTable.id);
   }
 }
 

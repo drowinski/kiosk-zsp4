@@ -17,7 +17,9 @@ export const routes = defineRoutes((route) => {
       route(':id', 'dashboard/assets/edit.modal.tsx');
     });
     route('settings', 'dashboard/settings/settings.layout.tsx', () => {
-      route('', 'dashboard/settings/timeline/timeline.page.tsx', { index: true });
+      route('timeline', 'dashboard/settings/timeline/timeline.page.tsx', () => {
+        route(':id', 'dashboard/settings/timeline/edit.page.tsx');
+      });
       route('users', 'dashboard/settings/users/list.page.tsx', () => {
         route(':id', 'dashboard/settings/users/edit.modal.tsx');
         route('create', 'dashboard/settings/users/create.modal.tsx');

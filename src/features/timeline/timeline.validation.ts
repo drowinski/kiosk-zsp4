@@ -12,3 +12,8 @@ export const timelineRangeSchema = baseTimelineRangeSchema.extend({
   coverAsset: assetBaseSchema.nullable()
 });
 export type TimelineRange = z.output<typeof timelineRangeSchema>;
+
+export const updateTimelineRangeSchema = baseTimelineRangeSchema.extend({
+  coverAssetId: assetBaseSchema.shape.id
+});
+export type UpdatedTimelineRange = z.input<typeof timelineRangeSchema>;

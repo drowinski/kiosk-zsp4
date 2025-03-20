@@ -6,9 +6,9 @@ import { SettingsNav, SettingsNavLink } from '@/app/dashboard/settings/_componen
 export default function SettingsLayout() {
   return (
     <Card className={'flex overflow-hidden p-0'}>
-      <SettingsNav>
+      <SettingsNav className={'w-1/5 min-w-[20%]'}>
         <SettingsNavLink
-          to={''}
+          to={'timeline'}
           className={'px-4 py-2'}
         >
           Oś czasu
