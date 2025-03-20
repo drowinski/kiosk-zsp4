@@ -1,5 +1,5 @@
 import { cn } from '@/utils/styles';
-import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import React, { Fragment, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from '@remix-run/react';
 import { ClientOnly } from 'remix-utils/client-only';
 
@@ -13,6 +13,8 @@ export interface TimelineItemProps extends React.ComponentPropsWithRef<'div'> {
 export const TimelineItem = React.forwardRef<HTMLDivElement, TimelineItemProps>(
   ({ coverUri, itemTitle, lineStart, onClickUri, className, ...props }, ref) => {
     const navigate = useNavigate();
+
+    const FragmentOrDiv = lineStart ? 'div' : Fragment;
 
     return (
       <div
@@ -50,15 +52,18 @@ export const TimelineItem = React.forwardRef<HTMLDivElement, TimelineItemProps>(
         >
           <span className={'text-3xl font-bold'}>{itemTitle}</span>
         </div>
-        <div
-          className={cn(
-            'flex h-10 min-h-10 w-10 min-w-10 items-center overflow-visible rounded-xl bg-primary shadow-md',
-            'duration-500 group-[[data-selected=true]]:delay-300 peer-hover:scale-110 peer-hover:shadow-lg',
-            'group-[[data-selected=true]]:scale-110 group-[[data-selected=true]]:shadow-xl'
+        <FragmentOrDiv>
+          <div
+            className={cn(
+              'flex h-10 min-h-10 w-10 min-w-10 items-center overflow-visible rounded-xl bg-primary shadow-md',
+              'duration-500 group-[[data-selected=true]]:delay-300 peer-hover:scale-110 peer-hover:shadow-lg',
+              'group-[[data-selected=true]]:scale-110 group-[[data-selected=true]]:shadow-xl'
+            )}
+          />
+          {lineStart && (
+            <div className={'absolute left-0 -z-10 h-3 w-full -translate-y-[26px] bg-secondary shadow-md'} />
           )}
-        >
-          {lineStart && <div className={'absolute left-0 -z-10 h-3 w-full bg-secondary shadow-md'} />}
-        </div>
+        </FragmentOrDiv>
       </div>
     );
   }
@@ -98,7 +103,8 @@ function _Timeline({ children, className, ...props }: TimelineProps) {
           } else {
             itemsMap.delete(index);
           }
-        }
+        },
+        lineStart: index === 0
       });
     }
   });

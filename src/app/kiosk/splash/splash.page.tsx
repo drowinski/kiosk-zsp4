@@ -7,8 +7,9 @@ export default function KioskSplashPage() {
 
   return (
     <Link
-      to={'/kiosk/gallery'}
+      to={'/kiosk/timeline'}
       className={'flex h-full cursor-default items-center gap-2'}
+      aria-labelledby={'title-card'}
     >
       <div className={'relative flex h-full flex-grow items-center justify-center overflow-hidden'}>
         <Carousel
@@ -19,14 +20,17 @@ export default function KioskSplashPage() {
             <CarouselItem key={index}>
               <img
                 src={uri}
-                alt={'starodawne zdjęcie'}
+                alt={'okładka'}
                 className={'blur-sm'}
               />
             </CarouselItem>
           ))}
         </Carousel>
         <div className={'absolute flex flex-col gap-2'}>
-          <Card className={'flex flex-col items-center bg-primary p-8 text-center text-primary-foreground'}>
+          <Card
+            id={'title-card'}
+            className={'flex flex-col items-center bg-primary p-8 text-center text-primary-foreground'}
+          >
             <span className={'mb-2 text-6xl font-extrabold uppercase'}>
               Izba
               <br />
