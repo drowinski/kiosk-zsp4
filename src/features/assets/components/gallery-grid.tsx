@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Asset } from '@/features/assets/assets.validation';
 import { formatDate } from '@/features/assets/utils/dates';
 import { CircleExclamationIcon, SpinnerIcon } from '@/components/icons';
+import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 
 export interface GalleryGridItemProps extends React.HTMLAttributes<HTMLDivElement> {
   asset: Asset;
@@ -43,7 +44,7 @@ export function GalleryGridItem({ asset, enableDebugView = false, className, ...
     };
     imageRef.current.addEventListener('error', onError);
 
-    imageRef.current.src = '/media/thumbnails/' + asset.fileName.split('.')[0] + '.jpeg'; // TODO: Better solution
+    imageRef.current.src = getAssetThumbnailUri(asset.fileName);
 
     const imageRefCurrent = imageRef.current;
 

@@ -7,6 +7,7 @@ import { formatDate } from '@/features/assets/utils/dates';
 import { Checkbox } from '@/components/base/checkbox';
 import { Link } from '@remix-run/react';
 import { RemixLinkProps } from '@remix-run/react/dist/components';
+import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 
 interface AssetListItemProps {
   asset: Asset;
@@ -35,7 +36,7 @@ export function AssetListItem({ asset, linkTo, linkState, isSelected = false, on
         className={'flex w-full gap-3 py-2'}
       >
         <img
-          src={'/media/thumbnails/' + asset.fileName.split('.')[0] + '.jpeg'} // TODO: Better solution (constant or function to determine path)
+          src={getAssetThumbnailUri(asset.fileName)}
           alt={asset.description || 'Brak opisu.'}
           className={'aspect-square h-16 rounded-md object-cover'}
         />
