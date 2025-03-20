@@ -78,7 +78,7 @@ export default function GalleryDetailModal() {
         size={'icon'}
         variant={'ghost'}
         className={'absolute left-3 top-3'}
-        onClick={() => navigate('..')}
+        onClick={() => navigate(-1)}
       >
         <XIcon
           color={'white'}

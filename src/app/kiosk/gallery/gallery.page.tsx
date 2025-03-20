@@ -34,7 +34,6 @@ export default function KioskGalleryPage() {
 
   return (
     <main className={'flex h-full flex-col gap-1'}>
-      <GalleryFilters className={'z-10'} />
       <GalleryGrid className={'no-scrollbar z-0 -mt-4 overflow-y-scroll px-1 pb-2 pt-4'}>
         {assets.map((asset) => (
           <GalleryGridItem
