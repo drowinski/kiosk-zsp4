@@ -21,7 +21,7 @@ export default function TimelinePage() {
           coverUri={range.coverAsset ? getAssetThumbnailUri(range.coverAsset.fileName) : ''}
           itemTitle={
             range.caption ||
-            `${range.minDate ? range.minDate.getUTCFullYear() : 'przeszłość'}–${range.maxDate ? range.maxDate.getUTCFullYear() : 'teraźniejszość'}`
+            `${range.minDate ? range.minDate.getUTCFullYear() : 'przeszłość'} – ${range.maxDate ? range.maxDate.getUTCFullYear() : 'teraźniejszość'}`
           }
           onClickUri={(() => {
             const searchParams = new URLSearchParams();
