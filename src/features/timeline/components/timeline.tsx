@@ -1,5 +1,5 @@
 import { cn } from '@/utils/styles';
-import React, { Fragment, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { Fragment, useEffect, useRef } from 'react';
 import { useNavigate } from '@remix-run/react';
 import { ClientOnly } from 'remix-utils/client-only';
 
@@ -88,9 +88,9 @@ function _Timeline({ children, className, ...props }: TimelineProps) {
 
   const itemsMapSize = getItemsMap().size;
 
-  useLayoutEffect(() => {
-    sessionStorage.clear(); // TODO: Hacky solution for clearing scroll state of gallery, fix
-  }, []);
+  // useLayoutEffect(() => {
+  //   sessionStorage.clear(); // TODO: Hacky solution for clearing scroll state of gallery, fix
+  // }, []);
 
   const childrenWithRef = React.Children.map(children, (child, index) => {
     if (React.isValidElement(child)) {
