@@ -1,11 +1,11 @@
 import { formatCaption } from '@/features/timeline/utils/strings';
-import { Form, useLoaderData } from '@remix-run/react';
-import { Input } from '@/components/base/input';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Input, InputErrorMessage } from '@/components/base/input';
 import { getYYYYMMDD } from '@/utils/dates';
 import { TimelineRange, updateTimelineRangeSchema } from '@/features/timeline/timeline.validation';
-import { LoaderFunctionArgs } from '@remix-run/node';
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
-import { useForm, useInputControl } from '@conform-to/react';
+import { SubmissionResult, useForm, useInputControl } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { Asset } from '@/features/assets/assets.validation';
 import { Button } from '@/components/base/button';
@@ -19,7 +19,6 @@ const updateTimelineRangeForm = updateTimelineRangeSchema;
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const timelineRangeId = parseInt(params.id || '');
-  console.log(timelineRangeId);
   if (!timelineRangeId) {
     throw new Response(null, { status: 404, statusText: 'Not Found' });
   }
@@ -31,8 +30,36 @@ export async function loader({ params }: LoaderFunctionArgs) {
   return { timelineRange, assets };
 }
 
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const submission = await parseWithZod(formData, {
+    schema: updateTimelineRangeForm.transform((timelineRange) => {
+      if (timelineRange.minDate === undefined) timelineRange.minDate = null;
+      if (timelineRange.maxDate === undefined) timelineRange.maxDate = null;
+      if (timelineRange.caption === undefined) timelineRange.caption = null;
+      return timelineRange;
+    }),
+    async: true
+  });
+  if (submission.status !== 'success') {
+    return { lastResult: submission.reply() };
+  }
+  try {
+    await timelineRepository.updateTimelineRange(submission.value);
+  } catch (_error) {
+    const error = _error as { code: string };
+    let errorMessage = 'Wystąpił błąd.';
+    if (error?.code === '23P01') {
+      errorMessage = 'Źle ustawione daty! Daty nie mogą pokrywać się z innym okresem.';
+    }
+    return { lastResult: submission.reply({ formErrors: [errorMessage] }) };
+  }
+  return { lastResult: submission.reply() };
+}
+
 export default function TimelineRangeEditPage() {
   const { timelineRange, assets } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
 
   return (
     <div className={'flex flex-col gap-1'}>
@@ -41,6 +68,7 @@ export default function TimelineRangeEditPage() {
         key={timelineRange.id}
         timelineRange={timelineRange}
         assets={assets}
+        lastResult={actionData?.lastResult}
       />
     </div>
   );
@@ -49,10 +77,12 @@ export default function TimelineRangeEditPage() {
 interface TimelineRangeEditFormProps {
   timelineRange: TimelineRange;
   assets: Asset[];
+  lastResult: SubmissionResult | undefined;
 }
 
-export function TimelineRangeEditForm({ timelineRange, assets }: TimelineRangeEditFormProps) {
+export function TimelineRangeEditForm({ timelineRange, assets, lastResult }: TimelineRangeEditFormProps) {
   const [form, fields] = useForm({
+    lastResult,
     onValidate: ({ formData }) => {
       const result = parseWithZod(formData, { schema: updateTimelineRangeForm });
       console.log(result);
@@ -76,12 +106,15 @@ export function TimelineRangeEditForm({ timelineRange, assets }: TimelineRangeEd
       id={form.id}
       onSubmit={form.onSubmit}
       noValidate
-      className={'flex gap-1'}
+      className={'flex gap-1 w-full'}
     >
       <div className={'flex flex-col gap-1'}>
+        <InputErrorMessage>{form.errors}</InputErrorMessage>
+        {/* TODO: FIX LAYOUT ISSUES WHEN ERROR MESSAGES APPEAR */}
         <Input
           type={'hidden'}
-          value={fields.id.value}
+          name={fields.id.name}
+          defaultValue={fields.id.value}
           readOnly
         />
         <Label className={'w-full'}>
@@ -93,6 +126,7 @@ export function TimelineRangeEditForm({ timelineRange, assets }: TimelineRangeEd
             className={'w-full'}
           />
         </Label>
+        <InputErrorMessage>{fields.minDate.errors}</InputErrorMessage>
         <Label className={'w-full'}>
           Data końcowa
           <Input
@@ -102,6 +136,7 @@ export function TimelineRangeEditForm({ timelineRange, assets }: TimelineRangeEd
             className={'w-full'}
           />
         </Label>
+        <InputErrorMessage>{fields.maxDate.errors}</InputErrorMessage>
         <Label className={'w-full'}>
           Podpis (opcjonalne)
           <Input
@@ -147,11 +182,11 @@ export function TimelineRangeEditForm({ timelineRange, assets }: TimelineRangeEd
       </div>
       {coverAsset && (
         <div className={cn('relative aspect-[3/4] h-full rounded-xl border-8 border-secondary bg-secondary shadow-md')}>
-          <div className={'absolute inset-0 h-full w-full overflow-hidden rounded-lg'}>
+          <div className={'absolute inset-0 overflow-hidden rounded-lg'}>
             <img
               src={getAssetUri(coverAsset.fileName)}
               alt={'okładka'}
-              className={'absolute inset-0 h-full w-full scale-125 rounded-lg object-cover'}
+              className={'h-full w-full scale-125 rounded-lg object-cover'}
             />
           </div>
         </div>

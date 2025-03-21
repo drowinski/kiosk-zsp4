@@ -2,7 +2,7 @@ import { check, date, integer, pgTable, varchar } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { assetTable } from '@/features/assets/assets.db';
 
-export const timelineRangesTable = pgTable(
+export const timelineRangeTable = pgTable(
   'timeline_ranges',
   {
     id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
