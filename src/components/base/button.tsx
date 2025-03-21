@@ -15,6 +15,7 @@ export const buttonVariants = cva(
         default: 'bg-primary text-primary-foreground shadow-sm hover:brightness-110',
         secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:brightness-110',
         accent: 'bg-accent text-accent-foreground shadow-sm hover:brightness-110',
+        success: 'bg-green-600 text-white shadow-sm hover:brightness-110',
         ghost: 'hover:bg-white/25'
       },
       size: {

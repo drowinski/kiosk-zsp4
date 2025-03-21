@@ -14,7 +14,7 @@ export default function TimelineSettingsPage() {
 
   return (
     <main className={'flex flex-col gap-2 p-2'}>
-      <h2 className={'font-bold text-xl ml-2'}>Oś czasu</h2>
+      <h2 className={'ml-2 text-xl font-bold'}>Oś czasu</h2>
       <div className={'flex gap-2'}>
         <div className={'flex flex-col gap-1'}>
           {timelineRanges.map((timelineRange) => (
@@ -28,9 +28,7 @@ export default function TimelineSettingsPage() {
             </Button>
           ))}
         </div>
-        <div>
-          <Outlet />
-        </div>
+        <Outlet />
       </div>
     </main>
   );

@@ -1,7 +1,7 @@
 import { TimelineRange } from '@/features/timeline/timeline.validation';
 import { db } from '@/lib/db/connection';
 import { timelineRangesTable } from '@/features/timeline/timeline.db';
-import { and, asc, eq, getTableColumns, gte, lte, sql } from 'drizzle-orm';
+import { and, asc, eq, getTableColumns, isNotNull, sql } from 'drizzle-orm';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
 import { Asset } from '@/features/assets/assets.validation';
 import { assetTagJunctionTable, tagTable } from '@/features/tags/tags.db';
@@ -44,12 +44,7 @@ export class DrizzleTimelineRepository implements TimelineRepository {
   }
 
   async getAllAssetsInTimelineRangeById(id: number): Promise<Asset[]> {
-    const timelineRangeWith = db
-      .$with('timelineRangeWith')
-      .as(db.select().from(timelineRangesTable).where(eq(timelineRangesTable.id, id)));
-
     return db
-      .with(timelineRangeWith)
       .select({
         ...getTableColumns(assetTable),
         date: getTableColumns(dateTable),
@@ -58,10 +53,17 @@ export class DrizzleTimelineRepository implements TimelineRepository {
         )
       })
       .from(assetTable)
-      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
+      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id))
       .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
       .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
-      .leftJoin(timelineRangeWith, and(gte(dateTable.dateMax, timelineRangeWith.minDate), lte(dateTable.dateMin, timelineRangeWith.maxDate)))
+      .leftJoin(timelineRangesTable, eq(timelineRangesTable.id, id))
+      .where(
+        and(
+          isNotNull(dateTable.dateMin),
+          isNotNull(dateTable.dateMax),
+          sql`daterange(${dateTable.dateMin}, ${dateTable.dateMax}, '[]') && daterange(${timelineRangesTable.minDate}, ${timelineRangesTable.maxDate}, '[]')`
+        )
+      )
       .groupBy(assetTable.id, dateTable.id);
   }
 }

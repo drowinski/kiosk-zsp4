@@ -7,11 +7,13 @@ import { LoaderFunctionArgs } from '@remix-run/node';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
 import { useForm, useInputControl } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
-import { Asset as AssetComponent } from '@/features/assets/components/asset';
 import { Asset } from '@/features/assets/assets.validation';
 import { Button } from '@/components/base/button';
 import { Modal, ModalContent, ModalHeader, ModalTitle, ModalTrigger } from '@/components/base/modal';
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
+import { cn } from '@/utils/styles';
+import { getAssetUri } from '@/features/assets/utils/uris';
+import { Label } from '@/components/base/label';
 
 const updateTimelineRangeForm = updateTimelineRangeSchema;
 
@@ -78,33 +80,45 @@ export function TimelineRangeEditForm({ timelineRange, assets }: TimelineRangeEd
     >
       <div className={'flex flex-col gap-1'}>
         <Input
-          type={'number'}
+          type={'hidden'}
           value={fields.id.value}
           readOnly
         />
+        <Label className={'w-full'}>
+          Data początkowa
+          <Input
+            type={'date'}
+            name={fields.minDate.name}
+            defaultValue={fields.minDate.initialValue}
+            className={'w-full'}
+          />
+        </Label>
+        <Label className={'w-full'}>
+          Data końcowa
+          <Input
+            type={'date'}
+            name={fields.maxDate.name}
+            defaultValue={fields.maxDate.initialValue}
+            className={'w-full'}
+          />
+        </Label>
+        <Label className={'w-full'}>
+          Podpis (opcjonalne)
+          <Input
+            placeholder={'Podpis...'}
+            name={fields.caption.name}
+            defaultValue={fields.caption.initialValue}
+          />
+        </Label>
         <Input
-          type={'date'}
-          name={fields.minDate.name}
-          defaultValue={fields.minDate.initialValue}
-        />
-        <Input
-          type={'date'}
-          name={fields.maxDate.name}
-          defaultValue={fields.maxDate.initialValue}
-        />
-        <Input
-          placeholder={'Opis'}
-          name={fields.caption.name}
-          defaultValue={fields.caption.initialValue}
-        />
-        <Input
+          type={'hidden'}
           name={fields.coverAssetId.name}
           value={coverAssetIdControl.value}
           readOnly
         />
         <Modal>
           <ModalTrigger asChild>
-            <Button>Wybierz okładkę</Button>
+            <Button variant={'secondary'}>Wybierz okładkę</Button>
           </ModalTrigger>
           <ModalContent>
             <ModalHeader>
@@ -124,14 +138,22 @@ export function TimelineRangeEditForm({ timelineRange, assets }: TimelineRangeEd
             </GalleryGrid>
           </ModalContent>
         </Modal>
+        <Button
+          type={'submit'}
+          variant={'success'}
+        >
+          Zatwierdź zmiany
+        </Button>
       </div>
       {coverAsset && (
-        <div className={'grow'}>
-          <AssetComponent
-            assetType={coverAsset.assetType}
-            fileName={coverAsset.fileName}
-            className={'max-h-full max-w-full'}
-          />
+        <div className={cn('relative aspect-[3/4] h-full rounded-xl border-8 border-secondary bg-secondary shadow-md')}>
+          <div className={'absolute inset-0 h-full w-full overflow-hidden rounded-lg'}>
+            <img
+              src={getAssetUri(coverAsset.fileName)}
+              alt={'okładka'}
+              className={'absolute inset-0 h-full w-full scale-125 rounded-lg object-cover'}
+            />
+          </div>
         </div>
       )}
     </Form>
