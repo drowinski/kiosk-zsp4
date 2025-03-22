@@ -12,7 +12,7 @@ import { Button } from '@/components/base/button';
 import { Modal, ModalContent, ModalHeader, ModalTitle, ModalTrigger } from '@/components/base/modal';
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
 import { cn } from '@/utils/styles';
-import { getAssetUri } from '@/features/assets/utils/uris';
+import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 import { Label } from '@/components/base/label';
 
 const updateTimelineRangeForm = updateTimelineRangeSchema;
@@ -184,7 +184,7 @@ export function TimelineRangeEditForm({ timelineRange, assets, lastResult }: Tim
         <div className={cn('relative aspect-[3/4] h-full rounded-xl border-8 border-secondary bg-secondary shadow-md')}>
           <div className={'absolute inset-0 overflow-hidden rounded-lg'}>
             <img
-              src={getAssetUri(coverAsset.fileName)}
+              src={getAssetThumbnailUri(coverAsset.fileName)}
               alt={'okładka'}
               className={'h-full w-full scale-125 rounded-lg object-cover'}
             />

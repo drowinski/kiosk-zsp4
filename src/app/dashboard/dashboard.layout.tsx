@@ -55,9 +55,9 @@ export default function DashboardLayout() {
           <span className={'text-xl font-bold'}>Kiosk Izby Pamięci ZSP4</span>
           <DashboardNav className={'h-fit'}>
             <DashboardNavItem to={'/dashboard/assets'}>Edycja zawartości</DashboardNavItem>
-            <DashboardNavItem to={'/dashboard/settings'}>Ustawienia</DashboardNavItem>
+            <DashboardNavItem to={'/dashboard/settings/timeline'}>Ustawienia</DashboardNavItem>
             <DashboardNavItem
-              to={'/kiosk/gallery'}
+              to={'/'}
               target={'_blank'}
             >
               Podgląd kiosku
