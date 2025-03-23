@@ -158,7 +158,7 @@ export default function UserEditModal() {
           <InputErrorMessage id={fields.isSuperuser.errorId}>{fields.isSuperuser.errors}</InputErrorMessage>
           <Button
             type={'submit'}
-            className={'bg-green-600 text-white'}
+            variant={'success'}
             disabled={navigation.state !== 'idle'}
           >
             Zapisz zmiany

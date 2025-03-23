@@ -21,13 +21,12 @@ import { DialogDescription } from '@radix-ui/react-dialog';
 import { TagSelector } from '@/features/tags/components/tag-selector';
 import { tagRepository } from '@/features/tags/tags.repository';
 
-const assetEditFormSchema = assetUpdateSchema
-  .pick({
-    id: true,
-    description: true,
-    date: true,
-    tagIds: true
-  })
+const assetEditFormSchema = assetUpdateSchema.pick({
+  id: true,
+  description: true,
+  date: true,
+  tagIds: true
+});
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const assetId = parseInt(params.id || '');
@@ -183,7 +182,10 @@ export default function AssetEditModal() {
             className={'h-32 resize-none'}
             maxLength={512}
           />
-          <div role={'group'} className={'flex flex-col gap-1'}>
+          <div
+            role={'group'}
+            className={'flex flex-col gap-1'}
+          >
             <Label asChild>
               <legend className={'appearance-none'}>Tagi</legend>
             </Label>
@@ -221,7 +223,8 @@ export default function AssetEditModal() {
           />
           <Button
             type={'submit'}
-            className={'flex gap-2 bg-green-600'}
+            variant={'success'}
+            className={'flex gap-2'}
             disabled={navigation.state !== 'idle'}
           >
             <CheckIcon /> Zatwierdź zmiany

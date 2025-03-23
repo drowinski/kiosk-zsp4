@@ -33,7 +33,7 @@ export const TimelineItem = React.forwardRef<HTMLDivElement, TimelineItemProps>(
           role={'link'}
           tabIndex={0}
           onClick={() => onClickUri && navigate(onClickUri)}
-          onKeyDown={() => onClickUri && navigate(onClickUri)}
+          onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && onClickUri && navigate(onClickUri)}
           aria-label={itemTitle}
         >
           <img

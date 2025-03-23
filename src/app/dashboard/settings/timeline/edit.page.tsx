@@ -9,11 +9,12 @@ import { SubmissionResult, useForm, useInputControl } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { Asset } from '@/features/assets/assets.validation';
 import { Button } from '@/components/base/button';
-import { Modal, ModalContent, ModalHeader, ModalTitle, ModalTrigger } from '@/components/base/modal';
+import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle, ModalTrigger } from '@/components/base/modal';
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
 import { cn } from '@/utils/styles';
 import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 import { Label } from '@/components/base/label';
+import { useState } from 'react';
 
 const updateTimelineRangeForm = updateTimelineRangeSchema;
 
@@ -50,7 +51,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const error = _error as { code: string };
     let errorMessage = 'Wystąpił błąd.';
     if (error?.code === '23P01') {
-      errorMessage = 'Źle ustawione daty! Daty nie mogą pokrywać się z innym okresem.';
+      errorMessage = 'Daty nie mogą pokrywać się z datami innego okresu.';
     }
     return { lastResult: submission.reply({ formErrors: [errorMessage] }) };
   }
@@ -99,6 +100,7 @@ export function TimelineRangeEditForm({ timelineRange, assets, lastResult }: Tim
 
   const coverAssetIdControl = useInputControl(fields.coverAssetId);
   const coverAsset = assets.find((asset) => asset.id.toString() === coverAssetIdControl.value);
+  const [isCoverAssetModalOpen, setIsCoverAssetModalOpen] = useState(false);
 
   return (
     <Form
@@ -106,9 +108,9 @@ export function TimelineRangeEditForm({ timelineRange, assets, lastResult }: Tim
       id={form.id}
       onSubmit={form.onSubmit}
       noValidate
-      className={'flex gap-1 w-52'}
+      className={'flex w-52 gap-1'}
     >
-      <div className={'flex flex-col gap-1 grow'}>
+      <div className={'flex grow flex-col gap-1'}>
         <InputErrorMessage>{form.errors}</InputErrorMessage>
         <Input
           type={'hidden'}
@@ -152,44 +154,83 @@ export function TimelineRangeEditForm({ timelineRange, assets, lastResult }: Tim
           value={coverAssetIdControl.value}
           readOnly
         />
-        <Modal>
-          <ModalTrigger asChild>
-            <Button variant={'secondary'}>Wybierz okładkę</Button>
-          </ModalTrigger>
-          <ModalContent>
-            <ModalHeader>
-              <ModalTitle>Wybierz okładkę</ModalTitle>
-            </ModalHeader>
-            <GalleryGrid>
-              {assets.map((asset) => (
-                <GalleryGridItem
-                  key={asset.id}
-                  asset={asset}
-                  role={'button'}
-                  tabIndex={0}
-                  onClick={() => coverAssetIdControl.change(asset.id.toString())}
-                  className={'transition-all duration-150 hover:scale-105 active:scale-100'}
-                />
-              ))}
-            </GalleryGrid>
-          </ModalContent>
-        </Modal>
         <Button
           type={'submit'}
           variant={'success'}
+          disabled={!form.dirty}
         >
           Zatwierdź zmiany
         </Button>
+        <Button
+          type={'submit'}
+          variant={'danger'}
+        >
+          Usuń
+        </Button>
       </div>
-      {coverAsset && (
-        <div className={cn('relative aspect-[3/4] h-full rounded-xl border-8 border-secondary bg-secondary shadow-md')}>
-            <img
-              src={getAssetThumbnailUri(coverAsset.fileName)}
-              alt={'okładka'}
-              className={'h-full w-full rounded-lg object-cover'}
-            />
-        </div>
-      )}
+      <Modal
+        open={isCoverAssetModalOpen}
+        onOpenChange={setIsCoverAssetModalOpen}
+      >
+        <ModalTrigger asChild>
+          <Button
+            className={cn(
+              'group relative aspect-[3/4] h-full rounded-xl p-0',
+              'border-8 border-secondary bg-secondary text-secondary-foreground shadow-md'
+            )}
+            aria-label={
+              coverAsset
+                ? `Zmień okładkę. Opis obecnej okładki: ${coverAsset.description || 'brak opisu'}`
+                : 'Ustaw okładkę.'
+            }
+            disabled={assets.length === 0}
+          >
+            {coverAsset ? (
+              <img
+                src={getAssetThumbnailUri(coverAsset.fileName)}
+                alt={'okładka'}
+                className={'h-full w-full rounded-lg object-cover'}
+              />
+            ) : (
+              <div className={'flex h-full w-full items-center justify-center'}>Brak okładki</div>
+            )}
+            <div
+              className={cn(
+                'absolute h-9 rounded-xl bg-secondary px-4 py-2 text-secondary-foreground',
+                'opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100'
+              )}
+            >
+              Wybierz okładkę
+            </div>
+          </Button>
+        </ModalTrigger>
+        <ModalContent>
+          <ModalHeader>
+            <ModalTitle>Wybierz okładkę</ModalTitle>
+            <ModalDescription className={'sr-only'}>Okno wyboru okładki</ModalDescription>
+          </ModalHeader>
+          <GalleryGrid>
+            {assets.map((asset) => (
+              <GalleryGridItem
+                key={asset.id}
+                asset={asset}
+                role={'button'}
+                tabIndex={0}
+                onClick={() => {
+                  coverAssetIdControl.change(asset.id.toString());
+                  setIsCoverAssetModalOpen(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key !== 'Enter' && e.key !== ' ') return;
+                  coverAssetIdControl.change(asset.id.toString());
+                  setIsCoverAssetModalOpen(false);
+                }}
+                className={'transition-all duration-150 hover:scale-105 active:scale-100'}
+              />
+            ))}
+          </GalleryGrid>
+        </ModalContent>
+      </Modal>
     </Form>
   );
 }

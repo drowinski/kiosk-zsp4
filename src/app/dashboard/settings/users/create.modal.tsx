@@ -138,7 +138,7 @@ export default function UserCreateModal() {
           <InputErrorMessage id={fields.isSuperuser.errorId}>{fields.isSuperuser.errors}</InputErrorMessage>
           <Button
             type={'submit'}
-            className={'bg-green-600 text-white'}
+            variant={'success'}
             disabled={
               !(fields.username.dirty && fields.password.dirty && fields.repeatPassword.dirty) ||
               navigation.state !== 'idle'

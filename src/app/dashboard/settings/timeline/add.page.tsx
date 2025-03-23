@@ -31,7 +31,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const error = _error as { code: string };
     let errorMessage = 'Wystąpił błąd.';
     if (error?.code === '23P01') {
-      errorMessage = 'Źle ustawione daty! Daty nie mogą pokrywać się z innym okresem.';
+      errorMessage = 'Daty nie mogą pokrywać się z datami innego okresu.';
     }
     return { lastResult: submission.reply({ formErrors: [errorMessage] }) };
   }
@@ -40,7 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return { lastResult: submission.reply({ formErrors: ['Wystąpił błąd.'] }) };
   }
 
-  return redirect(new URL(request.url).pathname.replace(/\/[^/]*$/, timelineRangeId.toString()));
+  return redirect(new URL(request.url).pathname.replace(/\/[^/]*$/, `/${timelineRangeId}`));
 }
 
 export default function TimelineRangeAddPage() {
