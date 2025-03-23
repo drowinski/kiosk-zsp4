@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { applyDeclension } from '@/utils/language';
 
 z.setErrorMap((issue, _ctx) => {
   let message = _ctx.defaultError;
@@ -34,7 +35,7 @@ z.setErrorMap((issue, _ctx) => {
     case z.ZodIssueCode.too_small:
       switch (issue.type) {
         case 'array':
-          message = `Minimum ${issue.minimum} elementów.`;
+          message = `Minimum ${issue.minimum} ${applyDeclension(Number(issue.minimum), 'element', 'elementy', 'elementów')}.`;
           break;
         case 'bigint':
           message = `Minimum ${issue.minimum}.`;
@@ -46,17 +47,17 @@ z.setErrorMap((issue, _ctx) => {
           message = `Minimum ${issue.minimum}.`;
           break;
         case 'set':
-          message = `Minimum ${issue.minimum} elementów.`;
+          message = `Minimum ${issue.minimum} ${applyDeclension(Number(issue.minimum), 'element', 'elementy', 'elementów')}.`;
           break;
         case 'string':
-          message = `Minimum ${issue.minimum} znaków.`;
+          message = `Minimum ${issue.minimum} ${applyDeclension(Number(issue.minimum), 'znak', 'znaki', 'znaków')}.`;
           break;
       }
       break;
     case z.ZodIssueCode.too_big:
       switch (issue.type) {
         case 'array':
-          message = `Maksimum ${issue.maximum} elementów.`;
+          message = `Maksimum ${issue.maximum} ${applyDeclension(Number(issue.maximum), 'element', 'elementy', 'elementów')}.`;
           break;
         case 'bigint':
           message = `Maksimum ${issue.maximum}.`;
@@ -68,10 +69,10 @@ z.setErrorMap((issue, _ctx) => {
           message = `Maksimum ${issue.maximum}.`;
           break;
         case 'set':
-          message = `Maksimum ${issue.maximum} elementów.`;
+          message = `Maksimum ${issue.maximum} ${applyDeclension(Number(issue.maximum), 'element', 'elementy', 'elementów')}.`;
           break;
         case 'string':
-          message = `Maksimum ${issue.maximum} znaków.`;
+          message = `Maksimum ${issue.maximum} ${applyDeclension(Number(issue.maximum), 'znak', 'znaki', 'znaków')}.`;
           break;
       }
       break;

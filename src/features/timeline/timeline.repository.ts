@@ -1,4 +1,4 @@
-import { TimelineRange, UpdatedTimelineRange } from '@/features/timeline/timeline.validation';
+import { NewTimelineRange, TimelineRange, UpdatedTimelineRange } from '@/features/timeline/timeline.validation';
 import { db } from '@/lib/db/connection';
 import { timelineRangeTable } from '@/features/timeline/timeline.db';
 import { and, asc, eq, getTableColumns, isNotNull, sql } from 'drizzle-orm';
@@ -13,6 +13,8 @@ export interface TimelineRepository {
   getAllTimelineRanges(): Promise<TimelineRange[]>;
 
   getAllAssetsInTimelineRangeById(id: number): Promise<Asset[]>;
+
+  createTimelineRange(newTimelineRange: NewTimelineRange): Promise<number | null>
 
   updateTimelineRange(updatedTimelineRange: UpdatedTimelineRange): Promise<void>;
 }
@@ -67,6 +69,14 @@ export class DrizzleTimelineRepository implements TimelineRepository {
         )
       )
       .groupBy(assetTable.id, dateTable.id);
+  }
+
+  async createTimelineRange(newTimelineRange: NewTimelineRange): Promise<number | null> {
+    const result = await db
+      .insert(timelineRangeTable)
+      .values(newTimelineRange)
+      .returning({ id: timelineRangeTable.id });
+    return result.at(0)?.id ?? null;
   }
 
   async updateTimelineRange(updatedTimelineRange: UpdatedTimelineRange): Promise<void> {

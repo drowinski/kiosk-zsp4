@@ -13,6 +13,24 @@ export const timelineRangeSchema = baseTimelineRangeSchema.extend({
 });
 export type TimelineRange = z.output<typeof timelineRangeSchema>;
 
+export const createTimelineRangeSchema = baseTimelineRangeSchema
+  .omit({ id: true })
+  .partial({
+    minDate: true,
+    maxDate: true
+  })
+  .extend({
+    coverAssetId: assetBaseSchema.shape.id.optional()
+  })
+  .refine(
+    ({ minDate, maxDate }: { minDate?: Date | null; maxDate?: Date | null }) =>
+      !minDate || !maxDate || minDate <= maxDate,
+    {
+      message: 'Data początkowa powinna być mniejsza niż końcowa.'
+    }
+  );
+export type NewTimelineRange = z.input<typeof createTimelineRangeSchema>;
+
 export const updateTimelineRangeSchema = baseTimelineRangeSchema
   .partial({
     minDate: true,
@@ -26,7 +44,7 @@ export const updateTimelineRangeSchema = baseTimelineRangeSchema
     ({ minDate, maxDate }: { minDate?: Date | null; maxDate?: Date | null }) =>
       !minDate || !maxDate || minDate <= maxDate,
     {
-      message: 'Pierwsza data okresu powinna być mniejsza niż druga.'
+      message: 'Data początkowa powinna być mniejsza niż końcowa.'
     }
   );
 export type UpdatedTimelineRange = z.input<typeof updateTimelineRangeSchema>;

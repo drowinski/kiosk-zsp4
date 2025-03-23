@@ -106,11 +106,10 @@ export function TimelineRangeEditForm({ timelineRange, assets, lastResult }: Tim
       id={form.id}
       onSubmit={form.onSubmit}
       noValidate
-      className={'flex gap-1 w-full'}
+      className={'flex gap-1 w-52'}
     >
-      <div className={'flex flex-col gap-1'}>
+      <div className={'flex flex-col gap-1 grow'}>
         <InputErrorMessage>{form.errors}</InputErrorMessage>
-        {/* TODO: FIX LAYOUT ISSUES WHEN ERROR MESSAGES APPEAR */}
         <Input
           type={'hidden'}
           name={fields.id.name}
@@ -143,8 +142,10 @@ export function TimelineRangeEditForm({ timelineRange, assets, lastResult }: Tim
             placeholder={'Podpis...'}
             name={fields.caption.name}
             defaultValue={fields.caption.initialValue}
+            className={'w-full'}
           />
         </Label>
+        <InputErrorMessage>{fields.caption.errors}</InputErrorMessage>
         <Input
           type={'hidden'}
           name={fields.coverAssetId.name}
@@ -182,13 +183,11 @@ export function TimelineRangeEditForm({ timelineRange, assets, lastResult }: Tim
       </div>
       {coverAsset && (
         <div className={cn('relative aspect-[3/4] h-full rounded-xl border-8 border-secondary bg-secondary shadow-md')}>
-          <div className={'absolute inset-0 overflow-hidden rounded-lg'}>
             <img
               src={getAssetThumbnailUri(coverAsset.fileName)}
               alt={'okładka'}
-              className={'h-full w-full scale-125 rounded-lg object-cover'}
+              className={'h-full w-full rounded-lg object-cover'}
             />
-          </div>
         </div>
       )}
     </Form>

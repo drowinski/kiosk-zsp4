@@ -27,6 +27,13 @@ export default function TimelineSettingsPage() {
               <NavLink to={`${timelineRange.id}`}>{formatCaption(timelineRange)}</NavLink>
             </Button>
           ))}
+          <Button
+            variant={'secondary'}
+            className={'[&.active]:bg-primary [&.active]:text-primary-foreground'}
+            asChild
+          >
+            <NavLink to={'new'}>Dodaj okres</NavLink>
+          </Button>
         </div>
         <Outlet />
       </div>
