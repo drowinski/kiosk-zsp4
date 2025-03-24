@@ -4,6 +4,8 @@ import { tagTable } from '@/features/tags/tags.db';
 import { eq } from 'drizzle-orm';
 
 export interface TagRepository {
+  getTagById(id: number): Promise<Tag | null>;
+
   getAllTags(): Promise<Tag[]>;
 
   createTag(newTag: NewTag): Promise<Tag | null>;
@@ -14,6 +16,11 @@ export interface TagRepository {
 }
 
 export class DrizzleTagRepository implements TagRepository {
+  async getTagById(id: number): Promise<Tag | null> {
+    const result = await db.select().from(tagTable).where(eq(tagTable.id, id));
+    return result.at(0) ?? null;
+  }
+
   async getAllTags(): Promise<Tag[]> {
     return db.select().from(tagTable).orderBy(tagTable.name);
   }

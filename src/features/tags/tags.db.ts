@@ -16,10 +16,10 @@ export const assetTagJunctionTable = pgTable(
   {
     assetId: integer('asset_id')
       .notNull()
-      .references(() => assetTable.id),
+      .references(() => assetTable.id, { onDelete: 'cascade' }),
     tagId: integer('tag_id')
       .notNull()
-      .references(() => tagTable.id)
+      .references(() => tagTable.id, { onDelete: 'cascade' })
   },
   (assetTagJunction) => ({
     pk: primaryKey({ columns: [assetTagJunction.assetId, assetTagJunction.tagId] })
