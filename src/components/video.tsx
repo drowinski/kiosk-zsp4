@@ -3,10 +3,13 @@ import { Button } from '@/components/base/button';
 import { ProgressBar } from '@/components/base/progress-bar';
 import { Slider } from '@/components/base/slider';
 import { PauseIcon, PlayIcon } from '@/components/icons';
+import { cn } from '@/utils/styles';
 
-interface VideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {}
+interface VideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
+  showPlayOverlay?: boolean;
+}
 
-export function Video({ src, className, ...props }: VideoProps) {
+export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true, ...props }: VideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
 
@@ -14,6 +17,7 @@ export function Video({ src, className, ...props }: VideoProps) {
   const [progress, setProgress] = useState(0);
   const [isPointerDownOnProgressBar, setIsPointerDownOnProgressBar] = useState(false);
   const [shouldResumeOnScrubEnd, setShouldResumeOnScrubEnd] = useState(false);
+  const [showPlayOverlay, setShowPlayOverlay] = useState(_showPlayOverlay);
 
   const handleProgress: ReactEventHandler<HTMLVideoElement> = (e) => {
     const video = e.currentTarget;
@@ -90,7 +94,7 @@ export function Video({ src, className, ...props }: VideoProps) {
   }, [handleScrubEnd, isPointerDownOnProgressBar]);
 
   return (
-    <div className={'relative h-full w-fit overflow-hidden rounded-xl'}>
+    <div className={cn('relative h-full w-fit overflow-hidden rounded-xl', className)}>
       <video
         ref={videoRef}
         src={src}
@@ -98,32 +102,50 @@ export function Video({ src, className, ...props }: VideoProps) {
         className={'max-h-full max-w-full'}
         onPlay={() => setIsPaused(false)}
         onPause={() => setIsPaused(true)}
+        onClick={() => togglePlay()}
         onTimeUpdate={handleProgress}
         {...props}
       />
-      <div className={'absolute bottom-2 left-2 right-2 flex h-8 gap-2 swiper-no-swiping'}>
+      {showPlayOverlay ? (
         <Button
-          size={'square'}
-          onClick={() => togglePlay()}
+          variant={'ghost'}
+          className={'absolute inset-0 h-full w-full'}
+          onClick={() => {
+            setShowPlayOverlay(false);
+            togglePlay(true);
+          }}
         >
-          {isPaused ? <PlayIcon /> : <PauseIcon />}
+          <div className={'flex h-full w-full items-center justify-center'}>
+            <div className={'aspect-square rounded-xl bg-primary p-3 text-primary-foreground'}>
+              <PlayIcon className={'h-full w-full'} />
+            </div>
+          </div>
         </Button>
-        <div className={'flex h-full w-full flex-col justify-between'}>
-          <ProgressBar
-            ref={progressBarRef}
-            value={progress * 100}
-            onPointerDown={handleScrubStart}
-            onClick={(e) => scrub(e.nativeEvent)}
-          />
-          <Slider
-            defaultValue={[videoRef.current?.volume || 1]}
-            min={0}
-            max={1}
-            step={0.05}
-            onValueChange={(value) => setVolume(value[0])}
-          />
+      ) : (
+        <div className={'swiper-no-swiping absolute bottom-2 left-2 right-2 flex h-9 gap-2'}>
+          <Button
+            size={'square'}
+            onClick={() => togglePlay()}
+          >
+            {isPaused ? <PlayIcon /> : <PauseIcon />}
+          </Button>
+          <div className={'flex h-full w-full flex-col justify-between'}>
+            <ProgressBar
+              ref={progressBarRef}
+              value={progress * 100}
+              onPointerDown={handleScrubStart}
+              onClick={(e) => scrub(e.nativeEvent)}
+            />
+            <Slider
+              defaultValue={[videoRef.current?.volume || 1]}
+              min={0}
+              max={1}
+              step={0.05}
+              onValueChange={(value) => setVolume(value[0])}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
