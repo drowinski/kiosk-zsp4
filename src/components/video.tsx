@@ -101,7 +101,7 @@ export function Video({ src, className, ...props }: VideoProps) {
         onTimeUpdate={handleProgress}
         {...props}
       />
-      <div className={'absolute bottom-2 left-2 right-2 flex h-8 gap-2'}>
+      <div className={'absolute bottom-2 left-2 right-2 flex h-8 gap-2 swiper-no-swiping'}>
         <Button
           size={'square'}
           onClick={() => togglePlay()}
