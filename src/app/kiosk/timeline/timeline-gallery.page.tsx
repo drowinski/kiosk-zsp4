@@ -10,7 +10,7 @@ import { InfoIcon, XIcon } from '@/components/icons';
 import { formatDate } from '@/features/assets/utils/dates';
 import { Button } from '@/components/base/button';
 import { Asset } from '@/features/assets/assets.validation';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogOverlay, DialogTitle } from '@radix-ui/react-dialog';
 import 'swiper/css';
 import 'swiper/css/zoom';
@@ -65,9 +65,6 @@ export interface GalleryDetailModalProps {
 }
 
 export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChange }: GalleryDetailModalProps) {
-  const prevButtonRef = useRef<HTMLButtonElement>(null);
-  const nextButtonRef = useRef<HTMLButtonElement>(null);
-
   const [asset, setAsset] = useState<Asset>(assets[currentAssetIndex]);
   const [isOpen, _setIsOpen] = useState(open);
 
@@ -95,7 +92,7 @@ export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChan
             spaceBetween={50}
             slidesPerView={1}
             initialSlide={currentAssetIndex}
-            navigation={{ prevEl: prevButtonRef.current, nextEl: nextButtonRef.current }}
+            navigation={{ prevEl: '.swiper-button-prev', nextEl: '.swiper-button-next' }}
             zoom={{ minRatio: 1, maxRatio: 3, toggle: true }}
             onSlideChange={(swiper) => setAsset(assets[swiper.activeIndex])}
             className={'h-full w-full rounded-xl'}
@@ -134,20 +131,8 @@ export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChan
               <span className={'text-2xl font-medium'}>{asset?.date ? formatDate(asset.date) : 'Nieznana'}</span>
             </div>
             <div className={'mt-auto flex gap-2'}>
-              <Button
-                ref={prevButtonRef}
-                type={'button'}
-                className={'grow'}
-              >
-                Poprzedni
-              </Button>
-              <Button
-                ref={nextButtonRef}
-                type={'button'}
-                className={'grow'}
-              >
-                Następny
-              </Button>
+              <Button className={'swiper-button-prev grow'}>Poprzedni</Button>
+              <Button className={'swiper-button-next grow'}>Następny</Button>
             </div>
           </Card>
         </div>
