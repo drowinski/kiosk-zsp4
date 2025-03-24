@@ -73,14 +73,21 @@ export function GalleryGridItem({ asset, enableDebugView = false, className, ...
         </div>
       )}
       {enableDebugView && (
-        <div className={'absolute flex size-full flex-col'}>
+        <div
+          className={
+            'absolute flex size-full select-text flex-col overflow-hidden p-2 font-bold text-white backdrop-blur-sm'
+          }
+        >
           <span>ID: {asset.id}</span>
           <span>File name: {asset.fileName}</span>
+          <span>Mime type: {asset.mimeType}</span>
           <span>Asset type: {asset.assetType}</span>
-          <span>Formatted date: {asset?.date ? formatDate(asset.date) : 'Nieznana'}</span>
-          <span>Date min: {asset.date?.dateMin.toDateString()}</span>
-          <span>Date max: {asset.date?.dateMax.toDateString()}</span>
+          <span>Date: {asset?.date ? formatDate(asset.date) : 'Nieznana'}</span>
+          <span>Date min: {asset.date?.dateMin.toISOString()}</span>
+          <span>Date max: {asset.date?.dateMax.toISOString()}</span>
           <span>Date precision: {asset.date?.datePrecision}</span>
+          <span>Tags: {asset.tags.length > 0 ? asset.tags.map((tag) => tag.name).join(', ') : '❌'}</span>
+          <span>Description: {asset.description}</span>
         </div>
       )}
     </div>
