@@ -20,6 +20,7 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { TagSelector } from '@/features/tags/components/tag-selector';
 import { tagRepository } from '@/features/tags/tags.repository';
+import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 
 const assetEditFormSchema = assetUpdateSchema.pick({
   id: true,
@@ -155,7 +156,8 @@ export default function AssetEditModal() {
         <div className={'flex max-h-60 max-w-full items-start justify-center'}>
           <Asset
             assetType={asset.assetType}
-            fileName={asset.fileName}
+            fileName={asset.assetType !== 'image' ? asset.fileName : undefined}
+            fullUrl={asset.assetType === 'image' ? getAssetThumbnailUri(asset.fileName) : undefined}
           />
         </div>
         <Form
