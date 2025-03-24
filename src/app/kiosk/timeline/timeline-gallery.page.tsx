@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Mousewheel, Navigation, Pagination, Zoom } from 'swiper/modules';
 import { Asset as AssetComponent } from '@/features/assets/components/asset';
 import { Card } from '@/components/base/card';
-import { InfoIcon, XIcon } from '@/components/icons';
+import { ChevronLeftIcon, ChevronRightIcon, InfoIcon, XIcon } from '@/components/icons';
 import { formatDate } from '@/features/assets/utils/dates';
 import { Button } from '@/components/base/button';
 import { Asset } from '@/features/assets/assets.validation';
@@ -39,7 +39,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         return map;
       }, new Map())
       .values()
-  ).sort((a, b) => a.name > b.name ? 1 : -1);
+  ).sort((a, b) => (a.name > b.name ? 1 : -1));
   return { assets, allAssetTags };
 }
 
@@ -189,8 +189,14 @@ export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChan
               <span className={'text-2xl font-medium'}>{asset?.date ? formatDate(asset.date) : 'Nieznana'}</span>
             </div>
             <div className={'mt-auto flex gap-2'}>
-              <Button className={'swiper-button-prev grow'}>Poprzedni</Button>
-              <Button className={'swiper-button-next grow'}>Następny</Button>
+              <Button className={'swiper-button-prev grow gap-1'}>
+                <ChevronLeftIcon />
+                Poprzedni
+              </Button>
+              <Button className={'swiper-button-next grow gap-1'}>
+                Następny
+                <ChevronRightIcon />
+              </Button>
             </div>
           </Card>
         </div>
