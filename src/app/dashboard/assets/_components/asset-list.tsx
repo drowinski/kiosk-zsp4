@@ -49,15 +49,15 @@ export function AssetListItem({ asset, linkTo, linkState, isSelected = false, on
               {asset.description || 'Brak opisu.'}
             </span>
           </div>
-          <div className={'flex max-w-full gap-1 overflow-clip'}>
-            <div className={'rounded-xl border border-secondary px-2 py-1 text-sm'}>
+          <div className={'flex max-w-full gap-1 overflow-clip rounded-r-md'}>
+            <div className={'text-nowrap rounded-xl border border-secondary px-2 py-1 text-sm'}>
               {asset.date ? formatDate(asset.date) : 'Brak daty'}
             </div>
             {asset.tags.map((tag) => (
               <div
                 key={tag.id}
                 className={
-                  'flex items-center justify-center rounded-xl bg-secondary px-2 py-1 text-sm text-secondary-foreground'
+                  'flex items-center justify-center text-nowrap rounded-xl bg-secondary px-2 py-1 text-sm text-secondary-foreground'
                 }
               >
                 {tag.name}
