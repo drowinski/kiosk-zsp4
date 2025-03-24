@@ -3,7 +3,7 @@ import { LoaderFunctionArgs } from '@remix-run/node';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
 import { useLoaderData } from '@remix-run/react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Zoom } from 'swiper/modules';
+import { Mousewheel, Navigation, Pagination, Zoom } from 'swiper/modules';
 import { Asset as AssetComponent } from '@/features/assets/components/asset';
 import { Card } from '@/components/base/card';
 import { InfoIcon, XIcon } from '@/components/icons';
@@ -12,9 +12,11 @@ import { Button } from '@/components/base/button';
 import { Asset } from '@/features/assets/assets.validation';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogOverlay, DialogTitle } from '@radix-ui/react-dialog';
+import { cn } from '@/utils/styles';
+
 import 'swiper/css';
 import 'swiper/css/zoom';
-import { cn } from '@/utils/styles';
+import 'swiper/css/mousewheel';
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const timelineRangeId = parseInt(params.timelineId || '');
@@ -91,11 +93,17 @@ export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChan
       >
         <div className={'max-w-4/5 flex w-4/5 items-center justify-center overflow-hidden'}>
           <Swiper
-            modules={[Navigation, Pagination, Zoom]}
+            modules={[Navigation, Pagination, Mousewheel, Zoom]}
             spaceBetween={50}
             slidesPerView={1}
             initialSlide={currentAssetIndex}
             navigation={{ prevEl: '.swiper-button-prev', nextEl: '.swiper-button-next' }}
+            mousewheel={{
+              forceToAxis: true,
+              sensitivity: 1,
+              thresholdDelta: 10,
+              thresholdTime: 500
+            }}
             zoom={{ minRatio: 1, maxRatio: 3, toggle: true }}
             onSlideChange={(swiper) => setAsset(assets[swiper.activeIndex])}
             className={'h-full w-full rounded-xl'}
