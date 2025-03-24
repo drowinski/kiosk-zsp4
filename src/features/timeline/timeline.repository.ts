@@ -60,7 +60,7 @@ export class DrizzleTimelineRepository implements TimelineRepository {
       .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id))
       .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
       .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
-      .leftJoin(timelineRangeTable, eq(timelineRangeTable.id, id))
+      .innerJoin(timelineRangeTable, eq(timelineRangeTable.id, id))
       .where(
         and(
           isNotNull(dateTable.dateMin),

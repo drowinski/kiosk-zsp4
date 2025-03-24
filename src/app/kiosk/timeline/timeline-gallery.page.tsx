@@ -1,0 +1,165 @@
+import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
+import { LoaderFunctionArgs } from '@remix-run/node';
+import { timelineRepository } from '@/features/timeline/timeline.repository';
+import { useLoaderData } from '@remix-run/react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Zoom } from 'swiper/modules';
+import { Asset as AssetComponent } from '@/features/assets/components/asset';
+import { Card } from '@/components/base/card';
+import { InfoIcon, XIcon } from '@/components/icons';
+import { formatDate } from '@/features/assets/utils/dates';
+import { Button } from '@/components/base/button';
+import { Asset } from '@/features/assets/assets.validation';
+import { useRef, useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogOverlay, DialogTitle } from '@radix-ui/react-dialog';
+import 'swiper/css';
+import 'swiper/css/zoom';
+import { cn } from '@/utils/styles';
+
+export async function loader({ params }: LoaderFunctionArgs) {
+  const timelineRangeId = parseInt(params.timelineId || '');
+  if (!timelineRangeId) {
+    throw new Response(null, { status: 400, statusText: 'Bad Request' });
+  }
+  const assets = await timelineRepository.getAllAssetsInTimelineRangeById(timelineRangeId);
+  return { assets };
+}
+
+export default function TimelineGalleryPage() {
+  const { assets } = useLoaderData<typeof loader>();
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [detailAssetIndex, setDetailAssetIndex] = useState(0);
+
+  return (
+    <main className={'flex h-full flex-col gap-1'}>
+      <GalleryGrid className={'no-scrollbar z-0 -mt-4 overflow-y-scroll px-1 pb-2 pt-4'}>
+        {assets.map((asset, index) => (
+          <GalleryGridItem
+            key={asset.id}
+            asset={asset}
+            enableDebugView={true}
+            tabIndex={0}
+            role={'button'}
+            onClick={() => {
+              setDetailAssetIndex(index);
+              setIsDetailModalOpen(true);
+            }}
+          />
+        ))}
+      </GalleryGrid>
+      <GalleryDetailModal
+        open={isDetailModalOpen}
+        onOpenChange={(open) => setIsDetailModalOpen(open)}
+        assets={assets}
+        currentAssetIndex={detailAssetIndex}
+      />
+    </main>
+  );
+}
+
+export interface GalleryDetailModalProps {
+  assets: Asset[];
+  currentAssetIndex: number;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChange }: GalleryDetailModalProps) {
+  const prevButtonRef = useRef<HTMLButtonElement>(null);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [asset, setAsset] = useState<Asset>(assets[currentAssetIndex]);
+  const [isOpen, _setIsOpen] = useState(open);
+
+  if (open !== isOpen) {
+    _setIsOpen(open);
+  }
+
+  const setIsOpen = (open: boolean) => {
+    _setIsOpen(open);
+    onOpenChange?.(open);
+  };
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={setIsOpen}
+    >
+      <DialogOverlay className={cn('absolute inset-0 bg-black', 'data-[state=open]:animate-gallery-detail-fade-in')} />
+      <DialogContent
+        className={cn('absolute inset-0 flex h-full w-full', 'data-[state=open]:animate-gallery-detail-scale-in')}
+      >
+        <div className={'max-w-4/5 flex w-4/5 items-center justify-center overflow-hidden'}>
+          <Swiper
+            modules={[Navigation, Pagination, Zoom]}
+            spaceBetween={50}
+            slidesPerView={1}
+            initialSlide={currentAssetIndex}
+            navigation={{ prevEl: prevButtonRef.current, nextEl: nextButtonRef.current }}
+            zoom={{ minRatio: 1, maxRatio: 3, toggle: true }}
+            onSlideChange={(swiper) => setAsset(assets[swiper.activeIndex])}
+            className={'h-full w-full rounded-xl'}
+          >
+            {assets.map((asset, index) => (
+              <SwiperSlide key={index}>
+                <div
+                  className={cn(
+                    'flex h-full w-full items-center justify-center p-4',
+                    asset.assetType === 'image' && 'swiper-zoom-container'
+                  )}
+                >
+                  <AssetComponent
+                    assetType={asset.assetType}
+                    fileName={asset.fileName}
+                  />
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+        <div className={'h-full w-1/5 p-2 pl-0'}>
+          <Card className={'flex h-full flex-col gap-4'}>
+            <DialogTitle className={'inline-flex items-center gap-2 text-3xl'}>
+              <InfoIcon /> O tym materiale
+            </DialogTitle>
+            <DialogDescription className={'text-xl'}>{asset?.description && asset.description}</DialogDescription>
+            <div className={'flex flex-col'}>
+              <span className={'text-xl'}>
+                {asset?.date
+                  ? asset.date.dateMin.getTime() !== asset.date.dateMax.getTime() && !asset.date.dateIsRange
+                    ? 'Przybliżona data'
+                    : 'Data'
+                  : 'Data'}
+              </span>
+              <span className={'text-2xl font-medium'}>{asset?.date ? formatDate(asset.date) : 'Nieznana'}</span>
+            </div>
+            <div className={'mt-auto flex gap-2'}>
+              <Button
+                ref={prevButtonRef}
+                type={'button'}
+                className={'grow'}
+              >
+                Poprzedni
+              </Button>
+              <Button
+                ref={nextButtonRef}
+                type={'button'}
+                className={'grow'}
+              >
+                Następny
+              </Button>
+            </div>
+          </Card>
+        </div>
+        <Button
+          size={'icon'}
+          variant={'ghost'}
+          className={'absolute left-3 top-3 z-10'}
+          onClick={() => setIsOpen(false)}
+        >
+          <XIcon color={'white'} />
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
+}

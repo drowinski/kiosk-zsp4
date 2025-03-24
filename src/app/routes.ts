@@ -7,6 +7,7 @@ export const routes = defineRoutes((route) => {
       route(':id', 'kiosk/gallery/gallery-detail.modal.tsx');
     });
     route('timeline', 'kiosk/timeline/timeline.page.tsx');
+    route('timeline/:timelineId/gallery', 'kiosk/timeline/timeline-gallery.page.tsx');
   });
   route('auth/sign-in', 'auth/sign-in.page.tsx');
   route('auth/sign-out', 'auth/sign-out.route.ts');

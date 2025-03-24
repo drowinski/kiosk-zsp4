@@ -13,6 +13,7 @@ import {
   FaFilm,
   FaFilter,
   FaImage,
+  FaInfoCircle,
   FaPause,
   FaPlay,
   FaPlus,
@@ -124,4 +125,8 @@ export function EllipsisIcon(props: IconProps) {
 
 export function UploadIcon(props: IconProps) {
   return <FaUpload {...props} />;
+}
+
+export function InfoIcon(props: IconProps) {
+  return <FaInfoCircle {...props} />;
 }
