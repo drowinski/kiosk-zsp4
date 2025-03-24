@@ -44,7 +44,7 @@ export default function TagListPage() {
           to={'create'}
           state={{ previousPathname: location.pathname, previousSearch: location.search }}
         >
-          <PlusIcon /> Dodaj tag
+          <PlusIcon /> Utwórz tag
         </Link>
       </Button>
       <Table>

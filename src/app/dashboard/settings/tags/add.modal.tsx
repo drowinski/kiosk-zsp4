@@ -78,7 +78,7 @@ export default function TagCreateModal() {
             variant={'success'}
             disabled={navigation.state !== 'idle' || !form.dirty}
           >
-            Zapisz
+            Utwórz
           </Button>
         </Form>
       </ModalContent>

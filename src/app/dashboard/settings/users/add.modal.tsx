@@ -144,7 +144,7 @@ export default function UserCreateModal() {
               navigation.state !== 'idle'
             }
           >
-            Zapisz zmiany
+            Dodaj
           </Button>
         </Form>
       </ModalContent>
