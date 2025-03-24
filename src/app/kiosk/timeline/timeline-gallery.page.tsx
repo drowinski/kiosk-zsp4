@@ -30,6 +30,11 @@ export default function TimelineGalleryPage() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [detailAssetIndex, setDetailAssetIndex] = useState(0);
 
+  const openDetailModal = (assetIndex?: number) => {
+    if (assetIndex) setDetailAssetIndex(assetIndex);
+    setIsDetailModalOpen(true);
+  };
+
   return (
     <main className={'flex h-full flex-col gap-1'}>
       <GalleryGrid className={'no-scrollbar z-0 -mt-4 overflow-y-scroll px-1 pb-2 pt-4'}>
@@ -40,10 +45,8 @@ export default function TimelineGalleryPage() {
             enableDebugView={true}
             tabIndex={0}
             role={'button'}
-            onClick={() => {
-              setDetailAssetIndex(index);
-              setIsDetailModalOpen(true);
-            }}
+            onClick={() => openDetailModal(index)}
+            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && openDetailModal(index)}
           />
         ))}
       </GalleryGrid>
@@ -141,6 +144,7 @@ export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChan
           variant={'ghost'}
           className={'absolute left-3 top-3 z-10'}
           onClick={() => setIsOpen(false)}
+          aria-label={'Zamknij'}
         >
           <XIcon color={'white'} />
         </Button>

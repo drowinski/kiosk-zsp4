@@ -114,6 +114,7 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
             setShowPlayOverlay(false);
             togglePlay(true);
           }}
+          aria-label={'Odtwórz film'}
         >
           <div className={'flex h-full w-full items-center justify-center'}>
             <div className={'aspect-square rounded-xl bg-primary p-3 text-primary-foreground'}>
@@ -126,6 +127,7 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
           <Button
             size={'square'}
             onClick={() => togglePlay()}
+            aria-label={isPaused ? 'Odtwórz film' : 'Wstrzymaj film'}
           >
             {isPaused ? <PlayIcon /> : <PauseIcon />}
           </Button>
@@ -135,6 +137,7 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
               value={progress * 100}
               onPointerDown={handleScrubStart}
               onClick={(e) => scrub(e.nativeEvent)}
+              aria-label={'Suwak czasu'}
             />
             <Slider
               defaultValue={[videoRef.current?.volume || 1]}
@@ -142,6 +145,7 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
               max={1}
               step={0.05}
               onValueChange={(value) => setVolume(value[0])}
+              aria-label={'Suwak głośności'}
             />
           </div>
         </div>

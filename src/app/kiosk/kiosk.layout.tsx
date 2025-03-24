@@ -4,6 +4,10 @@ import { ArrowLeftIcon, CircleExclamationIcon } from '@/components/icons';
 import { Button } from '@/components/base/button';
 import React from 'react';
 
+export function meta() {
+  return [{ title: 'Kiosk Izby Pamięci ZSP4' }];
+}
+
 export interface Layout extends React.PropsWithChildren {}
 
 export function Layout({ children }: Layout) {
@@ -17,6 +21,7 @@ export function Layout({ children }: Layout) {
             variant={'ghost'}
             size={'icon'}
             onClick={() => navigate(-1)}
+            aria-label={'Cofnij'}
           >
             <ArrowLeftIcon />
           </Button>
