@@ -18,7 +18,7 @@ import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
 import { PlusIcon } from '@/components/icons';
 import { Asset, assetSchema, AssetType } from '@/features/assets/assets.validation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AssetDeleteModal } from '@/app/dashboard/assets/_components/asset-delete-modal';
 import { Checkbox } from '@/components/base/checkbox';
 import { requireSession } from '@/features/sessions/sessions.server-utils';
@@ -100,6 +100,10 @@ export default function AssetListPage() {
   const submit = useSubmit();
 
   const [selectedAssetIds, setSelectedAssetIds] = useState<Set<Asset['id']>>(new Set());
+
+  useEffect(() => {
+    setSelectedAssetIds(new Set());
+  }, [assets]);
 
   return (
     <main className={'flex h-full gap-2'}>
