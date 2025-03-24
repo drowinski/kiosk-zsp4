@@ -59,16 +59,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const submission = await parseWithZod(formData, { schema: assetEditFormSchema, async: true });
+  const submission = await parseWithZod(formData, {
+    schema: assetEditFormSchema.transform((asset) => {
+      if (asset.description === undefined) asset.description = null;
+      if (asset.date === undefined) asset.date = null;
+      if (asset.tagIds === undefined) asset.tagIds = [];
+      return asset;
+    }),
+    async: true
+  });
   if (submission.status !== 'success') {
     return { lastResult: submission.reply() };
-  }
-
-  if (submission.value.date === undefined) {
-    submission.value.date = null;
-  }
-  if (submission.value.tagIds === undefined) {
-    submission.value.tagIds = [];
   }
 
   try {
