@@ -27,7 +27,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   if (!timelineRange) {
     throw new Response(null, { status: 404, statusText: 'Not Found' });
   }
-  const assets = await timelineRepository.getAllAssetsInTimelineRangeById(timelineRangeId);
+  const assets = await timelineRepository.getAssetsByTimelineRangeId(timelineRangeId);
   return { timelineRange, assets };
 }
 

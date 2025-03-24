@@ -1,7 +1,7 @@
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
-import { useLoaderData } from '@remix-run/react';
+import { Link, useLoaderData, useLocation } from '@remix-run/react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Mousewheel, Navigation, Pagination, Zoom } from 'swiper/modules';
 import { Asset as AssetComponent } from '@/features/assets/components/asset';
@@ -17,20 +17,38 @@ import { cn } from '@/utils/styles';
 import 'swiper/css';
 import 'swiper/css/zoom';
 import 'swiper/css/mousewheel';
+import { Tag } from '@/features/tags/tags.validation';
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const timelineRangeId = parseInt(params.timelineId || '');
   if (!timelineRangeId) {
     throw new Response(null, { status: 400, statusText: 'Bad Request' });
   }
-  const assets = await timelineRepository.getAllAssetsInTimelineRangeById(timelineRangeId);
-  return { assets };
+
+  const searchParams = new URLSearchParams(new URL(request.url).searchParams);
+  console.log(searchParams.entries());
+  let tagId: number | undefined = parseInt(searchParams.get('tag') || '');
+  console.log(tagId);
+  tagId = Number.isNaN(tagId) ? undefined : tagId;
+
+  const assets = await timelineRepository.getAssetsByTimelineRangeId(timelineRangeId, tagId);
+  const allAssetTags = Array.from(
+    assets
+      .reduce<Map<Tag['id'], Tag>>((map, asset) => {
+        asset.tags.forEach((tag) => map.set(tag.id, tag));
+        return map;
+      }, new Map())
+      .values()
+  ).sort((a, b) => a.name > b.name ? 1 : -1);
+  return { assets, allAssetTags };
 }
 
 export default function TimelineGalleryPage() {
-  const { assets } = useLoaderData<typeof loader>();
+  const { assets, allAssetTags } = useLoaderData<typeof loader>();
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [detailAssetIndex, setDetailAssetIndex] = useState(0);
+  const location = useLocation();
+  const tagId = new URLSearchParams(location.search).get('tag');
 
   const openDetailModal = (assetIndex?: number) => {
     if (assetIndex) setDetailAssetIndex(assetIndex);
@@ -39,6 +57,35 @@ export default function TimelineGalleryPage() {
 
   return (
     <main className={'flex h-full flex-col gap-1'}>
+      <Card className={'bg-primary p-0 text-primary-foreground'}>
+        <nav className={'flex gap-1 p-1'}>
+          <Button
+            className={cn('grow', !tagId && 'bg-accent text-accent-foreground')}
+            asChild
+          >
+            <Link
+              to={{ search: '' }}
+              replace
+            >
+              Wszystkie
+            </Link>
+          </Button>
+          {allAssetTags.map((tag) => (
+            <Button
+              key={tag.id}
+              className={cn('grow', tagId === tag.id.toString() && 'bg-accent text-accent-foreground')}
+              asChild
+            >
+              <Link
+                to={{ search: `?tag=${tag.id}` }}
+                replace
+              >
+                {tag.name}
+              </Link>
+            </Button>
+          ))}
+        </nav>
+      </Card>
       <GalleryGrid className={'no-scrollbar z-0 -mt-4 overflow-y-scroll px-1 pb-2 pt-4'}>
         {assets.map((asset, index) => (
           <GalleryGridItem

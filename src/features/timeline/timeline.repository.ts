@@ -1,7 +1,7 @@
 import { NewTimelineRange, TimelineRange, UpdatedTimelineRange } from '@/features/timeline/timeline.validation';
 import { db } from '@/lib/db/connection';
 import { timelineRangeTable } from '@/features/timeline/timeline.db';
-import { and, asc, eq, getTableColumns, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, eq, exists, getTableColumns, isNotNull, sql } from 'drizzle-orm';
 import { assetTable, dateTable } from '@/features/assets/assets.db';
 import { Asset } from '@/features/assets/assets.validation';
 import { assetTagJunctionTable, tagTable } from '@/features/tags/tags.db';
@@ -12,9 +12,9 @@ export interface TimelineRepository {
 
   getAllTimelineRanges(): Promise<TimelineRange[]>;
 
-  getAllAssetsInTimelineRangeById(id: number): Promise<Asset[]>;
+  getAssetsByTimelineRangeId(id: number, tagId?: number): Promise<Asset[]>;
 
-  createTimelineRange(newTimelineRange: NewTimelineRange): Promise<number | null>
+  createTimelineRange(newTimelineRange: NewTimelineRange): Promise<number | null>;
 
   updateTimelineRange(updatedTimelineRange: UpdatedTimelineRange): Promise<void>;
 }
@@ -47,7 +47,7 @@ export class DrizzleTimelineRepository implements TimelineRepository {
       .orderBy(sql`${asc(timelineRangeTable.minDate)} nulls first`);
   }
 
-  async getAllAssetsInTimelineRangeById(id: number): Promise<Asset[]> {
+  async getAssetsByTimelineRangeId(id: number, tagId?: number): Promise<Asset[]> {
     return db
       .select({
         ...getTableColumns(assetTable),
@@ -65,7 +65,15 @@ export class DrizzleTimelineRepository implements TimelineRepository {
         and(
           isNotNull(dateTable.dateMin),
           isNotNull(dateTable.dateMax),
-          sql`daterange(${dateTable.dateMin}, ${dateTable.dateMax}, '[]') && daterange(${timelineRangeTable.minDate}, ${timelineRangeTable.maxDate}, '[]')`
+          sql`daterange(${dateTable.dateMin}, ${dateTable.dateMax}, '[]') && daterange(${timelineRangeTable.minDate}, ${timelineRangeTable.maxDate}, '[]')`,
+          tagId
+            ? exists(
+                db
+                  .select({ _: sql`1` })
+                  .from(assetTagJunctionTable)
+                  .where(and(eq(assetTagJunctionTable.assetId, assetTable.id), eq(assetTagJunctionTable.tagId, tagId)))
+              )
+            : undefined
         )
       )
       .groupBy(assetTable.id, dateTable.id);
