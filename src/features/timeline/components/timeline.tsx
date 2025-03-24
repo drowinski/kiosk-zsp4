@@ -27,7 +27,7 @@ export const TimelineItem = React.forwardRef<HTMLDivElement, TimelineItemProps>(
             'relative flex aspect-[3/4] w-1/2 items-center justify-center overflow-hidden',
             'rounded-xl border-8 border-primary bg-primary shadow-md',
             'duration-500 ease-in-out group-[[data-selected=true]]:delay-75',
-            'group-[[data-selected=true]]:-translate-y-8 group-[[data-selected=true]]:scale-110',
+            'group-[[data-selected=true]]:translate-y-[-7%] group-[[data-selected=true]]:scale-110',
             'group-[[data-selected=true]]:shadow-xl'
           )}
           role={'link'}
@@ -46,7 +46,7 @@ export const TimelineItem = React.forwardRef<HTMLDivElement, TimelineItemProps>(
           className={cn(
             'flex flex-col items-center',
             'duration-500 group-[[data-selected=true]]:delay-200',
-            'group-[[data-selected=true]]:-translate-y-1 group-[[data-selected=true]]:scale-105',
+            'group-[[data-selected=true]]:translate-y-[-10%] group-[[data-selected=true]]:scale-105',
             'group-[[data-selected=true]]:drop-shadow-xl'
           )}
         >
