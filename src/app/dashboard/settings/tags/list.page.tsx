@@ -1,7 +1,7 @@
 import { tagRepository } from '@/features/tags/tags.repository';
 import { Link, Outlet, useLoaderData, useLocation, useSubmit } from '@remix-run/react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/base/table';
-import { EditIcon } from '@/components/icons';
+import { EditIcon, PlusIcon } from '@/components/icons';
 import { Button } from '@/components/base/button';
 import { TagDeleteModal } from '@/app/dashboard/settings/tags/_components/tag-delete-modal';
 import { ActionFunctionArgs } from '@remix-run/node';
@@ -36,6 +36,17 @@ export default function TagListPage() {
 
   return (
     <main className={'flex flex-col gap-1 p-2'}>
+      <Button
+        className={'flex items-center gap-2'}
+        asChild
+      >
+        <Link
+          to={'create'}
+          state={{ previousPathname: location.pathname, previousSearch: location.search }}
+        >
+          <PlusIcon /> Dodaj tag
+        </Link>
+      </Button>
       <Table>
         <TableHeader className={'bg-secondary text-secondary-foreground'}>
           <TableRow className={'text-nowrap'}>

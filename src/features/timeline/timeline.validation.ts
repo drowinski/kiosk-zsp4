@@ -5,7 +5,7 @@ const baseTimelineRangeSchema = z.object({
   id: z.number().positive().int(),
   minDate: z.date().nullable(),
   maxDate: z.date().nullable(),
-  caption: z.string().max(32).nullable().optional()
+  caption: z.string().max(32).trim().nullable().optional()
 });
 
 export const timelineRangeSchema = baseTimelineRangeSchema.extend({

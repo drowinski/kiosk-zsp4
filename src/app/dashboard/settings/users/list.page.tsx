@@ -51,7 +51,10 @@ export default function UserListPage() {
         className={'flex items-center gap-2'}
         asChild
       >
-        <Link to={'create'}>
+        <Link
+          to={'create'}
+          state={{ previousPathname: location.pathname, previousSearch: location.search }}
+        >
           <PlusIcon /> Dodaj użytkownika
         </Link>
       </Button>

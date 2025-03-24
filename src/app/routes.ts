@@ -28,6 +28,7 @@ export const routes = defineRoutes((route) => {
       });
       route('tags', 'dashboard/settings/tags/list.page.tsx', () => {
         route(':id', 'dashboard/settings/tags/edit.modal.tsx');
+        route('create', 'dashboard/settings/tags/create.modal.tsx');
       });
     });
   });

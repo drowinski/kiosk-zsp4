@@ -1,43 +1,30 @@
 import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from '@/components/base/modal';
-import { Form, useActionData, useLoaderData, useLocation, useNavigate, useNavigation } from '@remix-run/react';
+import { Form, useActionData, useLocation, useNavigate, useNavigation } from '@remix-run/react';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { ActionFunctionArgs } from '@remix-run/node';
 import { Input, InputErrorMessage } from '@/components/base/input';
 import { Label } from '@/components/base/label';
 import { Button } from '@/components/base/button';
 import { tagRepository } from '@/features/tags/tags.repository';
-import { updateTagSchema } from '@/features/tags/tags.validation';
+import { createTagSchema } from '@/features/tags/tags.validation';
 
-const tagEditFormSchema = updateTagSchema;
-
-export async function loader({ params }: LoaderFunctionArgs) {
-  const tagId = parseInt(params.id || '');
-  if (!tagId) {
-    throw new Response(null, { status: 404, statusText: 'Not Found' });
-  }
-  const tag = await tagRepository.getTagById(tagId);
-  if (!tag) {
-    throw new Response(null, { status: 404, statusText: 'Not Found' });
-  }
-  return { tag };
-}
+const tagCreateFormSchema = createTagSchema;
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const submission = await parseWithZod(formData, { schema: tagEditFormSchema, async: true });
+  const submission = await parseWithZod(formData, { schema: tagCreateFormSchema, async: true });
   if (submission.status !== 'success') {
     return { lastResult: submission.reply() };
   }
-  const result = await tagRepository.updateTag(submission.value);
+  const result = await tagRepository.createTag(submission.value);
   if (!result) {
     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
   }
   return { lastResult: submission.reply({ resetForm: true }) };
 }
 
-export default function TagEditModal() {
-  const { tag } = useLoaderData<typeof loader>();
+export default function TagCreateModal() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const navigate = useNavigate();
@@ -46,13 +33,12 @@ export default function TagEditModal() {
   const [form, fields] = useForm({
     lastResult: actionData?.lastResult ?? null,
     onValidate: ({ formData }) => {
-      const res = parseWithZod(formData, { schema: tagEditFormSchema });
+      const res = parseWithZod(formData, { schema: tagCreateFormSchema });
       console.log(res);
       return res;
     },
     defaultValue: {
-      id: tag.id,
-      name: tag.name
+      name: ''
     }
   });
 
@@ -65,14 +51,8 @@ export default function TagEditModal() {
     >
       <ModalContent className={'w-fit max-w-72'}>
         <ModalHeader>
-          <ModalTitle>
-            <span>
-              Zmień nazwę tagu
-              <br />
-              <span className={'font-bold'}>{tag.name}</span>
-            </span>
-          </ModalTitle>
-          <ModalDescription className={'sr-only'}>Edytuj tag</ModalDescription>
+          <ModalTitle>Utwórz tag</ModalTitle>
+          <ModalDescription className={'sr-only'}>Utwórz nowy tag</ModalDescription>
         </ModalHeader>
         <Form
           method={'post'}
@@ -81,14 +61,8 @@ export default function TagEditModal() {
           noValidate
           className={'flex grow flex-col gap-2'}
         >
-          <input
-            type="hidden"
-            name={fields.id.name}
-            defaultValue={fields.id.initialValue}
-            readOnly
-          />
           <Label className={'w-full'}>
-            <span className={'sr-only'}>Nazwa</span>
+            Nazwa
             <Input
               type={'text'}
               name={fields.name.name}

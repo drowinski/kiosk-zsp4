@@ -5,7 +5,7 @@ export const userPasswordHashSchema = z.string().length(160);
 
 const userBaseSchema = z.object({
   id: z.number().positive().int(),
-  username: z.string().trim().min(4).max(32),
+  username: z.string().trim().min(4).max(32).trim(),
   isSuperuser: z.boolean().default(false)
 });
 
