@@ -17,6 +17,8 @@ export interface TimelineRepository {
   createTimelineRange(newTimelineRange: NewTimelineRange): Promise<number | null>;
 
   updateTimelineRange(updatedTimelineRange: UpdatedTimelineRange): Promise<void>;
+
+  deleteTimelineRange(id: number): Promise<void>;
 }
 
 export class DrizzleTimelineRepository implements TimelineRepository {
@@ -90,6 +92,10 @@ export class DrizzleTimelineRepository implements TimelineRepository {
   async updateTimelineRange(updatedTimelineRange: UpdatedTimelineRange): Promise<void> {
     const { id, ...values } = updatedTimelineRange;
     await db.update(timelineRangeTable).set(values).where(eq(timelineRangeTable.id, id));
+  }
+
+  async deleteTimelineRange(id: number): Promise<void> {
+    await db.delete(timelineRangeTable).where(eq(timelineRangeTable.id, id));
   }
 }
 

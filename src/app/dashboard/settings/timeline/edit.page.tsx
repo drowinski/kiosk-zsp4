@@ -1,9 +1,9 @@
 import { formatCaption } from '@/features/timeline/utils/strings';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useSubmit } from '@remix-run/react';
 import { Input, InputErrorMessage } from '@/components/base/input';
 import { getYYYYMMDD } from '@/utils/dates';
-import { TimelineRange, updateTimelineRangeSchema } from '@/features/timeline/timeline.validation';
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
+import { TimelineRange, timelineRangeSchema, updateTimelineRangeSchema } from '@/features/timeline/timeline.validation';
+import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
 import { SubmissionResult, useForm, useInputControl } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
@@ -15,8 +15,10 @@ import { cn } from '@/utils/styles';
 import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 import { Label } from '@/components/base/label';
 import { useState } from 'react';
+import { TimelineRangeDeleteModal } from '@/app/dashboard/settings/timeline/_components/timeline-range-delete-modal';
+import { CheckIcon } from '@/components/icons';
 
-const updateTimelineRangeForm = updateTimelineRangeSchema;
+const updateTimelineRangeFormSchema = updateTimelineRangeSchema;
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const timelineRangeId = parseInt(params.id || '');
@@ -31,31 +33,42 @@ export async function loader({ params }: LoaderFunctionArgs) {
   return { timelineRange, assets };
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData();
-  const submission = await parseWithZod(formData, {
-    schema: updateTimelineRangeForm.transform((timelineRange) => {
-      if (timelineRange.minDate === undefined) timelineRange.minDate = null;
-      if (timelineRange.maxDate === undefined) timelineRange.maxDate = null;
-      if (timelineRange.caption === undefined) timelineRange.caption = null;
-      return timelineRange;
-    }),
-    async: true
-  });
-  if (submission.status !== 'success') {
-    return { lastResult: submission.reply() };
-  }
-  try {
-    await timelineRepository.updateTimelineRange(submission.value);
-  } catch (_error) {
-    const error = _error as { code: string };
-    let errorMessage = 'Wystąpił błąd.';
-    if (error?.code === '23P01') {
-      errorMessage = 'Daty nie mogą pokrywać się z datami innego okresu.';
+export async function action({ request, params }: ActionFunctionArgs) {
+  if (request.method === 'POST') {
+    const formData = await request.formData();
+    const submission = await parseWithZod(formData, {
+      schema: updateTimelineRangeFormSchema.transform((timelineRange) => {
+        if (timelineRange.minDate === undefined) timelineRange.minDate = null;
+        if (timelineRange.maxDate === undefined) timelineRange.maxDate = null;
+        if (timelineRange.caption === undefined) timelineRange.caption = null;
+        return timelineRange;
+      }),
+      async: true
+    });
+    if (submission.status !== 'success') {
+      return { lastResult: submission.reply() };
     }
-    return { lastResult: submission.reply({ formErrors: [errorMessage] }) };
+    try {
+      await timelineRepository.updateTimelineRange(submission.value);
+    } catch (_error) {
+      const error = _error as { code: string };
+      let errorMessage = 'Wystąpił błąd.';
+      if (error?.code === '23P01') {
+        errorMessage = 'Daty nie mogą pokrywać się z datami innego okresu.';
+      }
+      return { lastResult: submission.reply({ formErrors: [errorMessage] }) };
+    }
+    return { lastResult: submission.reply() };
+  } else if (request.method === 'DELETE') {
+    const { data: timelineRangeId } = await timelineRangeSchema.shape.id.safeParseAsync(params.id);
+    if (!timelineRangeId) {
+      throw new Response(null, { status: 404, statusText: 'Not Found' });
+    }
+    await timelineRepository.deleteTimelineRange(timelineRangeId);
+    return redirect(new URL(request.url).pathname.replace(/\/[^/]*$/, `/new`));
+  } else {
+    return null;
   }
-  return { lastResult: submission.reply() };
 }
 
 export default function TimelineRangeEditPage() {
@@ -82,10 +95,12 @@ interface TimelineRangeEditFormProps {
 }
 
 export function TimelineRangeEditForm({ timelineRange, assets, lastResult }: TimelineRangeEditFormProps) {
+  const submit = useSubmit();
+
   const [form, fields] = useForm({
     lastResult,
     onValidate: ({ formData }) => {
-      const result = parseWithZod(formData, { schema: updateTimelineRangeForm });
+      const result = parseWithZod(formData, { schema: updateTimelineRangeFormSchema });
       console.log(result);
       return result;
     },
@@ -158,15 +173,15 @@ export function TimelineRangeEditForm({ timelineRange, assets, lastResult }: Tim
           type={'submit'}
           variant={'success'}
           disabled={!form.dirty}
+          className={'gap-1'}
         >
-          Zatwierdź zmiany
+          <CheckIcon/> <span>Zatwierdź zmiany</span>
         </Button>
-        <Button
-          type={'submit'}
-          variant={'danger'}
-        >
-          Usuń
-        </Button>
+        <TimelineRangeDeleteModal
+          timelineRangeId={timelineRange.id}
+          onDelete={() => submit(null, { method: 'DELETE' })}
+          triggerClassName={'w-full'}
+        />
       </div>
       <Modal
         open={isCoverAssetModalOpen}

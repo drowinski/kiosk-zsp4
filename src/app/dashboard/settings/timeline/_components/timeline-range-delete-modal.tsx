@@ -2,14 +2,15 @@ import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle, ModalTr
 import { Button } from '@/components/base/button';
 import { TrashIcon } from '@/components/icons';
 import { useState } from 'react';
+import { cn } from '@/utils/styles';
 
-interface TagDeleteModalProps {
-  tagId: number;
-  tagName: string;
-  onDelete: (tagId: number) => void;
+interface TimelineRangeDeleteModalProps {
+  timelineRangeId: number;
+  onDelete: (timelineRangeId: number) => void;
+  triggerClassName?: string;
 }
 
-export function TagDeleteModal({ tagId, tagName, onDelete }: TagDeleteModalProps) {
+export function TimelineRangeDeleteModal({ timelineRangeId, onDelete, triggerClassName }: TimelineRangeDeleteModalProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -20,7 +21,8 @@ export function TagDeleteModal({ tagId, tagName, onDelete }: TagDeleteModalProps
       <ModalTrigger asChild>
         <Button
           size={'icon'}
-          className={'gap-1'}
+          variant={'danger'}
+          className={cn('gap-1', triggerClassName)}
         >
           <TrashIcon /> Usuń
         </Button>
@@ -28,10 +30,7 @@ export function TagDeleteModal({ tagId, tagName, onDelete }: TagDeleteModalProps
       <ModalContent className={'w-fit max-w-72'}>
         <ModalHeader>
           <ModalTitle className={'inline-flex items-center gap-2'}>
-            <TrashIcon />{' '}
-            <span>
-              Czy na pewno chcesz usunąć tag <span className={'font-bold'}>{tagName}?</span>
-            </span>
+            <TrashIcon /> <span>Czy na pewno chcesz usunąć okres z osi czasu?</span>
           </ModalTitle>
           <ModalDescription className={'text-danger'}>Ta czynność jest nieodwracalna.</ModalDescription>
         </ModalHeader>
@@ -42,7 +41,7 @@ export function TagDeleteModal({ tagId, tagName, onDelete }: TagDeleteModalProps
           >
             Anuluj
           </Button>
-          <Button onClick={() => onDelete(tagId)}>Usuń</Button>
+          <Button onClick={() => onDelete(timelineRangeId)}>Usuń</Button>
         </div>
       </ModalContent>
     </Modal>
