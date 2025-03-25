@@ -6,11 +6,12 @@
 
 import { PassThrough } from 'node:stream';
 
-import type { AppLoadContext, EntryContext } from '@remix-run/node';
+import type { ActionFunctionArgs, AppLoadContext, EntryContext, LoaderFunctionArgs } from '@remix-run/node';
 import { createReadableStreamFromReadable } from '@remix-run/node';
 import { RemixServer } from '@remix-run/react';
 import { isbot } from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
+import { logger } from '@/lib/logging';
 
 const ABORT_DELAY = 5_000;
 
@@ -69,7 +70,7 @@ function handleBotRequest(
           // errors encountered during initial shell rendering since they'll
           // reject and get logged in handleDocumentRequest.
           if (shellRendered) {
-            console.error(error);
+            // console.error(error);
           }
         }
       }
@@ -100,7 +101,7 @@ function handleBrowserRequest(
           const stream = createReadableStreamFromReadable(body);
 
           responseHeaders.set('Content-Type', 'text/html');
-
+          logger.info(`[${request.method}] ${request.url}`);
           resolve(
             new Response(stream, {
               headers: responseHeaders,
@@ -119,7 +120,7 @@ function handleBrowserRequest(
           // errors encountered during initial shell rendering since they'll
           // reject and get logged in handleDocumentRequest.
           if (shellRendered) {
-            console.error(error);
+            // console.error(error);
           }
         }
       }
@@ -127,4 +128,10 @@ function handleBrowserRequest(
 
     setTimeout(abort, ABORT_DELAY);
   });
+}
+
+export function handleError(error: unknown, { request, params, context }: LoaderFunctionArgs | ActionFunctionArgs) {
+  if (!request.signal.aborted) {
+    logger.error(error, `[${request.method}] ${request.url} - ${(error as { message: string }).message}`);
+  }
 }
