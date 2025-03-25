@@ -23,7 +23,7 @@ export default function TimelinePage() {
             (range.minDate ? range.minDate.getUTCFullYear().toString() + ' – ' : 'do ') +
               (range.maxDate ? range.maxDate.getUTCFullYear().toString() : 'teraz')
           }
-          onClickUri={`/kiosk/timeline/${range.id}/gallery`}
+          onClickUri={`${range.id}`}
           className={'min-w-full snap-center'}
         />
       ))}

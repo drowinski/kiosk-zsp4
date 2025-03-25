@@ -7,7 +7,7 @@ export default function KioskSplashPage() {
 
   return (
     <Link
-      to={'/kiosk/timeline'}
+      to={'/timeline'}
       className={'flex h-full cursor-default items-center gap-2'}
       aria-labelledby={'title-card'}
     >
