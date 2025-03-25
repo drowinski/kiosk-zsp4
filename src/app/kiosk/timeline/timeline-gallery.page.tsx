@@ -1,5 +1,6 @@
+import type { Route } from './+types/timeline-gallery.page';
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
-import { LoaderFunctionArgs, Link, useLoaderData, useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Mousewheel, Navigation, Pagination, Zoom } from 'swiper/modules';
@@ -9,39 +10,65 @@ import { ChevronLeftIcon, ChevronRightIcon, InfoIcon, XIcon } from '@/components
 import { formatDate } from '@/features/assets/utils/dates';
 import { Button } from '@/components/base/button';
 import { Asset } from '@/features/assets/assets.validation';
+import { Tag, tagSchema } from '@/features/tags/tags.validation';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogOverlay, DialogTitle } from '@radix-ui/react-dialog';
 import { cn } from '@/utils/styles';
+import { timelineRangeSchema } from '@/features/timeline/timeline.validation';
 
 import 'swiper/css';
 import 'swiper/css/zoom';
 import 'swiper/css/mousewheel';
-import { Tag } from '@/features/tags/tags.validation';
+import { tryAsync, trySync } from '@/utils/try';
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
-  const timelineRangeId = parseInt(params.timelineId || '');
-  if (!timelineRangeId) {
+export async function loader({ request, params, context: { logger } }: Route.LoaderArgs) {
+  logger.info('Parsing params...');
+  const [timelineRangeId, timelineRangeIdOk, timelineRangeIdError] = await tryAsync(
+    timelineRangeSchema.shape.id.parseAsync(params.timelineId)
+  );
+  if (!timelineRangeIdOk) {
+    logger.error(timelineRangeIdError);
     throw new Response(null, { status: 400, statusText: 'Bad Request' });
   }
 
-  const searchParams = new URLSearchParams(new URL(request.url).searchParams);
-  let tagId: number | undefined = parseInt(searchParams.get('tag') || '');
-  tagId = Number.isNaN(tagId) ? undefined : tagId;
+  const [tagId, tagIdOk, tagIdError] = await tryAsync(
+    tagSchema.shape.id.optional().parseAsync(new URL(request.url).searchParams.get('tag') || undefined)
+  );
+  if (!tagIdOk) {
+    logger.error(tagIdError);
+    throw new Response(null, { status: 400, statusText: 'Bad Request' });
+  }
 
-  const assets = await timelineRepository.getAssetsByTimelineRangeId(timelineRangeId, tagId);
-  const allAssetTags = Array.from(
-    assets
-      .reduce<Map<Tag['id'], Tag>>((map, asset) => {
-        asset.tags.forEach((tag) => map.set(tag.id, tag));
-        return map;
-      }, new Map())
-      .values()
-  ).sort((a, b) => (a.name > b.name ? 1 : -1));
-  return { assets, allAssetTags };
+  logger.info('Getting assets associated with timeline range...');
+  const [assets, assetsOk, assetsError] = await tryAsync(
+    timelineRepository.getAssetsByTimelineRangeId(timelineRangeId, tagId)
+  );
+  if (!assetsOk) {
+    logger.error(assetsError);
+    throw new Response(null, { status: 500, statusText: 'Server Error' });
+  }
+
+  logger.info('Getting available tags...');
+  const [tags, tagsOk, tagsError] = trySync(() =>
+    Array.from(
+      assets
+        .reduce<Map<Tag['id'], Tag>>((map, asset) => {
+          asset.tags.forEach((tag) => map.set(tag.id, tag));
+          return map;
+        }, new Map())
+        .values()
+    ).sort((a, b) => (a.name > b.name ? 1 : -1))
+  );
+  if (!tagsOk) {
+    logger.error(tagsError);
+    throw new Response(null, { status: 500, statusText: 'Server Error' });
+  }
+
+  logger.info('Success.');
+  return { assets, tags };
 }
 
-export default function TimelineGalleryPage() {
-  const { assets, allAssetTags } = useLoaderData<typeof loader>();
+export default function TimelineGalleryPage({ loaderData: { assets, tags } }: Route.ComponentProps) {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [detailAssetIndex, setDetailAssetIndex] = useState(0);
   const location = useLocation();
@@ -67,7 +94,7 @@ export default function TimelineGalleryPage() {
               Wszystkie
             </Link>
           </Button>
-          {allAssetTags.map((tag) => (
+          {tags.map((tag) => (
             <Button
               key={tag.id}
               className={cn('grow', tagId === tag.id.toString() && 'bg-accent text-accent-foreground')}

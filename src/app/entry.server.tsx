@@ -11,7 +11,6 @@ import { createReadableStreamFromReadable } from '@react-router/node';
 import { ServerRouter } from 'react-router';
 import { isbot } from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
-import { logger } from '@/lib/logging';
 
 // const ABORT_DELAY = 5_000;
 export const streamTimeout = 5000;
@@ -103,7 +102,7 @@ function handleBrowserRequest(
           const stream = createReadableStreamFromReadable(body);
 
           responseHeaders.set('Content-Type', 'text/html');
-          logger.info(`[${request.method}] ${request.url}`);
+
           resolve(
             new Response(stream, {
               headers: responseHeaders,
@@ -133,8 +132,11 @@ function handleBrowserRequest(
   });
 }
 
-export function handleError(error: unknown, { request, params, context }: LoaderFunctionArgs | ActionFunctionArgs) {
+export function handleError(
+  error: unknown,
+  { request, params, context: { logger } }: LoaderFunctionArgs | ActionFunctionArgs
+) {
   if (!request.signal.aborted) {
-    logger.error(error, `[${request.method}] ${request.url} - ${(error as { message: string }).message}`);
+    logger.error(error, (error as { message: string }).message);
   }
 }

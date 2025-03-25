@@ -1,4 +1,6 @@
-declare module '@react-router' {
+import { pino } from 'pino';
+
+declare module 'react-router' {
   // Your AppLoadContext used in v2
   interface AppLoadContext {
     logger: pino.Logger;
@@ -14,5 +16,3 @@ declare module '@react-router' {
     context: AppLoadContext;
   }
 }
-
-export {};

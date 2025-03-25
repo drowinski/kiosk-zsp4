@@ -31,7 +31,7 @@ app.all(
     build,
     getLoadContext: (req, res) => {
       return {
-        logger: logger.child({})
+        logger: logger.child({ httpMethod: req.method, url: req.url })
       };
     }
   })

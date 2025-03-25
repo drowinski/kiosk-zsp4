@@ -1,17 +1,14 @@
+import type { Route } from './+types/timeline.page';
 import { Timeline, TimelineItem } from '@/features/timeline/components/timeline';
-import { useLoaderData } from 'react-router';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
 import { getAssetUri } from '@/features/assets/utils/uris';
 
 export async function loader() {
   const timelineRanges = await timelineRepository.getAllTimelineRanges();
-
   return { timelineRanges };
 }
 
-export default function TimelinePage() {
-  const { timelineRanges } = useLoaderData<typeof loader>();
-
+export default function TimelinePage({ loaderData: { timelineRanges } }: Route.ComponentProps) {
   return (
     <Timeline className={'h-full'}>
       {timelineRanges.map((range) => (
