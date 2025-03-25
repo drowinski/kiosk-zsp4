@@ -15,11 +15,12 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogOverlay, DialogTitle } from '@radix-ui/react-dialog';
 import { cn } from '@/utils/styles';
 import { timelineRangeSchema } from '@/features/timeline/timeline.validation';
+import { tryAsync, trySync } from '@/utils/try';
+import { status, StatusCodes } from '@/utils/status-response';
 
 import 'swiper/css';
 import 'swiper/css/zoom';
 import 'swiper/css/mousewheel';
-import { tryAsync, trySync } from '@/utils/try';
 
 export async function loader({ request, params, context: { logger } }: Route.LoaderArgs) {
   logger.info('Parsing params...');
@@ -28,7 +29,7 @@ export async function loader({ request, params, context: { logger } }: Route.Loa
   );
   if (!timelineRangeIdOk) {
     logger.error(timelineRangeIdError);
-    throw new Response(null, { status: 400, statusText: 'Bad Request' });
+    throw status(StatusCodes.BAD_REQUEST);
   }
 
   const [tagId, tagIdOk, tagIdError] = await tryAsync(
@@ -36,7 +37,7 @@ export async function loader({ request, params, context: { logger } }: Route.Loa
   );
   if (!tagIdOk) {
     logger.error(tagIdError);
-    throw new Response(null, { status: 400, statusText: 'Bad Request' });
+    throw status(StatusCodes.BAD_REQUEST);
   }
 
   logger.info('Getting assets associated with timeline range...');
@@ -45,7 +46,7 @@ export async function loader({ request, params, context: { logger } }: Route.Loa
   );
   if (!assetsOk) {
     logger.error(assetsError);
-    throw new Response(null, { status: 500, statusText: 'Server Error' });
+    throw status(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 
   logger.info('Getting available tags...');
@@ -61,7 +62,7 @@ export async function loader({ request, params, context: { logger } }: Route.Loa
   );
   if (!tagsOk) {
     logger.error(tagsError);
-    throw new Response(null, { status: 500, statusText: 'Server Error' });
+    throw status(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 
   logger.info('Success.');

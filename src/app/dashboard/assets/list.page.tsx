@@ -1,15 +1,6 @@
+import type { Route } from './+types/list.page';
 import { AssetFiltering, assetRepository } from '@/features/assets/assets.repository';
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunctionArgs,
-  useLoaderData,
-  useLocation,
-  useSearchParams,
-  useSubmit,
-  ActionFunctionArgs,
-  LoaderFunctionArgs
-} from 'react-router';
+import { Link, Outlet, ShouldRevalidateFunctionArgs, useLocation, useSearchParams, useSubmit } from 'react-router';
 import { AssetList, AssetListItem } from '@/app/dashboard/assets/_components/asset-list';
 import { AssetFilters } from '@/app/dashboard/assets/_components/asset-filters';
 import { ParamPagination } from '@/components/param-pagination';
@@ -18,47 +9,107 @@ import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
 import { PlusIcon } from '@/components/icons';
-import { Asset, assetSchema, AssetType } from '@/features/assets/assets.validation';
+import { Asset, assetSchema } from '@/features/assets/assets.validation';
 import { useEffect, useState } from 'react';
 import { AssetDeleteModal } from '@/app/dashboard/assets/_components/asset-delete-modal';
 import { Checkbox } from '@/components/base/checkbox';
 import { requireSession } from '@/features/sessions/sessions.server-utils';
 import { z } from '@/lib/zod';
 import { assetService } from '@/features/assets/assets.service';
+import { tryAsync } from '@/utils/try';
+import { status, StatusCodes } from '@/utils/status-response';
 
 const DEFAULT_PAGE_SIZE = 10;
 
-export async function loader({ request }: LoaderFunctionArgs) {
+const loaderParamsSchema = z.object({
+  description: assetSchema.shape.description.optional(),
+  assetType: z
+    .string()
+    .transform((assetType) => Array.from(new Set(assetType.split('_'))))
+    .pipe(z.array(assetSchema.shape.assetType))
+    .optional(),
+  minYear: z.coerce
+    .number()
+    .positive()
+    .transform((minYear) => new Date(minYear, 0, 1))
+    .optional(),
+  maxYear: z.coerce
+    .number()
+    .positive()
+    .transform((maxYear) => new Date(maxYear, 11, 31))
+    .optional(),
+  sort: z
+    .string()
+    .optional()
+    .transform((sort) =>
+      sort
+        ? {
+            property: sort.split('_').at(0),
+            direction: sort.split('_').at(1)
+          }
+        : undefined
+    )
+    .pipe(
+      z
+        .object({
+          property: z.enum(['description', 'date', 'createdAt', 'updatedAt']),
+          direction: z.enum(['asc', 'desc'])
+        })
+        .default({
+          property: 'updatedAt',
+          direction: 'desc'
+        })
+    ),
+  page: z.coerce.number().nonnegative().optional().default(0),
+  pageSize: z.coerce.number().positive().optional().default(DEFAULT_PAGE_SIZE)
+});
+
+export async function loader({ request, context: { logger } }: Route.LoaderArgs) {
   const url = new URL(request.url);
 
-  const description = url.searchParams.get('description');
-  const assetType = url.searchParams.get('assetType');
-  const minYear = parseInt(url.searchParams.get('minYear') ?? '') || undefined;
-  const maxYear = parseInt(url.searchParams.get('maxYear') ?? '') || undefined;
-  const sort = url.searchParams.get('sort');
-  const page = parseInt(url.searchParams.get('page')!);
-  const pageSize = parseInt(url.searchParams.get('pageSize')!);
+  logger.info('Parsing params...');
+  const [params, parsedParamsOk, parsedParamsError] = await tryAsync(
+    loaderParamsSchema.parseAsync(Object.fromEntries(url.searchParams.entries()))
+  );
+  if (!parsedParamsOk) {
+    logger.error(parsedParamsError);
+    throw status(StatusCodes.BAD_REQUEST);
+  }
 
   const filters: AssetFiltering = {
-    description: description || undefined,
-    assetType: (assetType?.split('_') as AssetType[]) || undefined,
-    ...(minYear && { dateMin: new Date(minYear, 0, 1) }),
-    ...(maxYear && { dateMax: new Date(maxYear + 1, 0, 1) })
+    description: params?.description || undefined,
+    assetType: params?.assetType || undefined,
+    dateMin: params?.minYear || undefined,
+    dateMax: params?.maxYear || undefined
   };
 
-  const assetCount = await assetRepository.getAssetCount({ filters });
-  const assets = await assetRepository.getAssets({
-    pagination: {
-      page: page || 0,
-      pageSize: pageSize || DEFAULT_PAGE_SIZE
-    },
-    sorting: {
-      property: (sort?.split('_').at(0) as 'updatedAt' | null) || 'updatedAt',
-      direction: (sort?.split('_').at(1) as 'desc' | null) || 'desc'
-    },
-    filters
-  });
+  logger.info('Getting asset count...');
+  const [assetCount, assetCountOk, assetCountError] = await tryAsync(assetRepository.getAssetCount({ filters }));
+  if (!assetCountOk) {
+    logger.error(assetCountError);
+    throw status(StatusCodes.INTERNAL_SERVER_ERROR);
+  }
 
+  logger.info('Getting assets...');
+  const [assets, assetsOk, assetsError] = await tryAsync(
+    assetRepository.getAssets({
+      pagination: {
+        page: params.page,
+        pageSize: params.pageSize
+      },
+      sorting: {
+        property: params.sort.property,
+        direction: params.sort.direction
+      },
+      filters
+    })
+  );
+  if (!assetsOk) {
+    logger.error(assetsError);
+    throw status(StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+
+  logger.info('Success.');
   return { assets, assetCount };
 }
 
@@ -66,17 +117,27 @@ const assetsDeleteSchema = z.object({
   ids: z.array(assetSchema.shape.id)
 });
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context: { logger } }: Route.ActionArgs) {
   await requireSession(request);
 
   if (request.method === 'DELETE') {
+    logger.info('Parsing form data...');
     const formData = await request.json();
-    const { data, success } = await assetsDeleteSchema.safeParseAsync(formData);
-    if (!success) {
-      return new Response(null, { status: 400, statusText: 'Bad Request' });
+    const [data, dataOk, dataError] = await tryAsync(assetsDeleteSchema.parseAsync(formData));
+    if (!dataOk) {
+      logger.error(dataError);
+      return status(StatusCodes.BAD_REQUEST);
     }
-    await assetService.deleteAssets(...data.ids);
-    return new Response(null, { status: 204, statusText: 'No Content' });
+
+    logger.info('Deleting assets...');
+    const [, deleteAssetsOk, deleteAssetsError] = await tryAsync(assetService.deleteAssets(...data.ids));
+    if (!deleteAssetsOk) {
+      logger.error(deleteAssetsError);
+      return status(StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+
+    logger.info('Success.');
+    return status(StatusCodes.NO_CONTENT);
   } else {
     return null;
   }
@@ -94,8 +155,7 @@ export function shouldRevalidate({ nextUrl, actionResult, defaultShouldRevalidat
   return defaultShouldRevalidate;
 }
 
-export default function AssetListPage() {
-  const { assets, assetCount } = useLoaderData<typeof loader>();
+export default function AssetListPage({ loaderData: { assets, assetCount } }: Route.ComponentProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const submit = useSubmit();
