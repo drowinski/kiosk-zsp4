@@ -39,13 +39,13 @@ export function ErrorBoundary() {
   console.error(error);
   return (
     <Layout>
-      <div className={'flex h-full w-full items-center justify-center'}>
+      <main className={'flex h-full w-full items-center justify-center'}>
         <Card>
           <span className={'inline-flex items-center gap-2 text-xl font-medium'}>
             <CircleExclamationIcon /> Wystąpił błąd
           </span>
         </Card>
-      </div>
+      </main>
     </Layout>
   );
 }
