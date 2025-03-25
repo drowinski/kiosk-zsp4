@@ -1,11 +1,12 @@
-import { Outlet } from '@remix-run/react';
+import { isRouteErrorResponse, Outlet, useRouteError } from '@remix-run/react';
 import { Button } from '@/components/base/button';
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { requireSession } from '@/features/sessions/sessions.server-utils';
 import { DashboardNav, DashboardNavItem } from '@/app/dashboard/_components/dashboard-nav';
 import { Card } from '@/components/base/card';
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { cn } from '@/utils/styles';
+import { CircleExclamationIcon } from '@/components/icons';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireSession(request);
@@ -16,7 +17,9 @@ export function meta() {
   return [{ title: 'Kiosk Izby Pamięci ZSP4 - Panel sterowania' }];
 }
 
-export default function DashboardLayout() {
+export interface Layout extends React.PropsWithChildren {}
+
+export function Layout({ children }: Layout) {
   const headerRef = useRef<HTMLDivElement>(null);
 
   const signOut = async () => {
@@ -71,9 +74,32 @@ export default function DashboardLayout() {
           </Button>
         </Card>
       </header>
-      <div className={'container pb-2'}>
-        <Outlet />
-      </div>
+      <div className={'container pb-2'}>{children}</div>
     </div>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  console.error(error);
+  return (
+    <Layout>
+      <main className={'flex h-full w-full items-center justify-center'}>
+        <Card className={'flex flex-col justify-center'}>
+          <h1 className={'inline-flex items-center gap-2 text-xl font-medium'}>
+            <CircleExclamationIcon />
+            <span>{isRouteErrorResponse(error) ? `Błąd ${error.status}` : 'Nieznany błąd'}</span>
+          </h1>
+        </Card>
+      </main>
+    </Layout>
+  );
+}
+
+export default function DashboardLayout() {
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
   );
 }
