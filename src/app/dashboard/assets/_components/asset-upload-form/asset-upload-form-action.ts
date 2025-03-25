@@ -3,7 +3,7 @@ import { assetService } from '@/features/assets/assets.service';
 import { ReadStream } from 'node:fs';
 import { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { assetFormSchema } from '@/app/dashboard/assets/_components/asset-upload-form/asset-upload-form';
-import { redirect } from '@remix-run/node';
+import { redirect } from 'react-router';
 
 export async function assetUploadFormAction(formData: FormData, redirectUrl?: string) {
   console.log(formData);

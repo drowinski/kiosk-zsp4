@@ -1,7 +1,6 @@
 import { Card } from '@/components/base/card';
-import { Outlet, useLoaderData } from '@remix-run/react';
+import { Outlet, useLoaderData, LoaderFunctionArgs } from 'react-router';
 import { SettingsNav, SettingsNavLink } from '@/app/dashboard/settings/_components/settings-nav';
-import { LoaderFunctionArgs } from '@remix-run/node';
 import { getSession } from '@/features/sessions/sessions.server-utils';
 import { userRepository } from '@/features/users/users.repository';
 

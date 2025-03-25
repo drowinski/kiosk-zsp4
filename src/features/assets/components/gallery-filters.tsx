@@ -1,6 +1,6 @@
 import { Card } from '@/components/base/card';
 import { cn } from '@/utils/styles';
-import { useSearchParams } from '@remix-run/react';
+import { useSearchParams } from 'react-router';
 import { useMemo } from 'react';
 import { Label } from '@/components/base/label';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';

@@ -1,5 +1,5 @@
 import { sessionStorage } from '@/features/sessions/sessions.storage';
-import { redirect } from '@remix-run/node';
+import { redirect } from 'react-router';
 
 export async function getSession(request: Request) {
   return sessionStorage.getSession(request.headers.get('Cookie'));

@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, redirect } from '@remix-run/node';
+import { ActionFunctionArgs, redirect } from 'react-router';
 import { getSession } from '@/features/sessions/sessions.server-utils';
 import { sessionStorage } from '@/features/sessions/sessions.storage';
 

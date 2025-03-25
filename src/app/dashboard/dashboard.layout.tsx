@@ -1,6 +1,5 @@
-import { isRouteErrorResponse, Outlet, useRouteError } from '@remix-run/react';
+import { isRouteErrorResponse, Outlet, useRouteError, LoaderFunctionArgs } from 'react-router';
 import { Button } from '@/components/base/button';
-import { LoaderFunctionArgs } from '@remix-run/node';
 import { requireSession } from '@/features/sessions/sessions.server-utils';
 import { DashboardNav, DashboardNavItem } from '@/app/dashboard/_components/dashboard-nav';
 import { Card } from '@/components/base/card';

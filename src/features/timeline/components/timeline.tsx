@@ -1,6 +1,6 @@
 import { cn } from '@/utils/styles';
 import React, { Fragment, useEffect, useRef } from 'react';
-import { useNavigate } from '@remix-run/react';
+import { useNavigate } from 'react-router';
 import { ClientOnly } from 'remix-utils/client-only';
 
 export interface TimelineItemProps extends React.ComponentPropsWithRef<'div'> {

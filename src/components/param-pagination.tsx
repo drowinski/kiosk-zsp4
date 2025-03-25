@@ -7,7 +7,7 @@ import {
   PaginationNext,
   PaginationPrevious
 } from '@/components/base/pagination';
-import { useSearchParams } from '@remix-run/react';
+import { useSearchParams } from 'react-router';
 
 interface ParamPaginationProps {
   itemCount: number;

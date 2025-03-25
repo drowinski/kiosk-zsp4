@@ -1,5 +1,5 @@
 import { Timeline, TimelineItem } from '@/features/timeline/components/timeline';
-import { useLoaderData } from '@remix-run/react';
+import { useLoaderData } from 'react-router';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
 import { getAssetUri } from '@/features/assets/utils/uris';
 

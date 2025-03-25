@@ -3,7 +3,7 @@ import { ChevronLeftIcon, ChevronRightIcon, EllipsisIcon } from '@/components/ic
 
 import { cn } from '@/utils/styles';
 import { ButtonProps, buttonVariants } from '@/components/base/button';
-import { Link } from '@remix-run/react';
+import { Link } from 'react-router';
 
 export const Pagination = ({ className, ...props }: React.ComponentProps<'nav'>) => (
   <nav

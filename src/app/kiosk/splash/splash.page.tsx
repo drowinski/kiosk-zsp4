@@ -1,6 +1,6 @@
 import { Card } from '@/components/base/card';
 import { Carousel, CarouselItem } from '@/app/kiosk/splash/_components/carousel';
-import { Link } from '@remix-run/react';
+import { Link } from 'react-router';
 
 export default function KioskSplashPage() {
   const coverPhotoUris = new Array(5).fill(undefined).map((_, i) => `/splash/${i}.jpg`);

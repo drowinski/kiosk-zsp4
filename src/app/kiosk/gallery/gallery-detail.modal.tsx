@@ -1,4 +1,4 @@
-import { useNavigate, useOutletContext, useParams } from '@remix-run/react';
+import { useNavigate, useOutletContext, useParams } from 'react-router';
 import { Card } from '@/components/base/card';
 import { Asset as AssetComponent } from '@/features/assets/components/asset';
 import { type Asset } from '@/features/assets/assets.validation';

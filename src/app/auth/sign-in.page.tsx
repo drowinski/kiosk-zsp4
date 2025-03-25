@@ -1,6 +1,13 @@
-import { Form, useActionData, useNavigation } from '@remix-run/react';
+import {
+  data,
+  Form,
+  useActionData,
+  useNavigation,
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  redirect
+} from 'react-router';
 import { useForm } from '@conform-to/react';
-import { ActionFunctionArgs, json, LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { z } from '@/lib/zod';
 import { userPasswordSchema, userSchema } from '@/features/users/users.validation';
 import { parseWithZod } from '@conform-to/zod';
@@ -28,18 +35,18 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: formSchema });
   if (submission.status !== 'success') {
-    return json({ lastResult: submission.reply() });
+    return { lastResult: submission.reply() };
   }
 
   const user = await userService.validateUser(submission.value.username, submission.value.password);
   if (!user) {
-    return json({ lastResult: submission.reply({ formErrors: ['Błąd.'] }) });
+    return { lastResult: submission.reply({ formErrors: ['Błąd.'] }) };
   }
 
   const session = await sessionStorage.getSession();
   session.set('userId', user.id);
 
-  return json(
+  return data(
     { lastResult: submission.reply() },
     {
       headers: {

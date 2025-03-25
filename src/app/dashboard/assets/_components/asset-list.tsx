@@ -5,14 +5,13 @@ import { Card } from '@/components/base/card';
 import { ImageIcon, FilmIcon } from '@/components/icons';
 import { formatDate } from '@/features/assets/utils/dates';
 import { Checkbox } from '@/components/base/checkbox';
-import { Link } from '@remix-run/react';
-import { RemixLinkProps } from '@remix-run/react/dist/components';
+import { Link, LinkProps } from 'react-router';
 import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 
 interface AssetListItemProps {
   asset: Asset;
-  linkTo: RemixLinkProps['to'];
-  linkState?: RemixLinkProps['state'];
+  linkTo: LinkProps['to'];
+  linkState?: LinkProps['state'];
   isSelected?: boolean;
   onSelectedChange?: (selected: boolean) => void;
 }

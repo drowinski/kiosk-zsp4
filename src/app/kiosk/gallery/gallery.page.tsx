@@ -1,7 +1,6 @@
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
 import { assetRepository, AssetSorting } from '@/features/assets/assets.repository';
-import { Outlet, useLoaderData, useNavigate } from '@remix-run/react';
-import { LoaderFunctionArgs } from '@remix-run/node';
+import { Outlet, useLoaderData, useNavigate, LoaderFunctionArgs } from 'react-router';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -17,7 +16,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ...(minYear && { dateMin: new Date(minYear, 0, 1) }),
       ...(maxYear && { dateMax: new Date(maxYear + 1, 0, 1) }),
       ...(minDate && { dateMin: new Date(minDate) }),
-      ...(maxDate && { dateMax: new Date(maxDate) }),
+      ...(maxDate && { dateMax: new Date(maxDate) })
     },
     sorting: {
       property: (sort?.split('_').at(0) as AssetSorting['property'] | null) || 'date',

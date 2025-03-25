@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from '@remix-run/react';
+import { NavLink } from 'react-router';
 import { Button } from '@/components/base/button';
 import { cn } from '@/utils/styles';
 

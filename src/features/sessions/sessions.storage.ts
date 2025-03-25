@@ -1,5 +1,5 @@
 import { sessionService } from '@/features/sessions/sessions.service';
-import { createSessionStorage } from '@remix-run/node';
+import { createSessionStorage } from 'react-router';
 import { IS_PRODUCTION_ENV } from '@/lib/env';
 
 type SessionData = {

@@ -1,5 +1,5 @@
 import { Button } from '@/components/base/button';
-import { NavLink, Outlet, useLoaderData } from '@remix-run/react';
+import { NavLink, Outlet, useLoaderData } from 'react-router';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
 import { formatCaption } from '@/features/timeline/utils/strings';
 

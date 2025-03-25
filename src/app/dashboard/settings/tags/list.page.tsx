@@ -1,10 +1,9 @@
 import { tagRepository } from '@/features/tags/tags.repository';
-import { Link, Outlet, useLoaderData, useLocation, useSubmit } from '@remix-run/react';
+import { Link, Outlet, useLoaderData, useLocation, useSubmit, ActionFunctionArgs } from 'react-router';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/base/table';
 import { EditIcon, PlusIcon } from '@/components/icons';
 import { Button } from '@/components/base/button';
 import { TagDeleteModal } from '@/app/dashboard/settings/tags/_components/tag-delete-modal';
-import { ActionFunctionArgs } from '@remix-run/node';
 import { tagSchema } from '@/features/tags/tags.validation';
 import { z } from '@/lib/zod';
 

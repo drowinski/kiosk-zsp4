@@ -1,5 +1,5 @@
 import { Card } from '@/components/base/card';
-import { Outlet, useNavigate, useRouteError } from '@remix-run/react';
+import { Outlet, useNavigate, useRouteError } from 'react-router';
 import { ArrowLeftIcon, CircleExclamationIcon } from '@/components/icons';
 import { Button } from '@/components/base/button';
 import React from 'react';

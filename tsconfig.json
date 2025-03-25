@@ -5,7 +5,8 @@
     "**/.server/**/*.ts",
     "**/.server/**/*.tsx",
     "**/.client/**/*.ts",
-    "**/.client/**/*.tsx"
+    "**/.client/**/*.tsx",
+    ".react-router/types/**/*"
   ],
   "compilerOptions": {
     "lib": [
@@ -14,7 +15,7 @@
       "ES2022"
     ],
     "types": [
-      "@remix-run/node",
+      "@react-router/node",
       "vite/client"
     ],
     "isolatedModules": true,
@@ -34,6 +35,10 @@
         "./src/*"
       ]
     },
+    "rootDirs": [
+      ".",
+      "./.react-router/types"
+    ],
     // Vite takes care of building everything, not tsc.
     "noEmit": true
   }

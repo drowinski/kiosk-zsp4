@@ -1,9 +1,16 @@
 import { userRepository } from '@/features/users/users.repository';
-import { Link, Outlet, useLoaderData, useLocation, useSubmit } from '@remix-run/react';
+import {
+  Link,
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useSubmit,
+  ActionFunctionArgs,
+  LoaderFunctionArgs
+} from 'react-router';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/base/table';
 import { Button } from '@/components/base/button';
 import { CheckIcon, EditIcon, PlusIcon, XIcon } from '@/components/icons';
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { getSession } from '@/features/sessions/sessions.server-utils';
 import { requireSuperuser } from '@/features/users/users.server-utils';
 import { UserDeleteModal } from '@/app/dashboard/settings/users/_components/user-delete-modal';

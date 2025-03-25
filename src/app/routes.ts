@@ -1,4 +1,4 @@
-import { index, layout, prefix, route, RouteConfig } from '@remix-run/route-config';
+import { index, layout, prefix, route, RouteConfig } from '@react-router/dev/routes';
 
 export default [
   index('kiosk/splash/splash.page.tsx'),

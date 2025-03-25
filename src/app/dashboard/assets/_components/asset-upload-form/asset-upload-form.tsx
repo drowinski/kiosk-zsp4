@@ -10,7 +10,7 @@ import {
   useFormMetadata
 } from '@conform-to/react';
 import { cn } from '@/utils/styles';
-import { Form, useNavigation } from '@remix-run/react';
+import { Form, useNavigation } from 'react-router';
 import { parseWithZod } from '@conform-to/zod';
 import { useEffect, useState } from 'react';
 import { InputErrorMessage } from '@/components/base/input';
@@ -108,7 +108,7 @@ export function AssetUploadFormItem({ fieldName, file, onUpdateFile, onRemoveAss
   }, [file]);
 
   return (
-    <Card
+    (<Card
       key={field.key}
       className={'flex flex-col gap-2 overflow-hidden rounded-xl'}
     >
@@ -183,7 +183,7 @@ export function AssetUploadFormItem({ fieldName, file, onUpdateFile, onRemoveAss
         orientation={'vertical'}
       />
       {fieldset.date.errors && <InputErrorMessage>{fieldset.date.errors}</InputErrorMessage>}
-    </Card>
+    </Card>)
   );
 }
 

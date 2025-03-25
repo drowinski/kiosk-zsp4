@@ -1,7 +1,6 @@
-import { Form, useActionData } from '@remix-run/react';
+import { Form, useActionData, ActionFunctionArgs, redirect } from 'react-router';
 import { Input, InputErrorMessage } from '@/components/base/input';
 import { createTimelineRangeSchema } from '@/features/timeline/timeline.validation';
-import { ActionFunctionArgs, redirect } from '@remix-run/node';
 import { timelineRepository } from '@/features/timeline/timeline.repository';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
@@ -70,7 +69,7 @@ export default function TimelineRangeAddPage() {
         noValidate
         className={'flex w-52 gap-1'}
       >
-        <div className={'flex flex-col gap-1 grow'}>
+        <div className={'flex grow flex-col gap-1'}>
           <InputErrorMessage>{form.errors}</InputErrorMessage>
           <Label className={'w-full'}>
             Data początkowa

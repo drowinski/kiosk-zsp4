@@ -1,4 +1,4 @@
-import { useSearchParams as _useSearchParams } from '@remix-run/react';
+import { useSearchParams as _useSearchParams } from 'react-router';
 import { useCallback, useRef } from 'react';
 
 // The built-in Remix useSearchParams hook returns an unstable setSearchParams function
