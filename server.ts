@@ -2,6 +2,7 @@ import express from 'express';
 import { createRequestHandler } from '@remix-run/express';
 import { env, IS_PRODUCTION_ENV } from '@/lib/env';
 import { ServerBuild } from '@remix-run/node';
+import { logger } from '@/lib/logging';
 
 const viteDevServer = IS_PRODUCTION_ENV
   ? null
@@ -24,7 +25,17 @@ const build = viteDevServer
   ? () => viteDevServer.ssrLoadModule('virtual:remix/server-build') as Promise<ServerBuild>
   : ((await import('./build/server')) as unknown as ServerBuild);
 
-app.all('*', createRequestHandler({ build }));
+app.all(
+  '*',
+  createRequestHandler({
+    build,
+    getLoadContext: (req, res) => {
+      return {
+        logger: logger.child({})
+      };
+    }
+  })
+);
 
 app.listen(env.APP_PORT, () => {
   console.log(`App listening on http://localhost:${env.APP_PORT}`);

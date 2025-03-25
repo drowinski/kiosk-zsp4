@@ -29,7 +29,7 @@ const assetEditFormSchema = assetUpdateSchema.pick({
   tagIds: true
 });
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, context: { logger } }: LoaderFunctionArgs) {
   const assetId = parseInt(params.id || '');
   if (!assetId) {
     throw new Response(null, { status: 404, statusText: 'Not Found' });
@@ -39,7 +39,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   try {
     asset = await assetRepository.getAssetById(assetId);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     throw new Response(null, { status: 500, statusText: 'Server Error' });
   }
   if (!asset) {
@@ -50,14 +50,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
   try {
     availableTags = await tagRepository.getAllTags();
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     throw new Response(null, { status: 500, statusText: 'Server Error' });
   }
 
   return { asset, availableTags };
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context: { logger } }: ActionFunctionArgs) {
   const formData = await request.formData();
   const submission = await parseWithZod(formData, {
     schema: assetEditFormSchema.transform((asset) => {
@@ -75,7 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     await assetService.updateAsset(submission.value);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
   }
 

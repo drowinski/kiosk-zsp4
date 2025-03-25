@@ -26,9 +26,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   const searchParams = new URLSearchParams(new URL(request.url).searchParams);
-  console.log(searchParams.entries());
   let tagId: number | undefined = parseInt(searchParams.get('tag') || '');
-  console.log(tagId);
   tagId = Number.isNaN(tagId) ? undefined : tagId;
 
   const assets = await timelineRepository.getAssetsByTimelineRangeId(timelineRangeId, tagId);
