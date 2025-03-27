@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "tsx ./server.ts | pino-pretty --messageFormat \"[{httpMethod}:{url}] {msg}\" --ignore httpMethod,url",
+    "dev": "tsx ./server.ts | pino-pretty",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "NODE_ENV=production tsx ./server.ts",
     "test": "vitest",

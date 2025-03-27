@@ -13,7 +13,7 @@ const viteDevServer = IS_PRODUCTION_ENV
     );
 
 if (viteDevServer) {
-  console.info('Using Vite dev server.');
+  logger.info('Using Vite dev server.');
 }
 
 const app = express();
@@ -38,5 +38,5 @@ app.all(
 );
 
 app.listen(env.APP_PORT, () => {
-  console.log(`App listening on http://localhost:${env.APP_PORT}`);
+  logger.info(`App listening on http://localhost:${env.APP_PORT}`);
 });

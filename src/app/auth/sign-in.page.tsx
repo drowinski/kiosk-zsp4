@@ -1,12 +1,5 @@
-import {
-  data,
-  Form,
-  useActionData,
-  useNavigation,
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  redirect
-} from 'react-router';
+import type { Route } from './+types/sign-in.page';
+import { data, Form, useNavigation, redirect } from 'react-router';
 import { useForm } from '@conform-to/react';
 import { z } from '@/lib/zod';
 import { userPasswordSchema, userSchema } from '@/features/users/users.validation';
@@ -23,29 +16,38 @@ const formSchema = z.object({
   password: userPasswordSchema
 });
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context: { logger } }: Route.LoaderArgs) {
+  logger.info('Ensuring no existing session...');
   const session = await getSession(request);
-  if (!session || !session.id) {
-    return new Response(null, { headers: { 'Set-Cookie': await sessionStorage.destroySession(session) } });
+  if (session.get('userId')) {
+    logger.info('Existing session detected, redirecting...');
+    return redirect('/dashboard');
   }
-  return redirect('/dashboard');
+  logger.info('Success.');
+  return null;
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context: { logger } }: Route.ActionArgs) {
+  logger.info('Parsing sign-in form data...');
   const formData = await request.formData();
   const submission = parseWithZod(formData, { schema: formSchema });
   if (submission.status !== 'success') {
+    logger.warn('Validation error on sign-in form.');
     return { lastResult: submission.reply() };
   }
 
+  logger.info('Validating user...');
   const user = await userService.validateUser(submission.value.username, submission.value.password);
   if (!user) {
+    logger.warn(`User ${submission.value.username} not found.`);
     return { lastResult: submission.reply({ formErrors: ['Błąd.'] }) };
   }
 
+  logger.info(`Preparing session for user "${user.username}"...`);
   const session = await sessionStorage.getSession();
   session.set('userId', user.id);
 
+  logger.info(`New session created for user "${user.username}", sending cookie...`);
   return data(
     { lastResult: submission.reply() },
     {
@@ -56,12 +58,11 @@ export async function action({ request }: ActionFunctionArgs) {
   );
 }
 
-export default function SignInPage() {
-  const actionData = useActionData<typeof action>();
+export default function SignInPage({ actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
 
   const [form, fields] = useForm({
-    lastResult: actionData?.lastResult ?? null,
+    lastResult: actionData?.lastResult,
     onValidate: ({ formData }) => {
       return parseWithZod(formData, { schema: formSchema });
     },

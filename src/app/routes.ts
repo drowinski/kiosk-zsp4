@@ -10,7 +10,7 @@ export default [
   ...prefix('auth', [route('sign-in', 'auth/sign-in.page.tsx'), route('sign-out', 'auth/sign-out.route.ts')]),
   ...prefix('dashboard', [
     layout('dashboard/dashboard.layout.tsx', [
-      index('dashboard/home.page.tsx'),
+      index('dashboard/home.route.ts'),
       route('assets/upload', 'dashboard/assets/upload.page.tsx'),
       route('assets', 'dashboard/assets/list.page.tsx', [route(':id', 'dashboard/assets/edit.modal.tsx')]),
       route('settings', 'dashboard/settings/settings.layout.tsx', [

@@ -7,8 +7,10 @@ import React, { useEffect, useRef } from 'react';
 import { cn } from '@/utils/styles';
 import { CircleExclamationIcon } from '@/components/icons';
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  await requireSession(request);
+export async function loader({ request, context: { logger } }: LoaderFunctionArgs) {
+  logger.info('Checking user session...');
+  const session = await requireSession(request);
+  logger.info(`Identified as user ID: ${session.data.userId}`);
   return null;
 }
 
