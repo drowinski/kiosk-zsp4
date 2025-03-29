@@ -3,7 +3,7 @@ import { db } from '@/lib/db/connection';
 import { sessionTable } from '@/features/sessions/sessions.db';
 import { userTable } from '@/features/users/users.db';
 import { eq, getTableColumns } from 'drizzle-orm';
-import { getColumns } from '@/lib/db/utils/get-columns';
+import { getColumns } from '@/lib/db/helpers/get-columns';
 
 export interface SessionRepository {
   getSessionById(id: string): Promise<Session | null>;
