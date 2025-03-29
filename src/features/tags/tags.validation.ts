@@ -1,7 +1,7 @@
 import { z } from '@/lib/zod';
 
 export const baseTagSchema = z.object({
-  id: z.number().positive().int(),
+  id: z.coerce.number().positive().int(),
   name: z.string().min(1).max(128).trim()
 });
 

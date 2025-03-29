@@ -23,7 +23,7 @@ export interface Pagination {
   pageSize: number;
 }
 
-export interface AssetOptions {
+export interface AssetGetOptions {
   filters?: AssetFiltering;
   sorting?: AssetSorting;
   pagination?: Pagination;
@@ -34,11 +34,11 @@ export interface AssetRepository {
 
   getAssetsByIds(...ids: number[]): Promise<Asset[]>;
 
-  getAssets(options?: AssetOptions): Promise<Asset[]>;
+  getAssets(options?: AssetGetOptions): Promise<Asset[]>;
 
-  getAssetCount(options?: AssetOptions): Promise<number>;
+  getAssetCount(options?: AssetGetOptions): Promise<number>;
 
-  createAsset(newAsset: NewAsset): Promise<void>;
+  createAsset(newAsset: NewAsset): Promise<BaseAsset | null>;
 
   updateAsset(updatedAsset: UpdatedAsset): Promise<void>;
 
@@ -86,7 +86,7 @@ export class DrizzleAssetRepository implements AssetRepository {
       .where(inArray(assetTable.id, ids));
   }
 
-  async getAssets(options?: AssetOptions): Promise<Asset[]> {
+  async getAssets(options?: AssetGetOptions): Promise<Asset[]> {
     const query = db
       .select({
         ...getTableColumns(assetTable),
@@ -107,7 +107,7 @@ export class DrizzleAssetRepository implements AssetRepository {
     return options ? this.buildQueryWithOptions(query.$dynamic(), options) : query;
   }
 
-  async getAssetCount(options?: Omit<AssetOptions, 'sorting'>): Promise<number> {
+  async getAssetCount(options?: Omit<AssetGetOptions, 'sorting'>): Promise<number> {
     const query = db
       .select({ count: count() })
       .from(assetTable)
@@ -118,7 +118,7 @@ export class DrizzleAssetRepository implements AssetRepository {
     return result.at(0)?.count || 0;
   }
 
-  private buildQueryWithOptions<T extends PgSelect>(query: T, options: AssetOptions): T {
+  private buildQueryWithOptions<T extends PgSelect>(query: T, options: AssetGetOptions): T {
     if (options.filters) {
       const { assetType, description, dateMin, dateMax } = options.filters;
       query = query.where(
@@ -151,10 +151,10 @@ export class DrizzleAssetRepository implements AssetRepository {
     return query;
   }
 
-  async createAsset(newAsset: NewAsset): Promise<void> {
+  async createAsset(newAsset: NewAsset): Promise<BaseAsset | null> {
     const { date: dateValues, ...assetValues } = newAsset;
 
-    await db.transaction(async (tx) => {
+    return db.transaction(async (tx) => {
       let resultDate;
       if (dateValues) {
         resultDate = (await tx.insert(dateTable).values(dateValues).returning()).at(0);

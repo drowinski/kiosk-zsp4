@@ -19,7 +19,7 @@ const formSchema = z.object({
 export async function loader({ context: { logger, session } }: Route.LoaderArgs) {
   logger.info('Ensuring no existing session...');
   if (session) {
-    logger.info('Existing session found, redirecting...');
+    logger.info('Existing session found, redirecting.');
     return redirect('/dashboard');
   }
   logger.info('Success.');

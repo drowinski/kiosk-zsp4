@@ -7,6 +7,8 @@ import { AssetType, NewAsset, UpdatedAsset } from '@/features/assets/assets.vali
 import * as mime from 'mime-types';
 import ffmpeg from 'fluent-ffmpeg';
 import * as path from 'node:path';
+import { tryAsync } from '@/utils/try';
+import { logger } from '@/lib/logging';
 
 export class AssetService {
   private readonly assetRepository: AssetRepository;
@@ -25,75 +27,84 @@ export class AssetService {
   }
 
   async uploadAsset(stream: ReadStream, assetData: Omit<NewAsset, 'fileName' | 'assetType'>): Promise<void> {
+    logger.debug('Normalizing mime type and deriving asset type...', assetData);
     const mimeType = this.normalizeMimeType(assetData.mimeType);
     const assetType = this.getAssetTypeFromMimeType(mimeType);
+    logger.debug('Generating file name...', assetData);
     const fileName = this.generateFileName(mimeType);
 
-    try {
-      await this.fileManager.saveFileFromStream(stream, fileName);
-    } catch (error) {
-      console.error(error);
-      throw new Error('An error occurred while saving asset file.');
-    }
-
-    try {
-      await this.generateThumbnail(fileName, assetType);
-    } catch (error) {
-      console.error(error);
-      throw new Error('An error occurred while generating asset thumbnail.');
-    }
-
-    try {
-      await this.assetRepository.createAsset({
+    logger.debug('Adding entry to asset repository...');
+    const [createdAsset, createdAssetOk, createdAssetError] = await tryAsync(
+      this.assetRepository.createAsset({
         fileName: fileName,
         mimeType: mimeType,
         assetType: assetType,
         description: assetData.description,
         date: assetData.date
-      });
-    } catch (error) {
-      console.error(error);
-      throw new Error('An error occurred while adding asset to repository.');
+      })
+    );
+    if (!createdAssetOk) {
+      throw createdAssetError;
+    }
+    if (!createdAsset) {
+      throw new Error("Created asset wasn't returned.");
+    }
+
+    logger.debug('Saving asset file...');
+    const [, saveFileOk, saveFileError] = await tryAsync(this.fileManager.saveFileFromStream(stream, fileName));
+    if (!saveFileOk) {
+      logger.error(saveFileError);
+      logger.warn('Attempting to remove repository entry because of failed upload...');
+      const [deletedAssets, deleteAssetOk, deleteAssetError] = await tryAsync(
+        this.assetRepository.deleteAssets(createdAsset.id)
+      );
+      if (!deleteAssetOk) {
+        logger.error(deleteAssetError);
+      } else if (deletedAssets.length === 0) {
+        logger.warn('No deleted assets returned, possible orphaned entries.');
+      }
+      throw saveFileError;
+    }
+
+    logger.debug('Generating thumbnail...');
+    const [, generateThumbnailOk, generateThumbnailError] = await tryAsync(this.generateThumbnail(fileName, assetType));
+    if (!generateThumbnailOk) {
+      logger.error(generateThumbnailError, `An error occurred while generating thumbnail for file "${fileName}".`);
     }
   }
 
   async updateAsset(updatedAsset: UpdatedAsset): Promise<void> {
     if (updatedAsset.mimeType !== undefined) {
+      logger.debug('Normalizing mime type and deriving asset type...');
       updatedAsset.mimeType = this.normalizeMimeType(updatedAsset.mimeType);
       updatedAsset.assetType = this.getAssetTypeFromMimeType(updatedAsset.mimeType);
     }
 
-    try {
-      await this.assetRepository.updateAsset(updatedAsset);
-    } catch (error) {
-      console.error(error);
-      throw new Error('An error occurred while updating asset data.');
+    logger.debug('Updating asset repository entry...');
+    const [, updateAssetOk, updateAssetError] = await tryAsync(this.assetRepository.updateAsset(updatedAsset));
+    if (!updateAssetOk) {
+      throw updateAssetError;
     }
   }
 
   async deleteAssets(...ids: number[]): Promise<void> {
-    let assets;
-    try {
-      assets = await this.assetRepository.deleteAssets(...ids);
-    } catch (error) {
-      console.error(error);
-      throw new Error('An error occurred while deleting assets.');
+    const [assets, assetsOk, assetsError] = await tryAsync(this.assetRepository.deleteAssets(...ids));
+    if (!assetsOk) {
+      throw assetsError;
     }
 
     for (const asset of assets) {
       const thumbnailFilePath = this.getThumbnailFilePath(asset.fileName);
-      try {
-        await this.fileManager.deleteFile(thumbnailFilePath);
-      } catch (error) {
-        console.error(error);
-        throw new Error(`An error occurred while deleting asset thumbnail file. File name: ${thumbnailFilePath}`);
+      const [, deleteThumbnailOk, deleteThumbnailError] = await tryAsync(
+        this.fileManager.deleteFile(thumbnailFilePath)
+      );
+      if (!deleteThumbnailOk) {
+        throw deleteThumbnailError;
       }
 
-      try {
-        await this.fileManager.deleteFile(asset.fileName);
-      } catch (error) {
-        console.error(error);
-        throw new Error(`An error occurred while deleting asset file. File name: ${asset.fileName}`);
+      const [, deleteFileOk, deleteFileError] = await tryAsync(this.fileManager.deleteFile(asset.fileName));
+      if (!deleteFileOk) {
+        throw deleteFileError;
       }
     }
   }
