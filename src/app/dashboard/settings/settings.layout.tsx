@@ -1,15 +1,13 @@
 import { Card } from '@/components/base/card';
 import { Outlet, useLoaderData, LoaderFunctionArgs } from 'react-router';
 import { SettingsNav, SettingsNavLink } from '@/app/dashboard/settings/_components/settings-nav';
-import { getSession } from '@/features/sessions/sessions.server-utils';
 import { userRepository } from '@/features/users/users.repository';
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await getSession(request);
-  if (!session.data.userId) {
+export async function loader({ context: { session } }: LoaderFunctionArgs) {
+  if (!session) {
     throw new Response(null, { status: 500, statusText: 'Server Error' });
   }
-  const user = await userRepository.getUserById(session.data.userId);
+  const user = await userRepository.getUserById(session.user.id);
   if (!user) {
     throw new Response(null, { status: 500, statusText: 'Server Error' });
   }

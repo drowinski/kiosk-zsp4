@@ -13,7 +13,6 @@ import { Asset, assetSchema } from '@/features/assets/assets.validation';
 import { useEffect, useState } from 'react';
 import { AssetDeleteModal } from '@/app/dashboard/assets/_components/asset-delete-modal';
 import { Checkbox } from '@/components/base/checkbox';
-import { requireSession } from '@/features/sessions/sessions.server-utils';
 import { z } from '@/lib/zod';
 import { assetService } from '@/features/assets/assets.service';
 import { tryAsync } from '@/utils/try';
@@ -118,8 +117,6 @@ const assetsDeleteSchema = z.object({
 });
 
 export async function action({ request, context: { logger } }: Route.ActionArgs) {
-  await requireSession(request);
-
   if (request.method === 'DELETE') {
     logger.info('Parsing form data...');
     const formData = await request.json();

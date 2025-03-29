@@ -5,22 +5,21 @@ import { z } from '@/lib/zod';
 import { userPasswordSchema, userSchema } from '@/features/users/users.validation';
 import { parseWithZod } from '@conform-to/zod';
 import { userService } from '@/features/users/users.service';
-import { sessionStorage } from '@/features/sessions/sessions.storage';
-import { getSession } from '@/features/sessions/sessions.server-utils';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
 import { Input } from '@/components/base/input';
+import { sessionService } from '@/features/sessions/sessions.service';
+import { getSessionTokenCookie } from '@/features/sessions/sessions.cookies';
 
 const formSchema = z.object({
   username: userSchema.shape.username,
   password: userPasswordSchema
 });
 
-export async function loader({ request, context: { logger } }: Route.LoaderArgs) {
+export async function loader({ context: { logger, session } }: Route.LoaderArgs) {
   logger.info('Ensuring no existing session...');
-  const session = await getSession(request);
-  if (session.get('userId')) {
-    logger.info('Existing session detected, redirecting...');
+  if (session) {
+    logger.info('Existing session found, redirecting...');
     return redirect('/dashboard');
   }
   logger.info('Success.');
@@ -44,15 +43,16 @@ export async function action({ request, context: { logger } }: Route.ActionArgs)
   }
 
   logger.info(`Preparing session for user "${user.username}"...`);
-  const session = await sessionStorage.getSession();
-  session.set('userId', user.id);
+  const sessionToken = sessionService.generateSessionToken();
+  const session = await sessionService.createSession(sessionToken, user.id);
+  const sessionCookie = getSessionTokenCookie(sessionToken, session.expiresAt);
 
   logger.info(`New session created for user "${user.username}", sending cookie...`);
   return data(
     { lastResult: submission.reply() },
     {
       headers: {
-        'Set-Cookie': await sessionStorage.commitSession(session)
+        'Set-Cookie': sessionCookie
       }
     }
   );

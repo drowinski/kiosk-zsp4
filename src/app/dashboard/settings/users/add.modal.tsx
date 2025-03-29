@@ -14,10 +14,9 @@ import { parseWithZod } from '@conform-to/zod';
 import { Input, InputDescription, InputErrorMessage } from '@/components/base/input';
 import { Label } from '@/components/base/label';
 import { Button } from '@/components/base/button';
-import { requireSuperuser } from '@/features/users/users.server-utils';
-import { getSession } from '@/features/sessions/sessions.server-utils';
 import { userService } from '@/features/users/users.service';
 import { Checkbox } from '@/components/base/checkbox';
+import { status, StatusCodes } from '@/utils/status-response';
 
 const userCreateFormSchema = createUserSchema
   .extend({ repeatPassword: createUserSchema.shape.password })
@@ -26,15 +25,18 @@ const userCreateFormSchema = createUserSchema
     message: 'Hasła muszą być takie same.'
   });
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await getSession(request);
-  await requireSuperuser(session.data.userId);
+export async function loader({ context: { session } }: LoaderFunctionArgs) {
+  if (!session || !session.user.isSuperuser) {
+    throw status(StatusCodes.FORBIDDEN);
+  }
   return null;
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  const session = await getSession(request);
-  await requireSuperuser(session.data.userId);
+export async function action({ request, context: { session } }: ActionFunctionArgs) {
+  if (!session || !session.user.isSuperuser) {
+    throw status(StatusCodes.FORBIDDEN);
+  }
+
   const formData = await request.formData();
   const submission = await parseWithZod(formData, { schema: userCreateFormSchema, async: true });
   console.log(submission);

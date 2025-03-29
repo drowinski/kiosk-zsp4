@@ -11,37 +11,38 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/base/table';
 import { Button } from '@/components/base/button';
 import { CheckIcon, EditIcon, PlusIcon, XIcon } from '@/components/icons';
-import { getSession } from '@/features/sessions/sessions.server-utils';
-import { requireSuperuser } from '@/features/users/users.server-utils';
 import { UserDeleteModal } from '@/app/dashboard/settings/users/_components/user-delete-modal';
 import { updateUserSchema } from '@/features/users/users.validation';
+import { status, StatusCodes } from '@/utils/status-response';
 
 const userDeleteRequestSchema = updateUserSchema.pick({ id: true });
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await getSession(request);
-  await requireSuperuser(session.data.userId);
+export async function loader({ context: { session } }: LoaderFunctionArgs) {
+  if (!session || !session.user.isSuperuser) {
+    throw status(StatusCodes.FORBIDDEN);
+  }
 
   const users = await userRepository.getAllUsers();
 
-  return { users, session: session.data };
+  return { users, session: { user: session.user } };
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  const session = await getSession(request);
-  await requireSuperuser(session.data.userId);
+export async function action({ request, context: { session } }: ActionFunctionArgs) {
+  if (!session || !session.user.isSuperuser) {
+    throw status(StatusCodes.FORBIDDEN);
+  }
 
   if (request.method === 'DELETE') {
     const formData = await request.json();
     const { data, success } = await userDeleteRequestSchema.safeParseAsync(formData);
     if (!success) {
-      return new Response(null, { status: 400, statusText: 'Bad Request' });
+      return status(StatusCodes.BAD_REQUEST);
     }
-    if (data.id === session.data.userId) {
-      return new Response(null, { status: 400, statusText: 'Bad Request' });
+    if (data.id === session.user.id) {
+      return status(StatusCodes.BAD_REQUEST);
     }
     await userRepository.deleteUser(data.id);
-    return new Response(null, { status: 204, statusText: 'No Content' });
+    return status(StatusCodes.NO_CONTENT);
   } else {
     return null;
   }
@@ -78,7 +79,7 @@ export default function UserListPage() {
             <TableRow key={user.id}>
               <TableCell>
                 {user.username}
-                {session.userId === user.id && <span className={'font-bold text-muted'}> (twoje konto)</span>}
+                {session.user.id === user.id && <span className={'font-bold text-muted'}> (twoje konto)</span>}
               </TableCell>
               <TableCell>{user.isSuperuser ? <CheckIcon /> : <XIcon />}</TableCell>
               <TableCell>
@@ -96,7 +97,7 @@ export default function UserListPage() {
                       <EditIcon /> Edytuj
                     </Link>
                   </Button>
-                  {session.userId !== user.id && (
+                  {session.user.id !== user.id && (
                     <UserDeleteModal
                       userId={user.id}
                       username={user.username}

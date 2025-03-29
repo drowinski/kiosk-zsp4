@@ -1,42 +1,39 @@
 import express from 'express';
-import { createRequestHandler } from '@react-router/express';
-import { env, IS_PRODUCTION_ENV } from '@/lib/env';
-import { ServerBuild } from 'react-router';
 import { logger } from '@/lib/logging';
+import { env, IS_PRODUCTION_ENV } from '@/lib/env';
 
-const viteDevServer = IS_PRODUCTION_ENV
-  ? null
-  : await import('vite').then((vite) =>
-      vite.createServer({
-        server: { middlewareMode: true }
-      })
-    );
-
-if (viteDevServer) {
-  logger.info('Using Vite dev server.');
-}
+const BUILD_PATH = './build/server/index.js';
 
 const app = express();
 
-app.use(env.ASSET_URL_PATH, express.static(env.ASSET_ROOT_DIR));
-app.use(viteDevServer ? viteDevServer.middlewares : express.static('./build/client'));
+app.disable('x-powered-by');
 
-const build = viteDevServer
-  ? () => viteDevServer.ssrLoadModule('virtual:react-router/server-build') as Promise<ServerBuild>
-  : ((await import('./build/server')) as unknown as ServerBuild);
-
-app.all(
-  '*',
-  createRequestHandler({
-    build,
-    getLoadContext: (req, res) => {
-      return {
-        logger: logger.child({ httpMethod: req.method, url: req.url })
-      };
+if (!IS_PRODUCTION_ENV) {
+  logger.info('Starting development server');
+  const viteDevServer = await import('vite').then((vite) =>
+    vite.createServer({
+      server: { middlewareMode: true }
+    })
+  );
+  app.use(viteDevServer.middlewares);
+  app.use(async (req, res, next) => {
+    try {
+      const source = await viteDevServer.ssrLoadModule('./src/server/app.ts');
+      return await source.app(req, res, next);
+    } catch (error) {
+      if (typeof error === 'object' && error instanceof Error) {
+        viteDevServer.ssrFixStacktrace(error);
+      }
+      next(error);
     }
-  })
-);
+  });
+} else {
+  logger.info('Starting production server');
+  app.use('/assets', express.static('build/client/assets', { immutable: true, maxAge: '1y' }));
+  app.use(express.static('build/client', { maxAge: '1h' }));
+  app.use(await import(BUILD_PATH).then((mod) => mod.app));
+}
 
 app.listen(env.APP_PORT, () => {
-  logger.info(`App listening on http://localhost:${env.APP_PORT}`);
+  logger.info(`Server is running on http://localhost:${env.APP_PORT}`);
 });

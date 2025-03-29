@@ -1,18 +1,25 @@
 import type { Route } from './+types/sign-out.route';
 import { redirect } from 'react-router';
-import { getSession } from '@/features/sessions/sessions.server-utils';
-import { sessionStorage } from '@/features/sessions/sessions.storage';
+import { getDeleteSessionTokenCookie } from '@/features/sessions/sessions.cookies';
+import { tryAsync } from '@/utils/try';
+import { status, StatusCodes } from '@/utils/status-response';
+import { sessionService } from '@/features/sessions/sessions.service';
 
-export async function action({ request, context: { logger } }: Route.ActionArgs) {
+export async function action({ context: { logger, session } }: Route.ActionArgs) {
   logger.info('Sign out requested...');
-  const session = await getSession(request);
-  if (!session.get('userId')) {
+  if (!session) {
     return null;
   }
-  logger.info(`Destroying session of user ID: ${session.get('userId')}...`);
+  logger.info(`Deleting session ID "${session.id}" of user "${session.user.username}"...`);
+  const [, invalidateSessionOk, invalidateSessionError] = await tryAsync(sessionService.invalidateSession(session.id));
+  if (!invalidateSessionOk) {
+    logger.error(invalidateSessionError);
+    throw status(StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+  logger.info('Deleting session cookie.');
   return redirect('/', {
     headers: {
-      'Set-Cookie': await sessionStorage.destroySession(session)
+      'Set-Cookie': getDeleteSessionTokenCookie()
     }
   });
 }

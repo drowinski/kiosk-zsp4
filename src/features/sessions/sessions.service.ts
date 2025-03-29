@@ -1,7 +1,6 @@
 import crypto from 'node:crypto';
 import { SessionRepository, sessionRepository } from '@/features/sessions/sessions.repository';
 import { Session } from '@/features/sessions/sessions.validation';
-import { SessionValidationResult } from '@/features/sessions/sessions.types';
 
 export class SessionService {
   private readonly sessionsRepository: SessionRepository;
@@ -27,19 +26,18 @@ export class SessionService {
     return session;
   }
 
-  async validateSessionToken(token: string): Promise<SessionValidationResult> {
+  async validateSessionToken(token: string): Promise<Session | null> {
     const sessionId = this.generateSessionId(token);
-    const sessionWithUser = await this.sessionsRepository.getSessionWithUserBySessionId(sessionId);
-    if (!sessionWithUser) {
-      return { session: null, user: null };
+    const session = await this.sessionsRepository.getSessionById(sessionId);
+    if (!session) {
+      return null;
     }
-    const { session, user } = sessionWithUser;
     if (Date.now() >= session.expiresAt.getTime()) {
       await this.sessionsRepository.deleteSessionById(sessionId);
-      return { session: null, user: null };
+      return null;
     }
     // TODO: Refresh session if close to expiry
-    return { session, user };
+    return session;
   }
 
   async invalidateSession(sessionId: string): Promise<void> {

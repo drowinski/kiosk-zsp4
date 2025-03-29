@@ -1,18 +1,11 @@
-import { isRouteErrorResponse, Outlet, useRouteError, LoaderFunctionArgs } from 'react-router';
+import { isRouteErrorResponse, Outlet, useRouteError } from 'react-router';
 import { Button } from '@/components/base/button';
-import { requireSession } from '@/features/sessions/sessions.server-utils';
 import { DashboardNav, DashboardNavItem } from '@/app/dashboard/_components/dashboard-nav';
 import { Card } from '@/components/base/card';
 import React, { useEffect, useRef } from 'react';
 import { cn } from '@/utils/styles';
 import { CircleExclamationIcon } from '@/components/icons';
 
-export async function loader({ request, context: { logger } }: LoaderFunctionArgs) {
-  logger.info('Checking user session...');
-  const session = await requireSession(request);
-  logger.info(`Identified as user ID: ${session.data.userId}`);
-  return null;
-}
 
 export function meta() {
   return [{ title: 'Kiosk Izby Pamięci ZSP4 - Panel sterowania' }];
