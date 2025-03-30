@@ -17,16 +17,19 @@ export function Layout({ children }: Layout) {
     <div className={'flex h-full select-none flex-col'}>
       <header className={'p-1'}>
         <Card className={'flex items-center justify-between bg-primary px-2 py-2 text-primary-foreground'}>
-          <Button
-            variant={'ghost'}
-            size={'icon'}
-            onClick={() => navigate(-1)}
-            aria-label={'Cofnij'}
-          >
-            <ArrowLeftIcon />
-          </Button>
+          <div className={'grow basis-0'}>
+            <Button
+              variant={'ghost'}
+              size={'icon'}
+              onClick={() => navigate(-1)}
+              aria-label={'Cofnij'}
+              className={'basis-0'}
+            >
+              <ArrowLeftIcon />
+            </Button>
+          </div>
           <span className={'text-xl font-bold'}>Izba Pamięci</span>
-          <div className={'grow-1 basis-0'} />
+          <div className={'grow basis-0'} />
         </Card>
       </header>
       <div className={'h-full overflow-hidden px-1'}>{children}</div>
