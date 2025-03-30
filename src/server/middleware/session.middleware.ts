@@ -4,8 +4,8 @@ import { sessionService } from '@/features/sessions/sessions.service';
 
 export async function sessionMiddleware(request: Request, response: Response, next: NextFunction) {
   const logger = request.context.logger;
+  logger.info('Checking session...');
 
-  logger.info('Obtaining session cookie...');
   const cookies = cookieParser.parse(request.headers.cookie ?? '');
   const sessionToken = cookies.session;
   if (!sessionToken) {
@@ -15,7 +15,6 @@ export async function sessionMiddleware(request: Request, response: Response, ne
     return;
   }
 
-  logger.info('Validating session token...');
   const session = await sessionService.validateSessionToken(sessionToken);
   if (!session) {
     logger.info('Session token validation failed.');
@@ -24,7 +23,7 @@ export async function sessionMiddleware(request: Request, response: Response, ne
     return;
   }
 
-  logger.info('Session found.');
+  logger.info(`Session user: "${session.user.username}" | Session ID: "${session.id}"`);
   request.context.session = session;
   next();
 }
