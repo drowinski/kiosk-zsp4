@@ -29,6 +29,8 @@ import { DialogDescription } from '@radix-ui/react-dialog';
 import { TagSelector } from '@/features/tags/components/tag-selector';
 import { tagRepository } from '@/features/tags/tags.repository';
 import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
+import { status, StatusCodes } from '@/utils/status-response';
+import { tryAsync } from '@/utils/try';
 
 const assetEditFormSchema = assetUpdateSchema.pick({
   id: true,
@@ -38,34 +40,36 @@ const assetEditFormSchema = assetUpdateSchema.pick({
 });
 
 export async function loader({ params, context: { logger } }: LoaderFunctionArgs) {
+  logger.info('Parsing params...');
   const assetId = parseInt(params.id || '');
   if (!assetId) {
-    throw new Response(null, { status: 404, statusText: 'Not Found' });
+    throw status(StatusCodes.NOT_FOUND);
   }
 
-  let asset;
-  try {
-    asset = await assetRepository.getAssetById(assetId);
-  } catch (error) {
-    logger.error(error);
-    throw new Response(null, { status: 500, statusText: 'Server Error' });
+  logger.info(`Getting asset ID "${assetId}"...`);
+  const [asset, assetOk, assetError] = await tryAsync(assetRepository.getAssetById(assetId));
+  if (!assetOk) {
+    logger.error(assetError);
+    throw status(StatusCodes.INTERNAL_SERVER_ERROR);
   }
   if (!asset) {
-    throw new Response(null, { status: 404, statusText: 'Not Found' });
+    logger.warn('Asset not found.');
+    throw status(StatusCodes.NOT_FOUND);
   }
 
-  let availableTags;
-  try {
-    availableTags = await tagRepository.getAllTags();
-  } catch (error) {
-    logger.error(error);
-    throw new Response(null, { status: 500, statusText: 'Server Error' });
+  logger.info('Getting available tags...');
+  const [availableTags, availableTagsOk, availableTagsError] = await tryAsync(tagRepository.getAllTags());
+  if (!availableTagsOk) {
+    logger.error(availableTagsError);
+    throw status(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 
+  logger.info('Success.');
   return { asset, availableTags };
 }
 
 export async function action({ request, context: { logger } }: ActionFunctionArgs) {
+  logger.info('Parsing form data...');
   const formData = await request.formData();
   const submission = await parseWithZod(formData, {
     schema: assetEditFormSchema.transform((asset) => {
@@ -77,16 +81,19 @@ export async function action({ request, context: { logger } }: ActionFunctionArg
     async: true
   });
   if (submission.status !== 'success') {
+    logger.warn('Form data validation failed.');
     return { lastResult: submission.reply() };
   }
+  logger.info({ data: submission.value }, 'Form data parsed.');
 
-  try {
-    await assetService.updateAsset(submission.value);
-  } catch (error) {
-    logger.error(error);
+  logger.info('Updating asset...');
+  const [, updateAssetOk, updateAssetError] = await tryAsync(assetService.updateAsset(submission.value));
+  if (!updateAssetOk) {
+    logger.error(updateAssetError);
     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
   }
 
+  logger.info('Success.');
   return { lastResult: submission.reply({ resetForm: true }) };
 }
 
