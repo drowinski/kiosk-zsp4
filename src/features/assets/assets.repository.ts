@@ -42,6 +42,8 @@ export interface AssetRepository {
 
   updateAsset(updatedAsset: UpdatedAsset): Promise<void>;
 
+  deleteAsset(id: number): Promise<BaseAsset | null>;
+
   deleteAssets(...ids: number[]): Promise<BaseAsset[]>;
 }
 
@@ -253,6 +255,16 @@ export class DrizzleAssetRepository implements AssetRepository {
       if (!resultAsset) {
         return tx.rollback();
       }
+    });
+  }
+
+  async deleteAsset(id: number): Promise<BaseAsset | null> {
+    return db.transaction(async (tx) => {
+      const [asset] = await tx.delete(assetTable).where(eq(assetTable.id, id)).returning();
+      if (asset.dateId) {
+        await tx.delete(dateTable).where(eq(dateTable.id, asset.dateId));
+      }
+      return asset;
     });
   }
 

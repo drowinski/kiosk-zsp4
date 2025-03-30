@@ -34,33 +34,28 @@ export class AssetService {
     const fileName = this.generateFileName(mimeType);
 
     logger.debug('Adding entry to asset repository...');
-    const [createdAsset, createdAssetOk, createdAssetError] = await tryAsync(
-      this.assetRepository.createAsset({
-        fileName: fileName,
-        mimeType: mimeType,
-        assetType: assetType,
-        description: assetData.description,
-        date: assetData.date
-      })
-    );
-    if (!createdAssetOk) {
-      throw createdAssetError;
-    }
+    const createdAsset = await this.assetRepository.createAsset({
+      fileName: fileName,
+      mimeType: mimeType,
+      assetType: assetType,
+      description: assetData.description,
+      date: assetData.date
+    });
     if (!createdAsset) {
-      throw new Error("Created asset wasn't returned.");
+      throw new Error("Created asset wasn't returned from repository method.");
     }
 
     logger.debug('Saving asset file...');
     const [, saveFileOk, saveFileError] = await tryAsync(this.fileManager.saveFileFromStream(stream, fileName));
     if (!saveFileOk) {
-      logger.error(saveFileError);
       logger.warn('Attempting to remove repository entry because of failed upload...');
-      const [deletedAssets, deleteAssetOk, deleteAssetError] = await tryAsync(
-        this.assetRepository.deleteAssets(createdAsset.id)
+      const [deletedAsset, deleteAssetOk, deleteAssetError] = await tryAsync(
+        this.assetRepository.deleteAsset(createdAsset.id)
       );
       if (!deleteAssetOk) {
-        logger.error(deleteAssetError);
-      } else if (deletedAssets.length === 0) {
+        deleteAssetError.cause = saveFileError;
+        throw deleteAssetError;
+      } else if (!deletedAsset) {
         logger.warn('No deleted assets returned, possible orphaned entries.');
       }
       throw saveFileError;
@@ -88,24 +83,20 @@ export class AssetService {
   }
 
   async deleteAssets(...ids: number[]): Promise<void> {
-    const [assets, assetsOk, assetsError] = await tryAsync(this.assetRepository.deleteAssets(...ids));
-    if (!assetsOk) {
-      throw assetsError;
-    }
-
-    for (const asset of assets) {
-      const thumbnailFilePath = this.getThumbnailFilePath(asset.fileName);
-      const [, deleteThumbnailOk, deleteThumbnailError] = await tryAsync(
-        this.fileManager.deleteFile(thumbnailFilePath)
-      );
-      if (!deleteThumbnailOk) {
-        throw deleteThumbnailError;
+    for (const id of ids) {
+      logger.debug('Deleting asset repository entry...');
+      const deletedAsset = await this.assetRepository.deleteAsset(id);
+      if (!deletedAsset) {
+        logger.warn(`Asset ID "${id}" wasn't deleted. The ID may not exist.`);
+        continue;
       }
 
-      const [, deleteFileOk, deleteFileError] = await tryAsync(this.fileManager.deleteFile(asset.fileName));
-      if (!deleteFileOk) {
-        throw deleteFileError;
-      }
+      logger.debug('Deleting asset file...');
+      await this.fileManager.deleteFile(deletedAsset.fileName);
+
+      logger.debug('Deleting asset thumbnail...');
+      const thumbnailFilePath = this.getThumbnailFilePath(deletedAsset.fileName);
+      await this.fileManager.deleteFile(thumbnailFilePath);
     }
   }
 
@@ -119,7 +110,6 @@ export class AssetService {
           resolve();
         })
         .on('error', (error) => {
-          console.error(error);
           reject(error);
         });
 
