@@ -1,8 +1,6 @@
 import { Input } from '@/components/base/input';
 import { Card } from '@/components/base/card';
 import { useSearchParams } from '@/hooks/use-search-params';
-import { useEffect, useState } from 'react';
-import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/utils/styles';
 import { Label } from '@/components/base/label';
 import { FilterIcon } from '@/components/icons';
@@ -25,18 +23,13 @@ export function AssetFilters({ className }: AssetFilterProps) {
     }
   };
 
-  const [descriptionFilter, setDescriptionFilter] = useState(searchParams.get('description') || '');
-  const debouncedDescriptionFilter = useDebounce<string>(descriptionFilter);
-
-  useEffect(() => {
+  const updateDescription = useDebouncedCallback((description: string) => {
     setSearchParams((prev) => {
-      if ((prev.get('description') ?? '') !== debouncedDescriptionFilter) {
-        prev.delete('page');
-      }
-      setOrDeleteSearchParam(prev, 'description', debouncedDescriptionFilter);
+      prev.delete('page');
+      setOrDeleteSearchParam(prev, 'description', description);
       return prev;
     });
-  }, [debouncedDescriptionFilter, setSearchParams]);
+  }, 250);
 
   const onAssetTypeCheckboxChange = (value: string, checked: boolean) => {
     const assetTypeParam = searchParams.get('assetType');
@@ -58,13 +51,9 @@ export function AssetFilters({ className }: AssetFilterProps) {
 
   const updateYearRange = useDebouncedCallback((range: [number, number]) => {
     setSearchParams((prev) => {
-      if (range[0] === minYear && range[1] === maxYear) {
-        prev.delete('minYear');
-        prev.delete('maxYear');
-      } else {
-        prev.set('minYear', range[0].toString());
-        prev.set('maxYear', range[1].toString());
-      }
+      prev.delete('page');
+      setOrDeleteSearchParam(prev, 'minYear', range[0].toString());
+      setOrDeleteSearchParam(prev, 'maxYear', range[1].toString());
       return prev;
     });
   }, 250);
@@ -82,10 +71,11 @@ export function AssetFilters({ className }: AssetFilterProps) {
         <Label>
           Według opisu
           <Input
+            key={searchParams.get('description')}
             type={'text'}
             placeholder={'Opis...'}
-            value={descriptionFilter}
-            onChange={(event) => setDescriptionFilter(event.target.value)}
+            defaultValue={searchParams.get('description') ?? ''}
+            onChange={(event) => updateDescription(event.target.value)}
           />
         </Label>
         <div
@@ -97,6 +87,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
           </Label>
           <Label variant={'horizontal'}>
             <Checkbox
+              key={searchParams.get('assetType')}
               defaultChecked={searchParams.get('assetType')?.split('_').includes('image')}
               onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('image', checked)}
               aria-label={'pokaż zdjęcia'}
@@ -105,6 +96,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
           </Label>
           <Label variant={'horizontal'}>
             <Checkbox
+              key={searchParams.get('assetType')}
               defaultChecked={searchParams.get('assetType')?.split('_').includes('video')}
               onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('video', checked)}
               aria-label={'pokaż filmy'}
@@ -113,6 +105,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
           </Label>
           <Label variant={'horizontal'}>
             <Checkbox
+              key={searchParams.get('assetType')}
               defaultChecked={searchParams.get('assetType')?.split('_').includes('audio')}
               onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('audio', checked)}
               aria-label={'pokaż dźwięki'}
@@ -121,6 +114,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
           </Label>
         </div>
         <RangePicker
+          key={searchParams.get('minYear') + '' + searchParams.get('maxYear')}
           label={'Zakres lat'}
           min={minYear}
           max={maxYear}
