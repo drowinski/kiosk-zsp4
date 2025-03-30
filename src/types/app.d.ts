@@ -4,7 +4,9 @@ import { Session } from '@/features/sessions/sessions.validation';
 declare module 'express-serve-static-core' {
   interface Request {
     context: {
-      session?: Session;
+      id: string;
+      logger: pino.Logger;
+      session: Session | null;
     };
   }
 }
@@ -13,7 +15,7 @@ declare module 'react-router' {
   // Your AppLoadContext used in v2
   interface AppLoadContext {
     logger: pino.Logger;
-    session?: Session;
+    session: Session | null;
   }
 
   // TODO: remove this once we've migrated to `Route.LoaderArgs` instead for our loaders

@@ -35,10 +35,10 @@ export async function action({ request, context: { logger } }: Route.ActionArgs)
     return { lastResult: submission.reply() };
   }
 
-  logger.info('Validating user...');
+  logger.info(`Validating user ${submission.value.username}...`);
   const user = await userService.validateUser(submission.value.username, submission.value.password);
   if (!user) {
-    logger.warn(`User ${submission.value.username} not found.`);
+    logger.warn('User validation failed.');
     return { lastResult: submission.reply({ formErrors: ['Błąd.'] }) };
   }
 
