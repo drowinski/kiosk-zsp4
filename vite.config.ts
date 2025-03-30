@@ -3,14 +3,14 @@ import { reactRouter } from '@react-router/dev/vite';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   plugins: [reactRouter(), tsconfigPaths()],
   build: {
     rollupOptions: {
-      input: './src/server/app.ts'
+      input: isSsrBuild ? './src/server/app.ts' : undefined
     }
   },
   optimizeDeps: {
     include: ['@conform-to/react', '@conform-to/zod']
   }
-});
+}));
