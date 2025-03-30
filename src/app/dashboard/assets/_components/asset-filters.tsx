@@ -52,8 +52,8 @@ export function AssetFilters({ className }: AssetFilterProps) {
   const updateYearRange = useDebouncedCallback((range: [number, number]) => {
     setSearchParams((prev) => {
       prev.delete('page');
-      setOrDeleteSearchParam(prev, 'minYear', range[0].toString());
-      setOrDeleteSearchParam(prev, 'maxYear', range[1].toString());
+      setOrDeleteSearchParam(prev, 'minYear', range[0] !== minYear ? range[0].toString() : '');
+      setOrDeleteSearchParam(prev, 'maxYear', range[1] !== maxYear ? range[1].toString() : '');
       return prev;
     });
   }, 250);
