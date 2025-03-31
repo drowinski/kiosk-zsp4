@@ -152,6 +152,14 @@ export default function AssetEditModal() {
     [showDatePicker, dateMin, dateMax, datePrecision]
   );
 
+  // const dirtyCheck =
+  //   fields.description.dirty ||
+  //   dateMin !== dateFieldset.dateMin.initialValue ||
+  //   dateMax !== dateFieldset.dateMax.initialValue ||
+  //   datePrecision != dateFieldset.datePrecision.initialValue ||
+  //   showDatePicker !== (asset.date !== null) ||
+  //   tags.map((tag) => tag.id);
+
   return (
     <Modal
       onOpenChange={(open) =>
@@ -199,41 +207,42 @@ export default function AssetEditModal() {
             className={'h-32 resize-none'}
             maxLength={512}
           />
-          <div
-            role={'group'}
-            className={'flex flex-col gap-1'}
-          >
+          <fieldset className={'flex flex-col gap-1 pt-1'}>
             <Label asChild>
-              <legend className={'appearance-none'}>Tagi</legend>
+              <legend>Tagi</legend>
             </Label>
             <TagSelector
               allTags={availableTags}
               initialSelectedTags={tags}
               name={fields.tagIds.name}
             />
-          </div>
-          <Label>Data</Label>
-          <InputErrorMessage>{fields.date.errors}</InputErrorMessage>
-          {datePreview && <span className={'font-medium'}>{datePreview}</span>}
-          <AssetDatePicker
-            enabled={showDatePicker}
-            onEnabledChange={setShowDatePicker}
-            dateMin={{
-              name: dateFieldset.dateMin.name,
-              value: dateFieldset.dateMin.value,
-              onValueChange: (value) => setDateMin(value)
-            }}
-            dateMax={{
-              name: dateFieldset.dateMax.name,
-              value: dateFieldset.dateMax.value,
-              onValueChange: (value) => setDateMax(value)
-            }}
-            datePrecision={{
-              name: dateFieldset.datePrecision.name,
-              value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
-              onValueChange: (value) => setDatePrecision(value)
-            }}
-          />
+          </fieldset>
+          <fieldset className={'flex flex-col gap-1 pt-1'}>
+            <Label asChild>
+              <legend>Data</legend>
+            </Label>
+            <InputErrorMessage>{fields.date.errors}</InputErrorMessage>
+            {datePreview && <span className={'font-medium'}>{datePreview}</span>}
+            <AssetDatePicker
+              enabled={showDatePicker}
+              onEnabledChange={setShowDatePicker}
+              dateMin={{
+                name: dateFieldset.dateMin.name,
+                value: dateFieldset.dateMin.value,
+                onValueChange: (value) => setDateMin(value)
+              }}
+              dateMax={{
+                name: dateFieldset.dateMax.name,
+                value: dateFieldset.dateMax.value,
+                onValueChange: (value) => setDateMax(value)
+              }}
+              datePrecision={{
+                name: dateFieldset.datePrecision.name,
+                value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
+                onValueChange: (value) => setDatePrecision(value)
+              }}
+            />
+          </fieldset>
           <Button
             type={'submit'}
             variant={'success'}

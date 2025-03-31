@@ -5,7 +5,7 @@ import { useForm } from '@conform-to/react';
 import { Asset, AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
 import { Button } from '@/components/base/button';
-import { CheckIcon, PencilIcon } from '@/components/icons';
+import { CheckIcon, EllipsisIcon, PencilIcon } from '@/components/icons';
 import { Modal, ModalContent, ModalHeader, ModalTitle } from '@/components/base/modal';
 import { Label } from '@/components/base/label';
 import { TextArea } from '@/components/base/text-area';
@@ -24,6 +24,7 @@ import { z } from '@/lib/zod';
 import { Checkbox } from '@/components/base/checkbox';
 import { applyDeclension } from '@/utils/language';
 import { assetService } from '@/features/assets/assets.service';
+import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
 
 const searchParamsSchema = z.object({
   ids: z
@@ -106,7 +107,7 @@ export async function loader({ request, context: { logger } }: Route.LoaderArgs)
   }
 
   logger.info('Success.');
-  return { commonAssetValues, availableTags, assetIds: parsedParams.ids };
+  return { commonAssetValues, availableTags, assets };
 }
 
 export async function action({ request, context: { logger } }: Route.ActionArgs) {
@@ -160,7 +161,7 @@ export default function AssetEditModal({
   loaderData: {
     commonAssetValues: { tags, ...commonAssetValues },
     availableTags,
-    assetIds
+    assets
   },
   actionData
 }: Route.ComponentProps) {
@@ -227,20 +228,26 @@ export default function AssetEditModal({
       <ModalContent>
         <ModalHeader>
           <ModalTitle className={'flex gap-2'}>
-            <PencilIcon /> Edycja {assetIds.length}{' '}
-            {applyDeclension(assetIds.length, 'materiału', 'materiałów', 'materiałów')}
+            <PencilIcon /> Edycja {assets.length}{' '}
+            {applyDeclension(assets.length, 'materiału', 'materiałów', 'materiałów')}
           </ModalTitle>
           <VisuallyHidden>
             <DialogDescription>Edycja metadanych zawartości multimedialnej</DialogDescription>
           </VisuallyHidden>
         </ModalHeader>
-        {/*<div className={'flex max-h-60 max-w-full items-start justify-center'}>*/}
-        {/*  <Asset*/}
-        {/*    assetType={asset.assetType}*/}
-        {/*    fileName={asset.assetType !== 'image' ? asset.fileName : undefined}*/}
-        {/*    fullUrl={asset.assetType === 'image' ? getAssetThumbnailUri(asset.fileName) : undefined}*/}
-        {/*  />*/}
-        {/*</div>*/}
+        <GalleryGrid columnCount={4}>
+          {assets.slice(0, 7).map((asset) => (
+            <GalleryGridItem
+              key={asset.id}
+              asset={asset}
+            />
+          ))}
+          {assets.length > 8 && (
+            <div className={'flex items-center justify-center rounded-xl bg-secondary text-secondary-foreground'}>
+              <EllipsisIcon />
+            </div>
+          )}
+        </GalleryGrid>
         <Form
           method={'post'}
           id={form.id}
@@ -315,9 +322,10 @@ export default function AssetEditModal({
               <legend>Data</legend>
             </Label>
             <InputErrorMessage>{fields.date.errors}</InputErrorMessage>
-            <span className={'font-medium'}>
-              {datePreview ? datePreview : 'Istniejące daty zostaną usunięte z wybranych materiałów!'}
-            </span>
+            {datePreview && <span className={'font-medium'}>{datePreview}</span>}
+            {!showDatePicker && (
+              <span className={'font-medium'}>Istniejące daty zostaną usunięte z wybranych materiałów!</span>
+            )}
             <AssetDatePicker
               enabled={showDatePicker}
               onEnabledChange={setShowDatePicker}

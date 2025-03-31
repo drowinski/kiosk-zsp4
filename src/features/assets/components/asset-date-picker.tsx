@@ -4,7 +4,7 @@ import { DATE_PRECISION_ARRAY, DATE_PRECISION_ARRAY_IN_POLISH, MONTHS_IN_POLISH 
 import { Fragment, useEffect, useState } from 'react';
 import { Input } from '@/components/base/input';
 import { cn } from '@/utils/styles';
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon } from '@/components/icons';
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, PlusIcon, XIcon } from '@/components/icons';
 import { Button } from '@/components/base/button';
 import { Label } from '@/components/base/label';
 
@@ -310,25 +310,26 @@ export function AssetDatePicker({
             />
           </Label>
           <Button
-            className={'w-fit'}
+            className={'w-fit gap-1'}
             onClick={() => {
               setIsEnabled(false);
               onEnabledChange?.(false);
             }}
           >
-            Usuń datę
+            <XIcon />
+            Ustaw brak daty
           </Button>
         </div>
       ) : (
         <Button
-          variant={'secondary'}
-          className={'w-fit'}
+          className={'w-fit gap-1'}
           onClick={() => {
             setIsEnabled(true);
             onEnabledChange?.(true);
           }}
         >
-          Dodaj datę
+          <PlusIcon />
+          Ustaw datę
         </Button>
       )}
     </>

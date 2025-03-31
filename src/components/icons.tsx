@@ -9,20 +9,23 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaChevronUp,
-  FaEdit,
+  FaPenClip,
   FaFilm,
   FaFilter,
   FaImage,
-  FaInfoCircle,
+  FaCircleInfo,
   FaPause,
   FaPlay,
   FaPlus,
-  FaSearch,
+  FaMagnifyingGlass,
   FaSpinner,
   FaTrash,
-  FaUpload
-} from 'react-icons/fa';
-import { FaCircleExclamation, FaEllipsis, FaPencil, FaX } from 'react-icons/fa6';
+  FaUpload,
+  FaCircleExclamation,
+  FaEllipsis,
+  FaPencil,
+  FaX
+} from 'react-icons/fa6';
 import React from 'react';
 
 interface IconProps extends React.SVGAttributes<SVGElement> {}
@@ -84,7 +87,7 @@ export function CheckIcon(props: IconProps) {
 }
 
 export function EditIcon(props: IconProps) {
-  return <FaEdit {...props} />;
+  return <FaPenClip {...props} />;
 }
 
 export function TrashIcon(props: IconProps) {
@@ -116,7 +119,7 @@ export function FilterIcon(props: IconProps) {
 }
 
 export function SearchIcon(props: IconProps) {
-  return <FaSearch {...props} />;
+  return <FaMagnifyingGlass {...props} />;
 }
 
 export function EllipsisIcon(props: IconProps) {
@@ -128,5 +131,5 @@ export function UploadIcon(props: IconProps) {
 }
 
 export function InfoIcon(props: IconProps) {
-  return <FaInfoCircle {...props} />;
+  return <FaCircleInfo {...props} />;
 }

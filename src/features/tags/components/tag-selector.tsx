@@ -24,7 +24,6 @@ export function TagCombobox({ tags, onSelect, id }: TagComboboxProps) {
         <Button
           id={id}
           aria-expanded={open}
-          variant={'secondary'}
           className={'h-7 py-1'}
           aria-label={'Dodaj tag'}
         >
@@ -45,7 +44,7 @@ export function TagCombobox({ tags, onSelect, id }: TagComboboxProps) {
                     setOpen(false);
                   }}
                   className={
-                    'group data-[selected="true"]:bg-secondary data-[selected="true"]:text-secondary-foreground'
+                    'group data-[selected="true"]:bg-primary data-[selected="true"]:text-primary-foreground'
                   }
                 >
                   <PlusIcon className={'group-data-[selected="true"]:opacity-100 opacity-0'}/>
