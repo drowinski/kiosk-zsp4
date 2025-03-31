@@ -21,6 +21,9 @@ import { tagRepository } from '@/features/tags/tags.repository';
 import { status, StatusCodes } from '@/utils/status-response';
 import { tryAsync } from '@/utils/try';
 import { z } from '@/lib/zod';
+import { Checkbox } from '@/components/base/checkbox';
+import { applyDeclension } from '@/utils/language';
+import { assetService } from '@/features/assets/assets.service';
 
 const searchParamsSchema = z.object({
   ids: z
@@ -29,17 +32,26 @@ const searchParamsSchema = z.object({
     .pipe(z.array(assetUpdateSchema.shape.id).min(1))
 });
 
-const assetEditFormSchema = assetUpdateSchema.pick({
-  id: true, // TODO
-  description: true,
-  date: true,
-  tagIds: true
-});
+const assetEditManyFormSchema = assetUpdateSchema
+  .pick({
+    description: true,
+    date: true,
+    tagIds: true
+  })
+  .partial({
+    description: true,
+    date: true,
+    tagIds: true
+  })
+  .extend({
+    editDescription: z.boolean().default(false),
+    editDate: z.boolean().default(false),
+    editTags: z.boolean().default(false)
+  });
 
 export async function loader({ request, context: { logger } }: Route.LoaderArgs) {
-  const url = new URL(request.url);
-
   logger.info('Parsing params...');
+  const url = new URL(request.url);
   const [parsedParams, parsedParamsOk, parsedParamsError] = await tryAsync(
     searchParamsSchema.parseAsync(Object.fromEntries(url.searchParams.entries()))
   );
@@ -94,42 +106,61 @@ export async function loader({ request, context: { logger } }: Route.LoaderArgs)
   }
 
   logger.info('Success.');
-  return { commonAssetValues, availableTags };
+  return { commonAssetValues, availableTags, assetIds: parsedParams.ids };
 }
 
-// export async function action({ request, context: { logger } }: Route.ActionArgs) {
-//   logger.info('Parsing form data...');
-//   const formData = await request.formData();
-//   const submission = await parseWithZod(formData, {
-//     schema: assetEditFormSchema.transform((asset) => {
-//       if (asset.description === undefined) asset.description = null;
-//       if (asset.date === undefined) asset.date = null;
-//       if (asset.tagIds === undefined) asset.tagIds = [];
-//       return asset;
-//     }),
-//     async: true
-//   });
-//   if (submission.status !== 'success') {
-//     logger.warn('Form data validation failed.');
-//     return { lastResult: submission.reply() };
-//   }
-//   logger.info({ data: submission.value }, 'Form data parsed.');
-//
-//   logger.info('Updating asset...');
-//   const [, updateAssetOk, updateAssetError] = await tryAsync(assetService.updateAsset(submission.value));
-//   if (!updateAssetOk) {
-//     logger.error(updateAssetError);
-//     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
-//   }
-//
-//   logger.info('Success.');
-//   return { lastResult: submission.reply({ resetForm: true }) };
-// }
+export async function action({ request, context: { logger } }: Route.ActionArgs) {
+  logger.info('Parsing params...');
+  const url = new URL(request.url);
+  const [parsedParams, parsedParamsOk, parsedParamsError] = await tryAsync(
+    searchParamsSchema.parseAsync(Object.fromEntries(url.searchParams.entries()))
+  );
+  if (!parsedParamsOk) {
+    logger.error(parsedParamsError);
+    throw status(StatusCodes.BAD_REQUEST);
+  }
+
+  logger.info('Parsing form data...');
+  const formData = await request.formData();
+  const submission = await parseWithZod(formData, {
+    schema: assetEditManyFormSchema.transform((form) => {
+      return {
+        ...(form.editDescription && { description: form.description ?? null }),
+        ...(form.editDate && { date: form.date ?? null }),
+        ...(form.editTags && { tagIds: form.tagIds ?? [] })
+      };
+    }),
+    async: true
+  });
+  if (submission.status !== 'success') {
+    logger.warn('Form data validation failed.');
+    return { lastResult: submission.reply() };
+  }
+
+  logger.info(
+    {
+      ids: parsedParams.ids,
+      updatedValues: submission.value
+    },
+    `Updating assets with IDs: "${parsedParams.ids.join(',')}"...`
+  );
+  const [, updateAssetsOk, updateAssetsError] = await tryAsync(
+    assetService.updateAssets(parsedParams.ids, submission.value)
+  );
+  if (!updateAssetsOk) {
+    logger.error(updateAssetsError);
+    return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
+  }
+
+  logger.info('Success.');
+  return { lastResult: submission.reply({ resetForm: true }) };
+}
 
 export default function AssetEditModal({
   loaderData: {
     commonAssetValues: { tags, ...commonAssetValues },
-    availableTags
+    availableTags,
+    assetIds
   },
   actionData
 }: Route.ComponentProps) {
@@ -140,11 +171,11 @@ export default function AssetEditModal({
   const [form, fields] = useForm({
     // lastResult: navigation.state === 'idle' ? actionData?.lastResult || null : null,
     onValidate: ({ formData }) => {
-      const result = parseWithZod(formData, { schema: assetEditFormSchema });
+      const result = parseWithZod(formData, { schema: assetEditManyFormSchema });
       console.log(result);
       return result;
     },
-    constraint: getZodConstraint(assetEditFormSchema),
+    constraint: getZodConstraint(assetEditManyFormSchema),
     shouldRevalidate: 'onInput',
     defaultValue: {
       ...commonAssetValues,
@@ -161,6 +192,10 @@ export default function AssetEditModal({
   });
 
   const dateFieldset = fields.date.getFieldset();
+
+  const [isDescriptionEnabled, setIsDescriptionEnabled] = useState<boolean>(false);
+  const [areTagsEnabled, setAreTagsEnabled] = useState<boolean>(false);
+  const [isDateEnabled, setIsDateEnabled] = useState<boolean>(true);
 
   const [showDatePicker, setShowDatePicker] = useState<boolean>(commonAssetValues.date !== null);
 
@@ -193,7 +228,8 @@ export default function AssetEditModal({
       <ModalContent>
         <ModalHeader>
           <ModalTitle className={'flex gap-2'}>
-            <PencilIcon /> Edycja zawartości
+            <PencilIcon /> Edycja {assetIds.length}{' '}
+            {applyDeclension(assetIds.length, 'materiału', 'materiałów', 'materiałów')}
           </ModalTitle>
           <VisuallyHidden>
             <DialogDescription>Edycja metadanych zawartości multimedialnej</DialogDescription>
@@ -215,60 +251,96 @@ export default function AssetEditModal({
           state={{ previousPathname: location.state?.previousPathname, previousSearch: location.state?.previousSearch }}
         >
           <InputErrorMessage>{form.errors}</InputErrorMessage>
-          <input
-            type={'hidden'}
-            name={fields.id.name}
-            value={fields.id.value}
-          />
-          <Label htmlFor={fields.description.id}>Opis</Label>
-          <TextArea
-            key={fields.description.key}
-            id={fields.description.id}
-            name={fields.description.name}
-            defaultValue={fields.description.initialValue}
-            placeholder={'Opis'}
-            className={'h-32 resize-none'}
-            maxLength={512}
-          />
-          <div
-            role={'group'}
-            className={'flex flex-col gap-1'}
-          >
+          <fieldset className={'flex gap-4 py-2'}>
             <Label asChild>
-              <legend className={'appearance-none'}>Tagi</legend>
+              <legend>Edytowane pola</legend>
             </Label>
-            <TagSelector
-              allTags={availableTags}
-              initialSelectedTags={tags}
-              name={fields.tagIds.name}
-            />
-          </div>
-          <Label>Data</Label>
-          <InputErrorMessage>{fields.date.errors}</InputErrorMessage>
-          {datePreview && <span className={'font-medium'}>{datePreview}</span>}
-          <AssetDatePicker
-            enabled={showDatePicker}
-            onEnabledChange={setShowDatePicker}
-            id={{
-              name: dateFieldset.id.name,
-              value: dateFieldset.id.value
-            }}
-            dateMin={{
-              name: dateFieldset.dateMin.name,
-              value: dateFieldset.dateMin.value,
-              onValueChange: (value) => setDateMin(value)
-            }}
-            dateMax={{
-              name: dateFieldset.dateMax.name,
-              value: dateFieldset.dateMax.value,
-              onValueChange: (value) => setDateMax(value)
-            }}
-            datePrecision={{
-              name: dateFieldset.datePrecision.name,
-              value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
-              onValueChange: (value) => setDatePrecision(value)
-            }}
-          />
+            <Label variant={'horizontal'}>
+              <Checkbox
+                name={fields.editDescription.name}
+                checked={isDescriptionEnabled}
+                onCheckedChange={(checked) => setIsDescriptionEnabled(checked === true)}
+              />
+              Opis
+            </Label>
+            <Label variant={'horizontal'}>
+              <Checkbox
+                name={fields.editTags.name}
+                checked={areTagsEnabled}
+                onCheckedChange={(checked) => setAreTagsEnabled(checked === true)}
+              />
+              Tagi
+            </Label>
+            <Label variant={'horizontal'}>
+              <Checkbox
+                name={fields.editDate.name}
+                checked={isDateEnabled}
+                onCheckedChange={(checked) => setIsDateEnabled(checked === true)}
+              />
+              Data
+            </Label>
+          </fieldset>
+          {isDescriptionEnabled && (
+            <>
+              <Label htmlFor={fields.description.id}>Opis</Label>
+              <TextArea
+                key={fields.description.key}
+                id={fields.description.id}
+                name={fields.description.name}
+                defaultValue={fields.description.initialValue}
+                placeholder={'Opis'}
+                className={'h-32 resize-none'}
+                maxLength={512}
+              />
+            </>
+          )}
+          {areTagsEnabled && (
+            <div
+              role={'group'}
+              className={'flex flex-col gap-1'}
+            >
+              <Label asChild>
+                <legend className={'appearance-none'}>Tagi</legend>
+              </Label>
+              <TagSelector
+                allTags={availableTags}
+                initialSelectedTags={tags}
+                name={fields.tagIds.name}
+              />
+            </div>
+          )}
+          {isDateEnabled && (
+            <>
+              <Label>Data</Label>
+              <InputErrorMessage>{fields.date.errors}</InputErrorMessage>
+              <span className={'font-medium'}>
+                {datePreview ? datePreview : 'Istniejące daty zostaną usunięte z wybranych materiałów!'}
+              </span>
+              <AssetDatePicker
+                enabled={showDatePicker}
+                onEnabledChange={setShowDatePicker}
+                id={{
+                  name: dateFieldset.id.name,
+                  value: dateFieldset.id.value
+                }}
+                dateMin={{
+                  name: dateFieldset.dateMin.name,
+                  value: dateFieldset.dateMin.value,
+                  onValueChange: (value) => setDateMin(value)
+                }}
+                dateMax={{
+                  name: dateFieldset.dateMax.name,
+                  value: dateFieldset.dateMax.value,
+                  onValueChange: (value) => setDateMax(value)
+                }}
+                datePrecision={{
+                  name: dateFieldset.datePrecision.name,
+                  value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
+                  onValueChange: (value) => setDatePrecision(value)
+                }}
+              />
+            </>
+          )}
           <Button
             type={'submit'}
             variant={'success'}

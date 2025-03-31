@@ -5,6 +5,7 @@ import { and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, lte, n
 import { PgSelect } from 'drizzle-orm/pg-core';
 import { assetTagJunctionTable, tagTable } from '@/features/tags/tags.db';
 import { Tag } from '@/features/tags/tags.validation';
+import { Transaction } from '@/lib/db/types';
 
 export interface AssetFiltering {
   assetType?: AssetType[];
@@ -41,6 +42,8 @@ export interface AssetRepository {
   createAsset(newAsset: NewAsset): Promise<BaseAsset | null>;
 
   updateAsset(updatedAsset: UpdatedAsset): Promise<void>;
+
+  updateAssets(ids: number[], updatedValues: Omit<UpdatedAsset, 'id'>): Promise<void>;
 
   deleteAsset(id: number): Promise<BaseAsset | null>;
 
@@ -190,9 +193,10 @@ export class DrizzleAssetRepository implements AssetRepository {
     });
   }
 
-  async updateAsset(updatedAsset: UpdatedAsset): Promise<void> {
+  private async _updateAsset(updatedAsset: UpdatedAsset, tx?: Transaction): Promise<void> {
     const { date: dateValues, tagIds, ...assetValues } = updatedAsset;
-    await db.transaction(async (tx) => {
+    const dbOrTx = tx ?? db;
+    await dbOrTx.transaction(async (tx) => {
       let resultDate;
       if (dateValues) {
         const { id: dateId, ...dateValuesWithoutId } = dateValues;
@@ -241,19 +245,33 @@ export class DrizzleAssetRepository implements AssetRepository {
       }
 
       const { id: assetId, ...assetValuesWithoutId } = assetValues;
-      const resultAsset = (
-        await tx
-          .update(assetTable)
-          .set({
-            dateId: resultDate?.id,
-            ...assetValuesWithoutId
-          })
-          .where(eq(assetTable.id, assetId))
-          .returning()
-      ).at(0);
+      if (Object.keys(assetValuesWithoutId).length > 0) {
+        const resultAsset = (
+          await tx
+            .update(assetTable)
+            .set({
+              dateId: resultDate?.id,
+              ...assetValuesWithoutId
+            })
+            .where(eq(assetTable.id, assetId))
+            .returning()
+        ).at(0);
 
-      if (!resultAsset) {
-        return tx.rollback();
+        if (!resultAsset) {
+          return tx.rollback();
+        }
+      }
+    });
+  }
+
+  async updateAsset(updatedAsset: UpdatedAsset): Promise<void> {
+    await this._updateAsset(updatedAsset);
+  }
+
+  async updateAssets(ids: number[], updatedValues: Omit<UpdatedAsset, 'id'>) {
+    await db.transaction(async (tx) => {
+      for (const id of ids) {
+        await this._updateAsset({ id, ...updatedValues }, tx);
       }
     });
   }

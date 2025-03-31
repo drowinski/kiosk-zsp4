@@ -76,10 +76,18 @@ export class AssetService {
     }
 
     logger.debug('Updating asset repository entry...');
-    const [, updateAssetOk, updateAssetError] = await tryAsync(this.assetRepository.updateAsset(updatedAsset));
-    if (!updateAssetOk) {
-      throw updateAssetError;
+    await this.assetRepository.updateAsset(updatedAsset);
+  }
+
+  async updateAssets(ids: number[], updatedValues: Omit<UpdatedAsset, 'id'>): Promise<void> {
+    if (updatedValues.mimeType !== undefined) {
+      logger.debug('Normalizing mime type and deriving asset type...');
+      updatedValues.mimeType = this.normalizeMimeType(updatedValues.mimeType);
+      updatedValues.assetType = this.getAssetTypeFromMimeType(updatedValues.mimeType);
     }
+
+    logger.debug('Updating asset repository entries...');
+    await this.assetRepository.updateAssets(ids, updatedValues);
   }
 
   async deleteAssets(...ids: number[]): Promise<void> {
