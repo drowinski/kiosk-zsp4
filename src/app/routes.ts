@@ -12,7 +12,10 @@ export default [
     layout('dashboard/dashboard.layout.tsx', [
       index('dashboard/home.route.ts'),
       route('assets/upload', 'dashboard/assets/upload.page.tsx'),
-      route('assets', 'dashboard/assets/list.page.tsx', [route(':id', 'dashboard/assets/edit.modal.tsx')]),
+      route('assets', 'dashboard/assets/list.page.tsx', [
+        route(':id', 'dashboard/assets/edit.modal.tsx'),
+        route('edit', 'dashboard/assets/edit-many.modal.tsx')
+      ]),
       route('settings', 'dashboard/settings/settings.layout.tsx', [
         route('timeline', 'dashboard/settings/timeline/timeline.page.tsx', [
           route('new', 'dashboard/settings/timeline/add.page.tsx'),

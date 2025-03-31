@@ -1,6 +1,13 @@
 import type { Route } from './+types/list.page';
 import { AssetFiltering, assetRepository } from '@/features/assets/assets.repository';
-import { Link, Outlet, ShouldRevalidateFunctionArgs, useLocation, useSearchParams, useSubmit } from 'react-router';
+import {
+  Link,
+  Outlet,
+  ShouldRevalidateFunctionArgs,
+  useLocation,
+  useSearchParams,
+  useSubmit
+} from 'react-router';
 import { AssetList, AssetListItem } from '@/app/dashboard/assets/_components/asset-list';
 import { AssetFilters } from '@/app/dashboard/assets/_components/asset-filters';
 import { ParamPagination } from '@/components/param-pagination';
@@ -193,7 +200,21 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
             aria-label={'zaznacz wszystkie'}
           />
           {selectedAssetIds.size > 0 && (
-            <div className={'flex gap-1'}>
+            <div className={'flex items-center gap-1'}>
+              <span className={'mr-2'}>
+                {selectedAssetIds.size}/{assets.length}
+              </span>
+              <Button asChild>
+                <Link
+                  to={{
+                    pathname: 'edit',
+                    search: 'ids=' + Array.from(selectedAssetIds.values()).join(',')
+                  }}
+                  state={{ previousPathname: location.pathname, previousSearch: location.search }}
+                >
+                  Edytuj
+                </Link>
+              </Button>
               <AssetDeleteModal
                 assetIds={selectedAssetIds}
                 onDelete={() => {

@@ -8,7 +8,7 @@ export const assetDatePrecisionSchema = z.enum(DATE_PRECISION_ARRAY);
 export type AssetDatePrecision = z.output<typeof assetDatePrecisionSchema>;
 
 const assetDateBaseSchema = z.object({
-  id: z.number().positive().int(),
+  id: z.coerce.number().positive().int(),
   dateMin: z.date(),
   dateMax: z.date(),
   datePrecision: assetDatePrecisionSchema,
@@ -50,7 +50,7 @@ export const assetTypeSchema = z.enum(ASSET_TYPE_ARRAY);
 export type AssetType = z.output<typeof assetTypeSchema>;
 
 export const assetBaseSchema = z.object({
-  id: z.number().positive().int(),
+  id: z.coerce.number().positive().int(),
   fileName: z.string().max(2048),
   mimeType: z.string().max(255),
   assetType: assetTypeSchema,
