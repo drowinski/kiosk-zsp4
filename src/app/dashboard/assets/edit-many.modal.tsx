@@ -181,7 +181,6 @@ export default function AssetEditModal({
       ...commonAssetValues,
       date: commonAssetValues.date
         ? {
-            id: commonAssetValues.date.id,
             dateMin: getYYYYMMDD(commonAssetValues.date.dateMin),
             dateMax: getYYYYMMDD(commonAssetValues.date.dateMax),
             datePrecision: commonAssetValues.date.datePrecision,
@@ -195,7 +194,7 @@ export default function AssetEditModal({
 
   const [isDescriptionEnabled, setIsDescriptionEnabled] = useState<boolean>(false);
   const [areTagsEnabled, setAreTagsEnabled] = useState<boolean>(false);
-  const [isDateEnabled, setIsDateEnabled] = useState<boolean>(true);
+  const [isDateEnabled, setIsDateEnabled] = useState<boolean>(false);
 
   const [showDatePicker, setShowDatePicker] = useState<boolean>(commonAssetValues.date !== null);
 
@@ -280,72 +279,70 @@ export default function AssetEditModal({
               Data
             </Label>
           </fieldset>
-          {isDescriptionEnabled && (
-            <>
-              <Label htmlFor={fields.description.id}>Opis</Label>
-              <TextArea
-                key={fields.description.key}
-                id={fields.description.id}
-                name={fields.description.name}
-                defaultValue={fields.description.initialValue}
-                placeholder={'Opis'}
-                className={'h-32 resize-none'}
-                maxLength={512}
-              />
-            </>
-          )}
-          {areTagsEnabled && (
-            <div
-              role={'group'}
-              className={'flex flex-col gap-1'}
-            >
-              <Label asChild>
-                <legend className={'appearance-none'}>Tagi</legend>
-              </Label>
-              <TagSelector
-                allTags={availableTags}
-                initialSelectedTags={tags}
-                name={fields.tagIds.name}
-              />
-            </div>
-          )}
-          {isDateEnabled && (
-            <>
-              <Label>Data</Label>
-              <InputErrorMessage>{fields.date.errors}</InputErrorMessage>
-              <span className={'font-medium'}>
-                {datePreview ? datePreview : 'Istniejące daty zostaną usunięte z wybranych materiałów!'}
-              </span>
-              <AssetDatePicker
-                enabled={showDatePicker}
-                onEnabledChange={setShowDatePicker}
-                id={{
-                  name: dateFieldset.id.name,
-                  value: dateFieldset.id.value
-                }}
-                dateMin={{
-                  name: dateFieldset.dateMin.name,
-                  value: dateFieldset.dateMin.value,
-                  onValueChange: (value) => setDateMin(value)
-                }}
-                dateMax={{
-                  name: dateFieldset.dateMax.name,
-                  value: dateFieldset.dateMax.value,
-                  onValueChange: (value) => setDateMax(value)
-                }}
-                datePrecision={{
-                  name: dateFieldset.datePrecision.name,
-                  value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
-                  onValueChange: (value) => setDatePrecision(value)
-                }}
-              />
-            </>
-          )}
+          <div
+            className={'flex flex-col gap-1'}
+            hidden={!isDescriptionEnabled}
+          >
+            <Label htmlFor={fields.description.id}>Opis</Label>
+            <TextArea
+              key={fields.description.key}
+              id={fields.description.id}
+              name={fields.description.name}
+              defaultValue={fields.description.initialValue}
+              placeholder={'Opis'}
+              className={'h-32 resize-none'}
+              maxLength={512}
+            />
+          </div>
+          <fieldset
+            className={'flex flex-col gap-1 pt-1'}
+            hidden={!areTagsEnabled}
+          >
+            <Label asChild>
+              <legend>Tagi</legend>
+            </Label>
+            <TagSelector
+              allTags={availableTags}
+              initialSelectedTags={tags}
+              name={fields.tagIds.name}
+            />
+          </fieldset>
+          <fieldset
+            className={'flex flex-col gap-1 pt-1'}
+            hidden={!isDateEnabled}
+          >
+            <Label asChild>
+              <legend>Data</legend>
+            </Label>
+            <InputErrorMessage>{fields.date.errors}</InputErrorMessage>
+            <span className={'font-medium'}>
+              {datePreview ? datePreview : 'Istniejące daty zostaną usunięte z wybranych materiałów!'}
+            </span>
+            <AssetDatePicker
+              enabled={showDatePicker}
+              onEnabledChange={setShowDatePicker}
+              dateMin={{
+                name: dateFieldset.dateMin.name,
+                value: dateFieldset.dateMin.value,
+                onValueChange: (value) => setDateMin(value)
+              }}
+              dateMax={{
+                name: dateFieldset.dateMax.name,
+                value: dateFieldset.dateMax.value,
+                onValueChange: (value) => setDateMax(value)
+              }}
+              datePrecision={{
+                name: dateFieldset.datePrecision.name,
+                value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined,
+                onValueChange: (value) => setDatePrecision(value)
+              }}
+            />
+          </fieldset>
           <Button
             type={'submit'}
             variant={'success'}
             className={'flex gap-2'}
-            disabled={navigation.state !== 'idle'}
+            disabled={(!isDescriptionEnabled && !areTagsEnabled && !isDateEnabled) || navigation.state !== 'idle'}
           >
             <CheckIcon /> Zatwierdź zmiany
           </Button>

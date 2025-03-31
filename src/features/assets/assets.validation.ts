@@ -31,18 +31,7 @@ export const assetDateCreateSchema = assetDateBaseSchema
   });
 export type NewAssetDate = z.input<typeof assetDateCreateSchema>;
 
-export const assetDateUpdateSchema = assetDateBaseSchema
-  .omit({ id: true })
-  .extend({ id: assetDateBaseSchema.shape.id.optional() })
-  .refine(({ dateMin, dateMax }: { dateMin: Date; dateMax: Date }) => dateMin <= dateMax, {
-    message: 'Pierwsza data okresu powinna być mniejsza niż druga.'
-  })
-  .transform((value) => {
-    if (!value) return value;
-    value.dateMin = truncateDate(value.dateMin, value.datePrecision);
-    value.dateMax = truncateDate(value.dateMax, value.datePrecision);
-    return value;
-  });
+export const assetDateUpdateSchema = assetDateCreateSchema;
 export type UpdatedAssetDate = z.input<typeof assetDateUpdateSchema>;
 
 // Asset

@@ -185,8 +185,7 @@ export function DatePicker({
   );
 }
 
-type StringifiedUpdatedAssetDate = Omit<Omit<Omit<UpdatedAssetDate, 'dateMin'>, 'dateMax'>, 'id'> & {
-  id: string;
+type StringifiedUpdatedAssetDate = Omit<Omit<UpdatedAssetDate, 'dateMin'>, 'dateMax'> & {
   dateMin: string;
   dateMax: string;
 };
@@ -199,7 +198,6 @@ type AssetDatePickerProp<K extends keyof StringifiedUpdatedAssetDate> = {
 };
 
 export interface AssetDatePickerProps {
-  id?: Omit<Omit<AssetDatePickerProp<'id'>, 'onValueChange'>, 'defaultValue'>;
   dateMin?: AssetDatePickerProp<'dateMin'>;
   dateMax?: AssetDatePickerProp<'dateMax'>;
   datePrecision?: AssetDatePickerProp<'datePrecision'>;
@@ -209,7 +207,6 @@ export interface AssetDatePickerProps {
 }
 
 export function AssetDatePicker({
-  id,
   dateMin,
   dateMax,
   datePrecision,
@@ -258,14 +255,6 @@ export function AssetDatePicker({
       {isEnabled ? (
         <div className={'flex flex-col gap-1'}>
           <div className={cn('flex items-center gap-1', orientation === 'vertical' && 'w-fit flex-col')}>
-            {id && (
-              <input
-                type={'hidden'}
-                name={id.name}
-                value={id.value}
-                readOnly
-              />
-            )}
             <DatePicker
               name={dateMin?.name}
               value={minDate}

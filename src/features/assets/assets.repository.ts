@@ -198,30 +198,30 @@ export class DrizzleAssetRepository implements AssetRepository {
     const dbOrTx = tx ?? db;
     await dbOrTx.transaction(async (tx) => {
       let resultDate;
+      const dateIdSelect = tx
+        .$with('date_id_select')
+        .as(tx.select({ dateId: assetTable.dateId }).from(assetTable).where(eq(assetTable.id, assetValues.id)));
       if (dateValues) {
-        const { id: dateId, ...dateValuesWithoutId } = dateValues;
+        [resultDate] = await tx
+          .with(dateIdSelect)
+          .update(dateTable)
+          .set(dateValues)
+          .from(dateIdSelect)
+          .where(eq(dateTable.id, dateIdSelect.dateId))
+          .returning();
 
-        if (dateId) {
-          resultDate = (
-            await tx.update(dateTable).set(dateValuesWithoutId).where(eq(dateTable.id, dateId)).returning()
-          ).at(0);
+        if (!resultDate) {
+          [resultDate] = await tx.insert(dateTable).values(dateValues).returning();
         }
 
         if (!resultDate) {
-          resultDate = (await tx.insert(dateTable).values(dateValuesWithoutId).returning()).at(0);
-        }
-
-        if (!resultDate) {
-          return tx.rollback();
+          tx.rollback();
         }
       } else if (dateValues === null) {
-        const assetSelect = tx
-          .$with('date_id')
-          .as(tx.select({ dateId: assetTable.dateId }).from(assetTable).where(eq(assetTable.id, assetValues.id)));
         await tx
-          .with(assetSelect)
+          .with(dateIdSelect)
           .delete(dateTable)
-          .where(eq(dateTable.id, sql`(SELECT date_id FROM ${assetSelect})`));
+          .where(eq(dateTable.id, sql`(SELECT date_id FROM ${dateIdSelect})`));
       }
 
       if (tagIds) {
@@ -245,17 +245,15 @@ export class DrizzleAssetRepository implements AssetRepository {
       }
 
       const { id: assetId, ...assetValuesWithoutId } = assetValues;
-      if (Object.keys(assetValuesWithoutId).length > 0) {
-        const resultAsset = (
-          await tx
-            .update(assetTable)
-            .set({
-              dateId: resultDate?.id,
-              ...assetValuesWithoutId
-            })
-            .where(eq(assetTable.id, assetId))
-            .returning()
-        ).at(0);
+      if (resultDate || Object.keys(assetValuesWithoutId).length > 0) {
+        const [resultAsset] = await tx
+          .update(assetTable)
+          .set({
+            dateId: resultDate?.id,
+            ...assetValuesWithoutId
+          })
+          .where(eq(assetTable.id, assetId))
+          .returning();
 
         if (!resultAsset) {
           return tx.rollback();

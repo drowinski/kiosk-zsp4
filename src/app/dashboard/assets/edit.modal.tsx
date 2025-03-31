@@ -120,7 +120,6 @@ export default function AssetEditModal() {
       ...asset,
       date: asset.date
         ? {
-            id: asset.date.id,
             dateMin: getYYYYMMDD(asset.date.dateMin),
             dateMax: getYYYYMMDD(asset.date.dateMax),
             datePrecision: asset.date.datePrecision,
@@ -219,10 +218,6 @@ export default function AssetEditModal() {
           <AssetDatePicker
             enabled={showDatePicker}
             onEnabledChange={setShowDatePicker}
-            id={{
-              name: dateFieldset.id.name,
-              value: dateFieldset.id.value
-            }}
             dateMin={{
               name: dateFieldset.dateMin.name,
               value: dateFieldset.dateMin.value,
