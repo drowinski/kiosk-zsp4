@@ -183,6 +183,13 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
               );
               assetSelection.unselectAllAssets();
             }}
+            editPageLinkProps={(selectedIds) => ({
+              to: {
+                pathname: 'edit',
+                search: 'ids=' + Array.from(selectedIds.values()).join(',')
+              },
+              state: { previousPathname: location.pathname, previousSearch: location.search }
+            })}
             {...assetSelection}
           />
           <Label

@@ -1,6 +1,6 @@
 import { Checkbox } from '@/components/base/checkbox';
 import { Button } from '@/components/base/button';
-import { Link } from 'react-router';
+import { Link, LinkProps } from 'react-router';
 import { EditIcon } from '@/components/icons';
 import { AssetDeleteModal } from '@/app/dashboard/assets/_components/asset-delete-modal';
 import { Asset } from '@/features/assets/assets.validation';
@@ -51,11 +51,13 @@ export function useAssetSelection(assets: Asset[]) {
 interface AssetSelectionToolsProps extends ReturnType<typeof useAssetSelection> {
   assetCount: number;
   onDelete: (ids: number[]) => void;
+  editPageLinkProps: LinkProps | ((selectedIds: number[]) => LinkProps);
 }
 
 export function AssetSelectionTools({
   assetCount,
   onDelete,
+  editPageLinkProps,
   selectedIds,
   selectAllAssets,
   unselectAllAssets
@@ -84,11 +86,9 @@ export function AssetSelectionTools({
           asChild
         >
           <Link
-            to={{
-              pathname: 'edit',
-              search: 'ids=' + Array.from(selectedIds.values()).join(',')
-            }}
-            state={{ previousPathname: location.pathname, previousSearch: location.search }}
+            {...(typeof editPageLinkProps === 'function'
+              ? editPageLinkProps(Array.from(selectedIds))
+              : editPageLinkProps)}
           >
             <EditIcon />
             <span>Edytuj</span>
