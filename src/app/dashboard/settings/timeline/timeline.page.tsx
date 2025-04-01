@@ -20,8 +20,8 @@ export default function TimelineSettingsPage() {
           {timelineRanges.map((timelineRange) => (
             <Button
               key={timelineRange.id}
-              variant={'accent'}
-              className={'[&.active]:bg-primary [&.active]:text-primary-foreground'}
+              variant={'ghost'}
+              className={'[&.active]:bg-primary [&.active]:text-primary-foreground text-accent-foreground'}
               asChild
             >
               <NavLink to={`${timelineRange.id}`}>{formatCaption(timelineRange)}</NavLink>

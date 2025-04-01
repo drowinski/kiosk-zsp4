@@ -17,7 +17,7 @@ export const buttonVariants = cva(
         accent: 'bg-accent text-accent-foreground shadow-sm0',
         success: 'bg-green-600 text-white shadow-sm',
         danger: 'bg-red-600 text-white shadow-sm',
-        ghost: 'hover:bg-white/25'
+        ghost: 'hover:bg-white/15'
       },
       size: {
         default: 'h-9 px-4 py-2',

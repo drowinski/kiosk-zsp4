@@ -8,6 +8,7 @@ export interface SettingsNavItemProps extends React.ComponentProps<typeof NavLin
 export function SettingsNavLink({ className, ...props }: SettingsNavItemProps) {
   return (
     <Button
+      variant={'ghost'}
       className={cn('[&.active]:bg-accent [&.active]:text-accent-foreground', className)}
       asChild
     >
