@@ -8,7 +8,7 @@ import { Label } from '@/components/base/label';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
-import { PlusIcon } from '@/components/icons';
+import { EditIcon, PlusIcon } from '@/components/icons';
 import { Asset, assetSchema } from '@/features/assets/assets.validation';
 import { useEffect, useState } from 'react';
 import { AssetDeleteModal } from '@/app/dashboard/assets/_components/asset-delete-modal';
@@ -200,12 +200,17 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
             }}
             aria-label={'zaznacz wszystkie'}
           />
-          {selectedAssetIds.size > 0 && (
-            <div className={'flex items-center gap-1'}>
-              <span className={'mr-2'}>
+          <div className={'flex items-center gap-1'}>
+            {selectedAssetIds.size > 0 && (
+              <span className={'mr-1'}>
                 {selectedAssetIds.size}/{assets.length}
               </span>
-              <Button asChild>
+            )}
+            {selectedAssetIds.size > 1 && (
+              <Button
+                className={'gap-1'}
+                asChild
+              >
                 <Link
                   to={{
                     pathname: 'edit',
@@ -213,9 +218,12 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
                   }}
                   state={{ previousPathname: location.pathname, previousSearch: location.search }}
                 >
-                  Edytuj
+                  <EditIcon />
+                  <span>Edytuj</span>
                 </Link>
               </Button>
+            )}
+            {selectedAssetIds.size > 0 && (
               <AssetDeleteModal
                 assetIds={selectedAssetIds}
                 onDelete={() => {
@@ -229,8 +237,8 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
                   setSelectedAssetIds(new Set());
                 }}
               />
-            </div>
-          )}
+            )}
+          </div>
           <Label
             variant={'horizontal'}
             className={'ml-auto gap-2'}
@@ -296,7 +304,7 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
           />
         </div>
       </div>
-      <Outlet />
+      <Outlet />;
     </main>
   );
 }

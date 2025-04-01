@@ -20,10 +20,7 @@ export function AssetDeleteModal({ assetIds, onDelete }: AssetDeleteModalProps) 
     >
       <ModalTrigger asChild>
         <Button className={'gap-1'}>
-          <TrashIcon />{' '}
-          <span>
-            Usuń <span className={'font-bold'}>{assetIds.size}</span>
-          </span>
+          <TrashIcon /> <span>Usuń</span>
         </Button>
       </ModalTrigger>
       <ModalContent className={'w-fit max-w-96'}>
