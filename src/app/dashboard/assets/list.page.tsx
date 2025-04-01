@@ -1,22 +1,20 @@
 import type { Route } from './+types/list.page';
 import { AssetFiltering, assetRepository } from '@/features/assets/assets.repository';
-import { Link, Outlet, ShouldRevalidateFunctionArgs, useLocation, useSearchParams, useSubmit } from 'react-router';
+import { Link, Outlet, ShouldRevalidateFunctionArgs, useLocation, useSubmit } from 'react-router';
 import { AssetList, AssetListItem } from '@/app/dashboard/assets/_components/asset-list';
 import { AssetFilters } from '@/app/dashboard/assets/_components/asset-filters';
 import { ParamPagination } from '@/components/param-pagination';
 import { Label } from '@/components/base/label';
-import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
-import { EditIcon, PlusIcon } from '@/components/icons';
-import { Asset, assetSchema } from '@/features/assets/assets.validation';
-import { useEffect, useState } from 'react';
-import { AssetDeleteModal } from '@/app/dashboard/assets/_components/asset-delete-modal';
-import { Checkbox } from '@/components/base/checkbox';
+import { PlusIcon } from '@/components/icons';
+import { assetSchema } from '@/features/assets/assets.validation';
 import { z } from '@/lib/zod';
 import { assetService } from '@/features/assets/assets.service';
 import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';
+import { AssetSortDropdown } from '@/app/dashboard/assets/_components/asset-sort-dropdown';
+import { AssetSelectionTools, useAssetSelection } from '@/app/dashboard/assets/_components/asset-selection-tools';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -153,23 +151,10 @@ export function shouldRevalidate({ nextUrl, actionResult, defaultShouldRevalidat
 }
 
 export default function AssetListPage({ loaderData: { assets, assetCount } }: Route.ComponentProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const submit = useSubmit();
 
-  const [selectedAssetIds, setSelectedAssetIds] = useState<Set<Asset['id']>>(new Set());
-
-  useEffect(() => {
-    setSelectedAssetIds((prev) => {
-      const newSet = new Set<number>();
-      for (const id of assets.map((asset) => asset.id)) {
-        if (prev.has(id)) {
-          newSet.add(id);
-        }
-      }
-      return newSet;
-    });
-  }, [assets]);
+  const assetSelection = useAssetSelection(assets);
 
   return (
     <main className={'flex h-full gap-2'}>
@@ -186,90 +171,27 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
       </div>
       <div className={'flex grow flex-col gap-1'}>
         <Card className={'flex items-center gap-2 bg-secondary px-4 py-2 text-secondary-foreground'}>
-          <Checkbox
-            checked={
-              (assets.length > 0 && selectedAssetIds.size === assets.length) ||
-              (selectedAssetIds.size > 0 && 'indeterminate')
-            }
-            onCheckedChange={(checked) => {
-              if (checked === true) {
-                setSelectedAssetIds(assets.reduce((set, asset) => set.add(asset.id), new Set<number>()));
-              } else if (checked === false) {
-                setSelectedAssetIds(new Set());
-              }
+          <AssetSelectionTools
+            assetCount={assets.length}
+            onDelete={async (ids) => {
+              await submit(
+                { ids: Array.from(ids) },
+                {
+                  method: 'DELETE',
+                  encType: 'application/json'
+                }
+              );
+              assetSelection.unselectAllAssets();
             }}
-            aria-label={'zaznacz wszystkie'}
+            {...assetSelection}
           />
-          <div className={'flex items-center gap-1'}>
-            {selectedAssetIds.size > 0 && (
-              <span className={'mr-1'}>
-                {selectedAssetIds.size}/{assets.length}
-              </span>
-            )}
-            {selectedAssetIds.size > 1 && (
-              <Button
-                className={'gap-1'}
-                asChild
-              >
-                <Link
-                  to={{
-                    pathname: 'edit',
-                    search: 'ids=' + Array.from(selectedAssetIds.values()).join(',')
-                  }}
-                  state={{ previousPathname: location.pathname, previousSearch: location.search }}
-                >
-                  <EditIcon />
-                  <span>Edytuj</span>
-                </Link>
-              </Button>
-            )}
-            {selectedAssetIds.size > 0 && (
-              <AssetDeleteModal
-                assetIds={selectedAssetIds}
-                onDelete={() => {
-                  submit(
-                    { ids: Array.from(selectedAssetIds) },
-                    {
-                      method: 'DELETE',
-                      encType: 'application/json'
-                    }
-                  );
-                  setSelectedAssetIds(new Set());
-                }}
-              />
-            )}
-          </div>
           <Label
             variant={'horizontal'}
             className={'ml-auto gap-2'}
-            hidden={selectedAssetIds.size > 0}
+            hidden={assetSelection.selectedIds.size > 0}
           >
             Sortowanie
-            <Select
-              defaultValue={searchParams.get('sort') || 'updatedAt_desc'}
-              onValueChange={(value) =>
-                setSearchParams((prev) => {
-                  prev.delete('page');
-                  prev.set('sort', value);
-                  return prev;
-                })
-              }
-            >
-              <SelectTrigger className={'min-w-64'} />
-              <SelectContent
-                position={'popper'}
-                className={'min-w-64'}
-              >
-                <SelectOption value={'description_asc'}>Opis: od A do Z</SelectOption>
-                <SelectOption value={'description_desc'}>Opis: od Z do A</SelectOption>
-                <SelectOption value={'date_desc'}>Data: od najnowszych</SelectOption>
-                <SelectOption value={'date_asc'}>Data: od najstarszych</SelectOption>
-                <SelectOption value={'updatedAt_desc'}>Data modyfikacji: od najnowszych</SelectOption>
-                <SelectOption value={'updatedAt_asc'}>Data modyfikacji: od najstarszych</SelectOption>
-                <SelectOption value={'createdAt_desc'}>Data dodania: od najnowszych</SelectOption>
-                <SelectOption value={'createdAt_asc'}>Data dodania: od najstarszych</SelectOption>
-              </SelectContent>
-            </Select>
+            <AssetSortDropdown />
           </Label>
         </Card>
         {assetCount > 0 ? (
@@ -280,18 +202,14 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
                 asset={asset}
                 linkTo={asset.id.toString()}
                 linkState={{ previousPathname: location.pathname, previousSearch: location.search }}
-                isSelected={selectedAssetIds.has(asset.id)}
-                onSelectedChange={(selected) =>
-                  setSelectedAssetIds((prev) => {
-                    const newSet = new Set(prev);
-                    if (selected) {
-                      newSet.add(asset.id);
-                    } else {
-                      newSet.delete(asset.id);
-                    }
-                    return newSet;
-                  })
-                }
+                isSelected={assetSelection.selectedIds.has(asset.id)}
+                onSelectedChange={(selected) => {
+                  if (selected) {
+                    assetSelection.selectAsset(asset.id);
+                  } else {
+                    assetSelection.unselectAsset(asset.id);
+                  }
+                }}
               />
             ))}
           </AssetList>
@@ -305,7 +223,7 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
           />
         </div>
       </div>
-      <Outlet />;
+      <Outlet />
     </main>
   );
 }
