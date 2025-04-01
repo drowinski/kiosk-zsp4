@@ -55,7 +55,9 @@ export async function action({ request, context: { logger, session } }: ActionFu
   );
   if (!userOk) {
     logger.error(userError);
-    return { lastResult: submission.reply({ formErrors: ['Wystąpił błąd.'] }) };
+    return {
+      lastResult: submission.reply({ formErrors: ['Wystąpił błąd. Sprawdź czy nazwa użytkownika nie jest zajęta.'] })
+    };
   }
   if (!user) {
     logger.warn('No user returned.');
@@ -107,6 +109,7 @@ export default function UserCreateModal() {
           className={'flex grow flex-col gap-2'}
           navigate={true}
         >
+          <InputErrorMessage>{form.errors}</InputErrorMessage>
           <Label className={'w-full'}>
             Nazwa użytkownika
             <Input
