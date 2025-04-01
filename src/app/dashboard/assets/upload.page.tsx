@@ -6,7 +6,7 @@ import { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { useFetcher } from 'react-router';
 import { tryAsync } from '@/utils/try';
 import { z } from '@/lib/zod';
-import { assetCreateSchema, AssetDatePrecision } from '@/features/assets/assets.validation';
+import { assetCreateSchema } from '@/features/assets/assets.validation';
 import { useForm } from '@conform-to/react';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
@@ -16,7 +16,6 @@ import { Asset } from '@/features/assets/components/asset';
 import { InputErrorMessage } from '@/components/base/input';
 import { Label } from '@/components/base/label';
 import { TextArea } from '@/components/base/text-area';
-import { AssetDatePicker } from '@/features/assets/components/asset-date-picker';
 import { status, StatusCodes } from '@/utils/status-response';
 import { useObjectUrl } from '@/hooks/use-object-url';
 
@@ -24,7 +23,7 @@ const assetFormSchema = z
   .object({
     file: z.instanceof(File, { message: 'Dodaj plik. ' })
   })
-  .merge(assetCreateSchema.omit({ fileName: true, mimeType: true, assetType: true }));
+  .merge(assetCreateSchema.pick({ description: true }));
 
 export async function action({ request, context: { logger } }: Route.ActionArgs) {
   logger.info('Parsing form data...');
@@ -39,8 +38,7 @@ export async function action({ request, context: { logger } }: Route.ActionArgs)
   const [, uploadAssetOk, uploadAssetError] = await tryAsync(
     assetService.uploadAsset(ReadStream.fromWeb(asset.file.stream() as NodeReadableStream) as ReadStream, {
       mimeType: asset.file.type,
-      description: asset.description,
-      date: asset.date
+      description: asset.description
     })
   );
   if (!uploadAssetOk) {
@@ -152,7 +150,6 @@ export const AssetUploadForm = React.forwardRef<AssetUploadFormRef, AssetUploadF
         return result;
       }
     });
-    const dateFieldset = fields.date.getFieldset();
 
     const handleSubmit = async () => {
       if (isUploading || isUploaded) return;
@@ -177,7 +174,7 @@ export const AssetUploadForm = React.forwardRef<AssetUploadFormRef, AssetUploadF
     );
 
     return (
-      <Card className={'relative flex flex-col gap-3 overflow-hidden'}>
+      <Card className={'relative flex flex-col gap-2 overflow-hidden'}>
         <div className={'flex h-48 items-center justify-center'}>
           <Asset
             fullUrl={fileObjectURL}
@@ -233,29 +230,12 @@ export const AssetUploadForm = React.forwardRef<AssetUploadFormRef, AssetUploadF
                 key={fields.description.key}
                 name={fields.description.name}
                 placeholder={'Opis'}
-                className={'h-32 resize-none'}
+                className={'h-24 resize-none'}
                 maxLength={512}
                 defaultValue={file?.name.replace(/\.[a-zA-Z0-9]+$/, '')}
               />
             </Label>
             {fields.description.errors && <InputErrorMessage>{fields.description.errors}</InputErrorMessage>}
-            <Label asChild>Data</Label>
-            <AssetDatePicker
-              dateMin={{
-                name: dateFieldset.dateMin.name,
-                value: dateFieldset.dateMin.value
-              }}
-              dateMax={{
-                name: dateFieldset.dateMax.name,
-                value: dateFieldset.dateMax.value
-              }}
-              datePrecision={{
-                name: dateFieldset.datePrecision.name,
-                value: dateFieldset.datePrecision.initialValue as AssetDatePrecision | undefined
-              }}
-              orientation={'vertical'}
-            />
-            {fields.date.errors && <InputErrorMessage>{fields.date.errors}</InputErrorMessage>}
           </fetcher.Form>
         ) : (
           <div className={'flex h-full w-full items-center justify-center gap-2'}>
