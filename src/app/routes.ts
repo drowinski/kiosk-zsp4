@@ -17,6 +17,7 @@ export default [
         route('edit', 'dashboard/assets/edit-many.modal.tsx')
       ]),
       route('settings', 'dashboard/settings/settings.layout.tsx', [
+        index('dashboard/settings/index.route.ts'),
         route('timeline', 'dashboard/settings/timeline/timeline.page.tsx', [
           route('new', 'dashboard/settings/timeline/add.page.tsx'),
           route(':id', 'dashboard/settings/timeline/edit.page.tsx')
