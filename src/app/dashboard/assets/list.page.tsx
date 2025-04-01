@@ -242,6 +242,7 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
           <Label
             variant={'horizontal'}
             className={'ml-auto gap-2'}
+            hidden={selectedAssetIds.size > 0}
           >
             Sortowanie
             <Select

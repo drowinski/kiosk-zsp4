@@ -12,11 +12,11 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow-sm hover:brightness-110',
-        secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:brightness-110',
-        accent: 'bg-accent text-accent-foreground shadow-sm hover:brightness-110',
-        success: 'bg-green-600 text-white shadow-sm hover:brightness-110',
-        danger: 'bg-red-600 text-white shadow-sm hover:brightness-110',
+        default: 'bg-primary text-primary-foreground shadow-sm',
+        secondary: 'bg-secondary text-secondary-foreground shadow-sm',
+        accent: 'bg-accent text-accent-foreground shadow-sm0',
+        success: 'bg-green-600 text-white shadow-sm',
+        danger: 'bg-red-600 text-white shadow-sm',
         ghost: 'hover:bg-white/25'
       },
       size: {

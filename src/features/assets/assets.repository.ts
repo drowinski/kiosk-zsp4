@@ -60,7 +60,7 @@ export class DrizzleAssetRepository implements AssetRepository {
         date: {
           ...getTableColumns(dateTable)
         },
-        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
           'tags'
         )
       })
@@ -81,7 +81,9 @@ export class DrizzleAssetRepository implements AssetRepository {
         date: {
           ...getTableColumns(dateTable)
         },
-        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+        tags: sql<
+          Tag[]
+        >`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
           'tags'
         )
       })
@@ -100,7 +102,7 @@ export class DrizzleAssetRepository implements AssetRepository {
         date: {
           ...getTableColumns(dateTable)
         },
-        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
           'tags'
         )
       })
@@ -121,7 +123,7 @@ export class DrizzleAssetRepository implements AssetRepository {
         date: {
           ...getTableColumns(dateTable)
         },
-        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
           'tags'
         )
       })
