@@ -1,10 +1,13 @@
 import { Checkbox } from '@/components/base/checkbox';
 import { Button } from '@/components/base/button';
 import { Link, LinkProps } from 'react-router';
-import { EditIcon } from '@/components/icons';
+import { EditIcon, MinusIcon, PlusIcon, TagIcon } from '@/components/icons';
 import { AssetDeleteModal } from '@/app/dashboard/assets/_components/asset-delete-modal';
 import { Asset } from '@/features/assets/assets.validation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { TagCombobox } from '@/features/tags/components/tag-selector';
+import { Tag } from '@/features/tags/tags.validation';
+import { cn } from '@/utils/styles';
 
 export function useAssetSelection(assets: Asset[]) {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -49,23 +52,43 @@ export function useAssetSelection(assets: Asset[]) {
 }
 
 interface AssetSelectionToolsProps extends ReturnType<typeof useAssetSelection> {
-  assetCount: number;
+  assets: Asset[];
+  tags: Tag[];
   onDelete: (ids: number[]) => void;
+  onAddTag: (assetIds: number[], tagId: number) => void;
+  onRemoveTag: (assetIds: number[], tagId: number) => void;
   editPageLinkProps: LinkProps | ((selectedIds: number[]) => LinkProps);
 }
 
 export function AssetSelectionTools({
-  assetCount,
-  onDelete,
-  editPageLinkProps,
   selectedIds,
   selectAllAssets,
-  unselectAllAssets
+  unselectAllAssets,
+  assets,
+  tags,
+  onDelete,
+  onAddTag,
+  onRemoveTag,
+  editPageLinkProps
 }: AssetSelectionToolsProps) {
+  const tagsInSelectedAssets = useMemo(
+    () =>
+      Array.from(
+        assets
+          .filter((asset) => selectedIds.has(asset.id))
+          .reduce<Map<number, Tag>>((tags, asset) => {
+            asset.tags.forEach((tag) => tags.set(tag.id, tag));
+            return tags;
+          }, new Map())
+          .values()
+      ),
+    [assets, selectedIds]
+  );
+
   return (
     <div className={'flex items-center gap-1'}>
       <Checkbox
-        checked={(assetCount > 0 && selectedIds.size === assetCount) || (selectedIds.size > 0 && 'indeterminate')}
+        checked={(assets.length > 0 && selectedIds.size === assets.length) || (selectedIds.size > 0 && 'indeterminate')}
         onCheckedChange={(checked) => {
           if (checked === true) {
             selectAllAssets();
@@ -76,9 +99,53 @@ export function AssetSelectionTools({
         aria-label={'zaznacz wszystkie'}
       />
       {selectedIds.size > 0 && (
-        <span className={'mr-1'}>
-          {selectedIds.size}/{assetCount}
+        <span className={'mx-1'}>
+          {selectedIds.size}/{assets.length}
         </span>
+      )}
+      {selectedIds.size > 0 && (
+        <div className={'flex items-center'}>
+          <Button
+            className={'gap-1 rounded-r-none border-r border-secondary'}
+            asChild
+            aria-hidden
+          >
+            <div>
+              <TagIcon /> Tagi
+            </div>
+          </Button>
+          <TagCombobox
+            tags={tags}
+            onSelect={(tagId: number) => onAddTag(Array.from(selectedIds), tagId)}
+            triggerButton={
+              <Button
+                className={cn(
+                  'gap-1 rounded-l-none',
+                  tagsInSelectedAssets.length > 0 && 'rounded-r-none border-r border-r-secondary'
+                )}
+                aria-label={'Dodaj tag'}
+              >
+                <PlusIcon />
+              </Button>
+            }
+            icon={<PlusIcon />}
+          />
+          {tagsInSelectedAssets.length > 0 && (
+            <TagCombobox
+              tags={tagsInSelectedAssets}
+              onSelect={(tagId: number) => onRemoveTag(Array.from(selectedIds), tagId)}
+              triggerButton={
+                <Button
+                  className={'gap-1 rounded-l-none'}
+                  aria-label={'Usuń tag'}
+                >
+                  <MinusIcon />
+                </Button>
+              }
+              icon={<MinusIcon />}
+            />
+          )}
+        </div>
       )}
       {selectedIds.size > 1 && (
         <Button

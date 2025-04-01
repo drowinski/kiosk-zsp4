@@ -1,6 +1,6 @@
 import { Tag } from '@/features/tags/tags.validation';
 import { cn } from '@/utils/styles';
-import { Fragment, useMemo, useState } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/base/popover';
 import { Button } from '@/components/base/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/base/command';
@@ -9,11 +9,20 @@ import { PlusIcon } from '@/components/icons';
 interface TagComboboxProps {
   tags: Tag[];
   onSelect: (tagId: Tag['id']) => void;
-  id: string;
+  id?: string;
+  className?: string;
+  triggerButton?: React.ReactElement;
+  icon?: React.ReactElement;
 }
 
-export function TagCombobox({ tags, onSelect, id }: TagComboboxProps) {
+export function TagCombobox({ tags, onSelect, id, triggerButton, icon }: TagComboboxProps) {
   const [open, setOpen] = useState(false);
+
+  if (icon) {
+    icon = React.cloneElement(icon, {
+      className: cn('opacity-0 group-data-[selected="true"]:opacity-100', icon.props.className)
+    });
+  }
 
   return (
     <Popover
@@ -21,14 +30,18 @@ export function TagCombobox({ tags, onSelect, id }: TagComboboxProps) {
       onOpenChange={(open) => setOpen(open)}
     >
       <PopoverTrigger asChild>
-        <Button
-          id={id}
-          aria-expanded={open}
-          className={'h-7 py-1'}
-          aria-label={'Dodaj tag'}
-        >
-          <PlusIcon />
-        </Button>
+        {triggerButton ? (
+          triggerButton
+        ) : (
+          <Button
+            id={id}
+            aria-expanded={open}
+            className={'h-7 py-1'}
+            aria-label={'Dodaj tag'}
+          >
+            {icon ? icon : <PlusIcon />}
+          </Button>
+        )}
       </PopoverTrigger>
       <PopoverContent className={'p-0'}>
         <Command>
@@ -43,11 +56,9 @@ export function TagCombobox({ tags, onSelect, id }: TagComboboxProps) {
                     onSelect(tag.id);
                     setOpen(false);
                   }}
-                  className={
-                    'group data-[selected="true"]:bg-primary data-[selected="true"]:text-primary-foreground'
-                  }
+                  className={'group data-[selected="true"]:bg-primary data-[selected="true"]:text-primary-foreground'}
                 >
-                  <PlusIcon className={'group-data-[selected="true"]:opacity-100 opacity-0'}/>
+                  {icon ? icon : <PlusIcon className={'opacity-0 group-data-[selected="true"]:opacity-100'} />}
                   {tag.name}
                 </CommandItem>
               ))}

@@ -15,6 +15,8 @@ import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';
 import { AssetSortDropdown } from '@/app/dashboard/assets/_components/asset-sort-dropdown';
 import { AssetSelectionTools, useAssetSelection } from '@/app/dashboard/assets/_components/asset-selection-tools';
+import { tagRepository } from '@/features/tags/tags.repository';
+import { tagSchema } from '@/features/tags/tags.validation';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -106,36 +108,85 @@ export async function loader({ request, context: { logger } }: Route.LoaderArgs)
     throw status(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 
+  logger.info('Getting tags...');
+  const [tags, tagsOk, tagsError] = await tryAsync(tagRepository.getAllTags());
+  if (!tagsOk) {
+    logger.error(tagsError);
+    throw status(StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+
   logger.info('Success.');
-  return { assets, assetCount };
+  return { assets, assetCount, tags };
 }
+
+const addOrRemoveTagFromAssetsSchema = z.object({
+  ids: z.array(assetSchema.shape.id),
+  tagId: tagSchema.shape.id
+});
 
 const assetsDeleteSchema = z.object({
   ids: z.array(assetSchema.shape.id)
 });
 
 export async function action({ request, context: { logger } }: Route.ActionArgs) {
+  logger.info('Parsing intent...');
+  const jsonData = await request.json();
+  const intent: string = jsonData.intent;
+
   if (request.method === 'DELETE') {
-    logger.info('Parsing form data...');
-    const formData = await request.json();
-    const [data, dataOk, dataError] = await tryAsync(assetsDeleteSchema.parseAsync(formData));
+    logger.info('Parsing json data for delete request...');
+    const [data, dataOk, dataError] = await tryAsync(assetsDeleteSchema.parseAsync(jsonData));
     if (!dataOk) {
       logger.error(dataError);
-      return status(StatusCodes.BAD_REQUEST);
+      throw status(StatusCodes.BAD_REQUEST);
     }
 
     logger.info('Deleting assets...');
     const [, deleteAssetsOk, deleteAssetsError] = await tryAsync(assetService.deleteAssets(...data.ids));
     if (!deleteAssetsOk) {
       logger.error(deleteAssetsError);
-      return status(StatusCodes.INTERNAL_SERVER_ERROR);
+      throw status(StatusCodes.INTERNAL_SERVER_ERROR);
     }
 
     logger.info('Success.');
     return status(StatusCodes.NO_CONTENT);
-  } else {
-    return null;
   }
+
+  if (intent === 'add_tag') {
+    logger.info('Parsing json data for add tag request...');
+    const [data, dataOk, dataError] = await tryAsync(addOrRemoveTagFromAssetsSchema.parseAsync(jsonData));
+    if (!dataOk) {
+      logger.error(dataError);
+      throw status(StatusCodes.BAD_REQUEST);
+    }
+    logger.info(`Adding tag ID "${data.tagId}" to asset IDs "${data.ids.join(',')}"....`);
+    const [, addTagOk, addTagError] = await tryAsync(tagRepository.addTagToAssets(data.tagId, ...data.ids));
+    if (!addTagOk) {
+      logger.error(addTagError);
+      throw status(StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+    logger.info('Success.');
+    return status(StatusCodes.NO_CONTENT);
+  }
+
+  if (intent === 'remove_tag') {
+    logger.info('Parsing json data for add tag request...');
+    const [data, dataOk, dataError] = await tryAsync(addOrRemoveTagFromAssetsSchema.parseAsync(jsonData));
+    if (!dataOk) {
+      logger.error(dataError);
+      throw status(StatusCodes.BAD_REQUEST);
+    }
+    logger.info(`Removing tag ID "${data.tagId}" from asset IDs "${data.ids.join(',')}"....`);
+    const [, addTagOk, addTagError] = await tryAsync(tagRepository.removeTagFromAssets(data.tagId, ...data.ids));
+    if (!addTagOk) {
+      logger.error(addTagError);
+      throw status(StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+    logger.info('Success.');
+    return status(StatusCodes.NO_CONTENT);
+  }
+
+  return null;
 }
 
 export function shouldRevalidate({ nextUrl, actionResult, defaultShouldRevalidate }: ShouldRevalidateFunctionArgs) {
@@ -150,7 +201,7 @@ export function shouldRevalidate({ nextUrl, actionResult, defaultShouldRevalidat
   return defaultShouldRevalidate;
 }
 
-export default function AssetListPage({ loaderData: { assets, assetCount } }: Route.ComponentProps) {
+export default function AssetListPage({ loaderData: { assets, assetCount, tags } }: Route.ComponentProps) {
   const location = useLocation();
   const submit = useSubmit();
 
@@ -172,7 +223,28 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
       <div className={'flex grow flex-col gap-1'}>
         <Card className={'flex items-center gap-2 bg-secondary px-4 py-2 text-secondary-foreground'}>
           <AssetSelectionTools
-            assetCount={assets.length}
+            assets={assets}
+            tags={tags}
+            onAddTag={async (assetIds, tagId) => {
+              console.log(`Add tag ${tagId} to ${assetIds.join(',')}.`);
+              await submit(
+                { intent: 'add_tag', ids: assetIds, tagId: tagId },
+                {
+                  method: 'PUT',
+                  encType: 'application/json'
+                }
+              );
+            }}
+            onRemoveTag={async (assetIds, tagId) => {
+              console.log(`Remove tag ${tagId} from ${assetIds.join(',')}.`);
+              await submit(
+                { intent: 'remove_tag', ids: assetIds, tagId: tagId },
+                {
+                  method: 'PUT',
+                  encType: 'application/json'
+                }
+              );
+            }}
             onDelete={async (ids) => {
               await submit(
                 { ids: Array.from(ids) },

@@ -1,7 +1,7 @@
 import { NewTag, Tag, UpdatedTag } from '@/features/tags/tags.validation';
 import { db } from '@/lib/db/connection';
-import { tagTable } from '@/features/tags/tags.db';
-import { eq } from 'drizzle-orm';
+import { assetTagJunctionTable, tagTable } from '@/features/tags/tags.db';
+import { and, eq, inArray } from 'drizzle-orm';
 
 export interface TagRepository {
   getTagById(id: number): Promise<Tag | null>;
@@ -13,6 +13,10 @@ export interface TagRepository {
   updateTag(updatedTag: UpdatedTag): Promise<Tag | null>;
 
   deleteTag(id: number): Promise<Tag | null>;
+
+  addTagToAssets(tagId: number, ...assetIds: number[]): Promise<void>;
+
+  removeTagFromAssets(tagId: number, ...assetIds: number[]): Promise<void>;
 }
 
 export class DrizzleTagRepository implements TagRepository {
@@ -39,6 +43,24 @@ export class DrizzleTagRepository implements TagRepository {
   async deleteTag(id: number): Promise<Tag | null> {
     const result = await db.delete(tagTable).where(eq(tagTable.id, id)).returning();
     return result.at(0) ?? null;
+  }
+
+  async addTagToAssets(tagId: number, ...assetIds: number[]): Promise<void> {
+    await db
+      .insert(assetTagJunctionTable)
+      .values(
+        assetIds.map((assetId) => ({
+          tagId,
+          assetId
+        }))
+      )
+      .onConflictDoNothing();
+  }
+
+  async removeTagFromAssets(tagId: number, ...assetIds: number[]): Promise<void> {
+    await db
+      .delete(assetTagJunctionTable)
+      .where(and(eq(assetTagJunctionTable.tagId, tagId), inArray(assetTagJunctionTable.assetId, assetIds)));
   }
 }
 

@@ -24,7 +24,8 @@ import {
   FaCircleExclamation,
   FaEllipsis,
   FaPencil,
-  FaX
+  FaX,
+  FaMinus, FaTag
 } from 'react-icons/fa6';
 import React from 'react';
 
@@ -74,6 +75,10 @@ export function PlusIcon(props: IconProps) {
   return <FaPlus {...props} />;
 }
 
+export function MinusIcon(props: IconProps) {
+  return <FaMinus {...props} />;
+}
+
 export function XIcon(props: IconProps) {
   return <FaX {...props} />;
 }
@@ -108,6 +113,10 @@ export function CalendarIcon(props: IconProps) {
 
 export function PencilIcon(props: IconProps) {
   return <FaPencil {...props} />;
+}
+
+export function TagIcon(props: IconProps) {
+  return <FaTag {...props} />;
 }
 
 export function CircleExclamationIcon(props: IconProps) {
