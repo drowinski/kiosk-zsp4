@@ -2,7 +2,7 @@ import { Asset } from '@/features/assets/assets.validation';
 import React from 'react';
 import { cn } from '@/utils/styles';
 import { Card } from '@/components/base/card';
-import { ImageIcon, FilmIcon, EyeIcon, EyeSlashIcon } from '@/components/icons';
+import { ImageIcon, FilmIcon, EyeIcon, EyeSlashIcon, DocumentIcon } from '@/components/icons';
 import { formatDate } from '@/features/assets/utils/dates';
 import { Checkbox } from '@/components/base/checkbox';
 import { Link, LinkProps } from 'react-router';
@@ -42,7 +42,15 @@ export function AssetListItem({ asset, linkTo, linkState, isSelected = false, on
         <div className={'flex w-full min-w-0 flex-col justify-between'}>
           <div className={'flex min-w-0 items-center gap-1.5 text-lg'}>
             <span className={'text-secondary'}>
-              {asset.assetType === 'image' ? <ImageIcon /> : asset.assetType === 'video' ? <FilmIcon /> : 'audio'}
+              {asset.assetType === 'image' ? (
+                <ImageIcon />
+              ) : asset.assetType === 'video' ? (
+                <FilmIcon />
+              ) : asset.assetType === 'document' ? (
+                <DocumentIcon />
+              ) : (
+                'audio'
+              )}
             </span>
             <span className={'min-w-0 overflow-hidden text-ellipsis text-nowrap font-medium'}>
               {asset.description || 'Brak opisu.'}

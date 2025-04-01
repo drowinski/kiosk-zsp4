@@ -178,7 +178,7 @@ export const AssetUploadForm = React.forwardRef<AssetUploadFormRef, AssetUploadF
         <div className={'flex h-48 items-center justify-center'}>
           <Asset
             fullUrl={fileObjectURL}
-            assetType={file?.type.split('/')[0] as never}
+            assetType={file?.type.startsWith('application') ? 'document' : (file?.type.split('/')[0] as never)}
           />
         </div>
         {!isUploaded ? (
@@ -280,7 +280,7 @@ export function AssetUploadFormToolbar({
           <label className={'inline-flex items-center gap-1'}>
             <input
               type={'file'}
-              accept={'image/jpeg, image/png, video/mp4'}
+              accept={'image/jpeg, image/png, video/mp4, application/pdf'}
               onInput={(event) => {
                 const fileList = event.currentTarget.files;
                 if (!fileList) return;

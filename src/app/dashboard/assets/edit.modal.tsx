@@ -13,7 +13,6 @@ import { assetRepository } from '@/features/assets/assets.repository';
 import { useForm } from '@conform-to/react';
 import { AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
-import { Asset } from '@/features/assets/components/asset';
 import { Button } from '@/components/base/button';
 import { CheckIcon, PencilIcon } from '@/components/icons';
 import { Modal, ModalContent, ModalHeader, ModalTitle } from '@/components/base/modal';
@@ -33,6 +32,7 @@ import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 import { status, StatusCodes } from '@/utils/status-response';
 import { tryAsync } from '@/utils/try';
 import { z } from '@/lib/zod';
+import { Asset } from '@/features/assets/components/asset';
 
 const assetEditFormSchema = assetUpdateSchema
   .pick({

@@ -15,9 +15,10 @@ export class AssetService {
   private readonly fileManager: FileManager;
   private readonly thumbnailDirectory: string;
   private readonly mimeTypeToAssetTypeMap = new Map<string, AssetType>([
-    ['image', 'image'],
-    ['video', 'video'],
-    ['audio', 'audio']
+    ['image/jpeg', 'image'],
+    ['image/png', 'image'],
+    ['video/mp4', 'video'],
+    ['application/pdf', 'document']
   ]);
 
   constructor(assetRepository: AssetRepository, fileManager: FileManager, thumbnailDirectory: string) {
@@ -131,6 +132,8 @@ export class AssetService {
           timestamps: ['5%'],
           size: '640x?'
         });
+      } else {
+        reject();
       }
     });
   }
@@ -157,11 +160,7 @@ export class AssetService {
   }
 
   private getAssetTypeFromMimeType(mimeType: string): AssetType {
-    const mediaType = mimeType.split('/').at(0);
-    if (!mediaType) {
-      throw new Error('Invalid MIME type string.');
-    }
-    const assetType = this.mimeTypeToAssetTypeMap.get(mediaType);
+    const assetType = this.mimeTypeToAssetTypeMap.get(mimeType);
     if (!assetType) {
       throw new Error('Unsupported MIME type.');
     }

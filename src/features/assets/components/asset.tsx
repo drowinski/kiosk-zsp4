@@ -35,7 +35,9 @@ export function Asset({ assetType, fullUrl, fileName, description, className }: 
     );
   } else if (assetType === 'audio') {
     return <audio src={fullUri}></audio>;
+  } else if (assetType === 'document') {
+    return <div>Dokument</div>;
   } else {
-    return <div>Niewłaściwy typ multimediów.</div>;
+    return <audio src={fullUri} />;
   }
 }

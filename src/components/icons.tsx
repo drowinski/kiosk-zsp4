@@ -28,7 +28,9 @@ import {
   FaMinus,
   FaTag,
   FaEye,
-  FaEyeSlash
+  FaEyeSlash,
+  FaFile,
+  FaMusic
 } from 'react-icons/fa6';
 import React from 'react';
 
@@ -108,6 +110,14 @@ export function ImageIcon(props: IconProps) {
 
 export function FilmIcon(props: IconProps) {
   return <FaFilm {...props} />;
+}
+
+export function AudioIcon(props: IconProps) {
+  return <FaMusic {...props} />;
+}
+
+export function DocumentIcon(props: IconProps) {
+  return <FaFile {...props} />;
 }
 
 export function CalendarIcon(props: IconProps) {
