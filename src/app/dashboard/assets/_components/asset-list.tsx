@@ -2,7 +2,7 @@ import { Asset } from '@/features/assets/assets.validation';
 import React from 'react';
 import { cn } from '@/utils/styles';
 import { Card } from '@/components/base/card';
-import { ImageIcon, FilmIcon } from '@/components/icons';
+import { ImageIcon, FilmIcon, EyeIcon, EyeSlashIcon } from '@/components/icons';
 import { formatDate } from '@/features/assets/utils/dates';
 import { Checkbox } from '@/components/base/checkbox';
 import { Link, LinkProps } from 'react-router';
@@ -49,7 +49,15 @@ export function AssetListItem({ asset, linkTo, linkState, isSelected = false, on
             </span>
           </div>
           <div className={'flex max-w-full gap-1 overflow-clip rounded-r-md'}>
-            <div className={'text-nowrap rounded-xl border border-secondary px-2 py-1 text-sm'}>
+            <div
+              className={cn(
+                'flex items-center text-nowrap rounded-xl px-2 py-1 text-sm',
+                asset.isPublished ? 'bg-secondary text-secondary-foreground' : 'bg-primary text-primary-foreground'
+              )}
+            >
+              {asset.isPublished ? <EyeIcon /> : <EyeSlashIcon />}
+            </div>
+            <div className={'flex items-center text-nowrap rounded-xl border border-secondary px-2 py-1 text-sm'}>
               {asset.date ? formatDate(asset.date) : 'Brak daty'}
             </div>
             {asset.tags.map((tag) => (

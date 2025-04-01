@@ -70,6 +70,7 @@ export class DrizzleTimelineRepository implements TimelineRepository {
           isNotNull(dateTable.dateMin),
           isNotNull(dateTable.dateMax),
           sql`daterange(${dateTable.dateMin}, ${dateTable.dateMax}, '[]') && daterange(${timelineRangeTable.minDate}, ${timelineRangeTable.maxDate}, '[]')`,
+          eq(assetTable.isPublished, true),
           tagId
             ? exists(
                 db
@@ -98,7 +99,8 @@ export class DrizzleTimelineRepository implements TimelineRepository {
         and(
           isNotNull(dateTable.dateMin),
           isNotNull(dateTable.dateMax),
-          sql`daterange(${dateTable.dateMin}, ${dateTable.dateMax}, '[]') && daterange(${timelineRangeTable.minDate}, ${timelineRangeTable.maxDate}, '[]')`
+          sql`daterange(${dateTable.dateMin}, ${dateTable.dateMax}, '[]') && daterange(${timelineRangeTable.minDate}, ${timelineRangeTable.maxDate}, '[]')`,
+          eq(assetTable.isPublished, true)
         )
       )
       .groupBy(tagTable.id)

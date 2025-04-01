@@ -119,13 +119,18 @@ export async function loader({ request, context: { logger } }: Route.LoaderArgs)
   return { assets, assetCount, tags };
 }
 
+const assetsDeleteSchema = z.object({
+  ids: z.array(assetSchema.shape.id)
+});
+
 const addOrRemoveTagFromAssetsSchema = z.object({
   ids: z.array(assetSchema.shape.id),
   tagId: tagSchema.shape.id
 });
 
-const assetsDeleteSchema = z.object({
-  ids: z.array(assetSchema.shape.id)
+const setIsPublishedSchema = z.object({
+  ids: z.array(assetSchema.shape.id),
+  isPublished: z.boolean()
 });
 
 export async function action({ request, context: { logger } }: Route.ActionArgs) {
@@ -159,12 +164,14 @@ export async function action({ request, context: { logger } }: Route.ActionArgs)
       logger.error(dataError);
       throw status(StatusCodes.BAD_REQUEST);
     }
+
     logger.info(`Adding tag ID "${data.tagId}" to asset IDs "${data.ids.join(',')}"....`);
     const [, addTagOk, addTagError] = await tryAsync(tagRepository.addTagToAssets(data.tagId, ...data.ids));
     if (!addTagOk) {
       logger.error(addTagError);
       throw status(StatusCodes.INTERNAL_SERVER_ERROR);
     }
+
     logger.info('Success.');
     return status(StatusCodes.NO_CONTENT);
   }
@@ -176,12 +183,35 @@ export async function action({ request, context: { logger } }: Route.ActionArgs)
       logger.error(dataError);
       throw status(StatusCodes.BAD_REQUEST);
     }
+
     logger.info(`Removing tag ID "${data.tagId}" from asset IDs "${data.ids.join(',')}"....`);
     const [, addTagOk, addTagError] = await tryAsync(tagRepository.removeTagFromAssets(data.tagId, ...data.ids));
     if (!addTagOk) {
       logger.error(addTagError);
       throw status(StatusCodes.INTERNAL_SERVER_ERROR);
     }
+
+    logger.info('Success.');
+    return status(StatusCodes.NO_CONTENT);
+  }
+
+  if (intent === 'set_is_published') {
+    logger.info('Parsing json data for add tag request...');
+    const [data, dataOk, dataError] = await tryAsync(setIsPublishedSchema.parseAsync(jsonData));
+    if (!dataOk) {
+      logger.error(dataError);
+      throw status(StatusCodes.BAD_REQUEST);
+    }
+
+    logger.info(`Setting isPublished to "${data.isPublished}" for asset IDs "${data.ids.join(',')}"...`);
+    const [, updateAssetOk, updateAssetError] = await tryAsync(
+      assetRepository.updateAssets(data.ids, { isPublished: data.isPublished })
+    );
+    if (!updateAssetOk) {
+      logger.error(updateAssetError);
+      throw status(StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+
     logger.info('Success.');
     return status(StatusCodes.NO_CONTENT);
   }
@@ -226,7 +256,6 @@ export default function AssetListPage({ loaderData: { assets, assetCount, tags }
             assets={assets}
             tags={tags}
             onAddTag={async (assetIds, tagId) => {
-              console.log(`Add tag ${tagId} to ${assetIds.join(',')}.`);
               await submit(
                 { intent: 'add_tag', ids: assetIds, tagId: tagId },
                 {
@@ -236,7 +265,6 @@ export default function AssetListPage({ loaderData: { assets, assetCount, tags }
               );
             }}
             onRemoveTag={async (assetIds, tagId) => {
-              console.log(`Remove tag ${tagId} from ${assetIds.join(',')}.`);
               await submit(
                 { intent: 'remove_tag', ids: assetIds, tagId: tagId },
                 {
@@ -254,6 +282,15 @@ export default function AssetListPage({ loaderData: { assets, assetCount, tags }
                 }
               );
               assetSelection.unselectAllAssets();
+            }}
+            onPublishedChange={async (ids, isPublished) => {
+              await submit(
+                { intent: 'set_is_published', ids: ids, isPublished: isPublished },
+                {
+                  method: 'PUT',
+                  encType: 'application/json'
+                }
+              );
             }}
             editPageLinkProps={(selectedIds) => ({
               to: {

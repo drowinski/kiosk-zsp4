@@ -12,6 +12,7 @@ export const assetTable = pgTable('assets', {
   assetType: assetTypeEnum('type').notNull(),
   description: varchar('description', { length: 512 }),
   dateId: integer('date_id').references(() => dateTable.id, { onDelete: 'set null' }),
+  isPublished: boolean('is_published').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at')
     .notNull()

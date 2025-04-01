@@ -12,6 +12,7 @@ export interface AssetFiltering {
   description?: string;
   dateMin?: Date;
   dateMax?: Date;
+  isPublished?: boolean;
 }
 
 export interface AssetSorting {
@@ -60,7 +61,9 @@ export class DrizzleAssetRepository implements AssetRepository {
         date: {
           ...getTableColumns(dateTable)
         },
-        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+        tags: sql<
+          Tag[]
+        >`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
           'tags'
         )
       })
@@ -102,7 +105,9 @@ export class DrizzleAssetRepository implements AssetRepository {
         date: {
           ...getTableColumns(dateTable)
         },
-        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+        tags: sql<
+          Tag[]
+        >`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
           'tags'
         )
       })
@@ -123,7 +128,9 @@ export class DrizzleAssetRepository implements AssetRepository {
         date: {
           ...getTableColumns(dateTable)
         },
-        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+        tags: sql<
+          Tag[]
+        >`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
           'tags'
         )
       })
@@ -151,13 +158,14 @@ export class DrizzleAssetRepository implements AssetRepository {
 
   private buildQueryWithOptions<T extends PgSelect>(query: T, options: AssetGetOptions): T {
     if (options.filters) {
-      const { assetType, description, dateMin, dateMax } = options.filters;
+      const { assetType, description, dateMin, dateMax, isPublished } = options.filters;
       query = query.where(
         and(
           assetType && assetType.length > 0 ? inArray(assetTable.assetType, assetType) : undefined,
           description ? ilike(assetTable.description, `%${description}%`) : undefined,
           dateMin ? gte(dateTable.dateMax, dateMin) : undefined,
-          dateMax ? lte(dateTable.dateMin, dateMax) : undefined
+          dateMax ? lte(dateTable.dateMin, dateMax) : undefined,
+          isPublished ? eq(assetTable.isPublished, isPublished) : undefined
         )
       );
     }

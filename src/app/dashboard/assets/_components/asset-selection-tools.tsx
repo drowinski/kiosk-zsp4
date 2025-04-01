@@ -57,6 +57,7 @@ interface AssetSelectionToolsProps extends ReturnType<typeof useAssetSelection> 
   onDelete: (ids: number[]) => void;
   onAddTag: (assetIds: number[], tagId: number) => void;
   onRemoveTag: (assetIds: number[], tagId: number) => void;
+  onPublishedChange: (ids: number[], isPublished: boolean) => void;
   editPageLinkProps: LinkProps | ((selectedIds: number[]) => LinkProps);
 }
 
@@ -69,20 +70,22 @@ export function AssetSelectionTools({
   onDelete,
   onAddTag,
   onRemoveTag,
+  onPublishedChange,
   editPageLinkProps
 }: AssetSelectionToolsProps) {
+  const selectedAssets = useMemo(() => assets.filter((asset) => selectedIds.has(asset.id)), [assets, selectedIds]);
+
   const tagsInSelectedAssets = useMemo(
     () =>
       Array.from(
-        assets
-          .filter((asset) => selectedIds.has(asset.id))
+        selectedAssets
           .reduce<Map<number, Tag>>((tags, asset) => {
             asset.tags.forEach((tag) => tags.set(tag.id, tag));
             return tags;
           }, new Map())
           .values()
       ),
-    [assets, selectedIds]
+    [selectedAssets]
   );
 
   return (
@@ -163,10 +166,42 @@ export function AssetSelectionTools({
         </Button>
       )}
       {selectedIds.size > 0 && (
-        <AssetDeleteModal
-          assetIds={selectedIds}
-          onDelete={() => onDelete(Array.from(selectedIds))}
-        />
+        <>
+          <div className={'flex items-center'}>
+            <Button
+              className={'cursor-pointer gap-2'}
+              asChild
+            >
+              <label htmlFor={'publish-checkbox'}>
+                <Checkbox
+                  id={'publish-checkbox'}
+                  checked={selectedAssets.reduce<boolean | 'indeterminate'>((result, asset, index) => {
+                    if (result === 'indeterminate') {
+                      return result;
+                    }
+                    if (index === 0) {
+                      return asset.isPublished;
+                    }
+                    if (result !== asset.isPublished) {
+                      return 'indeterminate';
+                    }
+                    return result;
+                  }, false)}
+                  onCheckedChange={(checked) => {
+                    if (checked !== 'indeterminate') {
+                      onPublishedChange(Array.from(selectedIds), checked);
+                    }
+                  }}
+                />
+                Publikuj
+              </label>
+            </Button>
+          </div>
+          <AssetDeleteModal
+            assetIds={selectedIds}
+            onDelete={() => onDelete(Array.from(selectedIds))}
+          />
+        </>
       )}
     </div>
   );

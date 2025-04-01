@@ -25,7 +25,10 @@ import {
   FaEllipsis,
   FaPencil,
   FaX,
-  FaMinus, FaTag
+  FaMinus,
+  FaTag,
+  FaEye,
+  FaEyeSlash
 } from 'react-icons/fa6';
 import React from 'react';
 
@@ -129,6 +132,14 @@ export function FilterIcon(props: IconProps) {
 
 export function SearchIcon(props: IconProps) {
   return <FaMagnifyingGlass {...props} />;
+}
+
+export function EyeIcon(props: IconProps) {
+  return <FaEye {...props} />;
+}
+
+export function EyeSlashIcon(props: IconProps) {
+  return <FaEyeSlash {...props} />;
 }
 
 export function EllipsisIcon(props: IconProps) {
