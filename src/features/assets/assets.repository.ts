@@ -6,6 +6,7 @@ import { PgSelect } from 'drizzle-orm/pg-core';
 import { assetTagJunctionTable, tagTable } from '@/features/tags/tags.db';
 import { Tag } from '@/features/tags/tags.validation';
 import { Transaction } from '@/lib/db/types';
+import { logger } from '@/lib/logging';
 
 export interface AssetFiltering {
   assetType?: AssetType[];
@@ -159,13 +160,14 @@ export class DrizzleAssetRepository implements AssetRepository {
   private buildQueryWithOptions<T extends PgSelect>(query: T, options: AssetGetOptions): T {
     if (options.filters) {
       const { assetType, description, dateMin, dateMax, isPublished } = options.filters;
+      logger.info({ isPublished, t: typeof isPublished });
       query = query.where(
         and(
           assetType && assetType.length > 0 ? inArray(assetTable.assetType, assetType) : undefined,
           description ? ilike(assetTable.description, `%${description}%`) : undefined,
           dateMin ? gte(dateTable.dateMax, dateMin) : undefined,
           dateMax ? lte(dateTable.dateMin, dateMax) : undefined,
-          isPublished ? eq(assetTable.isPublished, isPublished) : undefined
+          isPublished !== undefined ? eq(assetTable.isPublished, isPublished) : undefined
         )
       );
     }

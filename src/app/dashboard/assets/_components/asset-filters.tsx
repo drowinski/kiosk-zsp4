@@ -7,6 +7,7 @@ import { FilterIcon } from '@/components/icons';
 import { Checkbox } from '@/components/base/checkbox';
 import { RangePicker } from '@/components/range-picker';
 import { useDebouncedCallback } from 'use-debounce';
+import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 
 interface AssetFilterProps {
   className?: string;
@@ -78,10 +79,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
             onChange={(event) => updateDescription(event.target.value)}
           />
         </Label>
-        <div
-          role={'group'}
-          className={'flex flex-col gap-2'}
-        >
+        <fieldset className={'flex flex-col gap-2 pt-2'}>
           <Label asChild>
             <legend>Typy plików</legend>
           </Label>
@@ -112,7 +110,26 @@ export function AssetFilters({ className }: AssetFilterProps) {
             />
             Audio
           </Label>
-        </div>
+        </fieldset>
+        <Label className={'w-full'}>
+          <span className={'inline-flex gap-1'}>Status publikacji</span>
+          <Select
+            defaultValue={searchParams.get('isPublished') ?? 'none'}
+            onValueChange={(value) => {
+              setSearchParams((prev) => {
+                setOrDeleteSearchParam(prev, 'isPublished', value);
+                return prev;
+              });
+            }}
+          >
+            <SelectTrigger className={'w-full'}/>
+            <SelectContent>
+              <SelectOption value={'none'}>Dowolny</SelectOption>
+              <SelectOption value={'true'}>Opublikowane</SelectOption>
+              <SelectOption value={'false'}>Ukryte</SelectOption>
+            </SelectContent>
+          </Select>
+        </Label>
         <RangePicker
           key={searchParams.get('minYear') + '' + searchParams.get('maxYear')}
           label={'Zakres lat'}
