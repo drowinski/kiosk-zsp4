@@ -19,6 +19,7 @@ export default [
       route('settings', 'dashboard/settings/settings.layout.tsx', [
         index('dashboard/settings/index.route.ts'),
         route('timeline', 'dashboard/settings/timeline/timeline.page.tsx', [
+          index('dashboard/settings/timeline/index.route.ts'),
           route('new', 'dashboard/settings/timeline/add.page.tsx'),
           route(':id', 'dashboard/settings/timeline/edit.page.tsx')
         ]),

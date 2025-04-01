@@ -192,6 +192,7 @@ export function AssetSelectionTools({
                       onPublishedChange(Array.from(selectedIds), checked);
                     }
                   }}
+                  aria-label={'Publikuj'}
                 />
                 Publikuj
               </label>
