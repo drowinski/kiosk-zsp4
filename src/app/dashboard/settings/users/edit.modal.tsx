@@ -7,7 +7,8 @@ import {
   useNavigate,
   useNavigation,
   ActionFunctionArgs,
-  LoaderFunctionArgs
+  LoaderFunctionArgs,
+  redirect
 } from 'react-router';
 import { updateUserSchema } from '@/features/users/users.validation';
 import { useForm } from '@conform-to/react';
@@ -19,6 +20,7 @@ import { Button } from '@/components/base/button';
 import { userService } from '@/features/users/users.service';
 import { Checkbox } from '@/components/base/checkbox';
 import { status, StatusCodes } from '@/utils/status-response';
+import { tryAsync } from '@/utils/try';
 
 const userEditFormSchema = updateUserSchema
   .extend({ repeatPassword: updateUserSchema.shape.password })
@@ -43,22 +45,33 @@ export async function loader({ params, context: { session } }: LoaderFunctionArg
   return { user };
 }
 
-export async function action({ request, context: { session } }: ActionFunctionArgs) {
+export async function action({ request, context: { logger, session } }: ActionFunctionArgs) {
+  logger.info('Checking if superuser...');
   if (!session || !session.user.isSuperuser) {
+    logger.warn('Not superuser. Forbidden.');
     throw status(StatusCodes.FORBIDDEN);
   }
 
+  logger.info('Parsing form data...');
   const formData = await request.formData();
   const submission = await parseWithZod(formData, { schema: userEditFormSchema, async: true });
-  console.log(submission);
   if (submission.status !== 'success') {
     return { lastResult: submission.reply() };
   }
-  const result = await userService.updateUser(submission.value);
-  if (!result) {
+
+  logger.info('Updating user...');
+  const [user, userOk, userError] = await tryAsync(userService.updateUser(submission.value));
+  if (!userOk) {
+    logger.error(userError);
     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
   }
-  return { lastResult: submission.reply({ resetForm: true }) };
+  if (!user) {
+    logger.warn('No user returned.');
+    return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
+  }
+
+  logger.info('Success.');
+  return redirect('..');
 }
 
 export default function UserEditModal() {

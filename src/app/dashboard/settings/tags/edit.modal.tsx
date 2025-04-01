@@ -7,7 +7,8 @@ import {
   useNavigate,
   useNavigation,
   ActionFunctionArgs,
-  LoaderFunctionArgs
+  LoaderFunctionArgs,
+  redirect
 } from 'react-router';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
@@ -16,6 +17,7 @@ import { Label } from '@/components/base/label';
 import { Button } from '@/components/base/button';
 import { tagRepository } from '@/features/tags/tags.repository';
 import { updateTagSchema } from '@/features/tags/tags.validation';
+import { tryAsync } from '@/utils/try';
 
 const tagEditFormSchema = updateTagSchema;
 
@@ -31,17 +33,27 @@ export async function loader({ params }: LoaderFunctionArgs) {
   return { tag };
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context: { logger } }: ActionFunctionArgs) {
+  logger.info('Parsing form data...');
   const formData = await request.formData();
   const submission = await parseWithZod(formData, { schema: tagEditFormSchema, async: true });
   if (submission.status !== 'success') {
     return { lastResult: submission.reply() };
   }
-  const result = await tagRepository.updateTag(submission.value);
-  if (!result) {
+
+  logger.info('Updating tag...');
+  const [tag, tagOk, tagError] = await tryAsync(tagRepository.updateTag(submission.value));
+  if (!tagOk) {
+    logger.error(tagError);
     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
   }
-  return { lastResult: submission.reply({ resetForm: true }) };
+  if (!tag) {
+    logger.warn('No tag returned.');
+    return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
+  }
+
+  logger.info('Success.');
+  return redirect('..');
 }
 
 export default function TagEditModal() {

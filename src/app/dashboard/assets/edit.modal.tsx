@@ -102,7 +102,7 @@ export async function action({ request, context: { logger } }: ActionFunctionArg
   }
 
   logger.info('Success.');
-  return callbackUrl ? redirect(callbackUrl) : { lastResult: submission.reply({ resetForm: true }) };
+  return callbackUrl ? redirect(callbackUrl) : redirect('..');
 }
 
 export default function AssetEditModal() {
@@ -115,7 +115,7 @@ export default function AssetEditModal() {
   const navigation = useNavigation();
   const location = useLocation();
 
-  const callbackUrl: string = location.state?.previousPathname + location.state?.previousSearch;
+  const callbackUrl: string = location.state?.previousPathname ?? '' + location.state?.previousSearch ?? '';
 
   const [form, fields] = useForm({
     lastResult: navigation.state === 'idle' ? actionData?.lastResult || null : null,

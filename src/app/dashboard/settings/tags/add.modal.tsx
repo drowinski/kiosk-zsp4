@@ -1,5 +1,13 @@
 import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from '@/components/base/modal';
-import { Form, useActionData, useLocation, useNavigate, useNavigation, ActionFunctionArgs } from 'react-router';
+import {
+  Form,
+  useActionData,
+  useLocation,
+  useNavigate,
+  useNavigation,
+  ActionFunctionArgs,
+  redirect
+} from 'react-router';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { Input, InputErrorMessage } from '@/components/base/input';
@@ -7,20 +15,31 @@ import { Label } from '@/components/base/label';
 import { Button } from '@/components/base/button';
 import { tagRepository } from '@/features/tags/tags.repository';
 import { createTagSchema } from '@/features/tags/tags.validation';
+import { tryAsync } from '@/utils/try';
 
 const tagCreateFormSchema = createTagSchema;
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context: { logger } }: ActionFunctionArgs) {
+  logger.info('Parsing form data...');
   const formData = await request.formData();
   const submission = await parseWithZod(formData, { schema: tagCreateFormSchema, async: true });
   if (submission.status !== 'success') {
     return { lastResult: submission.reply() };
   }
-  const result = await tagRepository.createTag(submission.value);
-  if (!result) {
+
+  logger.info('Creating tag...');
+  const [tag, tagOk, tagError] = await tryAsync(tagRepository.createTag(submission.value));
+  if (!tagOk) {
+    logger.error(tagError);
     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
   }
-  return { lastResult: submission.reply({ resetForm: true }) };
+  if (!tag) {
+    logger.warn('No tag returned.');
+    return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
+  }
+
+  logger.info('Success.');
+  return redirect('..');
 }
 
 export default function TagCreateModal() {
