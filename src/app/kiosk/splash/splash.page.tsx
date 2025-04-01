@@ -1,10 +1,24 @@
+import type { Route } from './+types/splash.page';
 import { Card } from '@/components/base/card';
 import { Carousel, CarouselItem } from '@/app/kiosk/splash/_components/carousel';
 import { Link } from 'react-router';
+import { tryAsync } from '@/utils/try';
+import { status, StatusCodes } from '@/utils/status-response';
+import { getAssetUri } from '@/features/assets/utils/uris';
+import { assetRepository } from '@/features/assets/assets.repository';
 
-export default function KioskSplashPage() {
-  const coverPhotoUris = new Array(5).fill(undefined).map((_, i) => `/splash/${i}.jpg`);
+export async function loader({ context: { logger } }: Route.LoaderArgs) {
+  logger.info('Getting carousel entries...');
+  const [assets, assetsOk, assetsError] = await tryAsync(assetRepository.getRandomAssets(5));
+  if (!assetsOk) {
+    logger.error(assetsError);
+    return status(StatusCodes.INTERNAL_SERVER_ERROR);
+  }
 
+  return { assets };
+}
+
+export default function KioskSplashPage({ loaderData: { assets } }: Route.ComponentProps) {
   return (
     <Link
       to={'/timeline'}
@@ -16,11 +30,11 @@ export default function KioskSplashPage() {
           intervalMs={5000}
           className={'absolute left-0 top-0 h-full w-full scale-110'}
         >
-          {coverPhotoUris.map((uri, index) => (
-            <CarouselItem key={index}>
+          {assets.map((asset) => (
+            <CarouselItem key={asset.id}>
               <img
-                src={uri}
-                alt={'okładka'}
+                src={getAssetUri(asset.fileName)}
+                alt={asset.description ?? 'Brak opisu.'}
                 className={'blur-sm'}
               />
             </CarouselItem>

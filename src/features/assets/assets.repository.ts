@@ -37,6 +37,8 @@ export interface AssetRepository {
 
   getAssets(options?: AssetGetOptions): Promise<Asset[]>;
 
+  getRandomAssets(count: number, options?: AssetGetOptions): Promise<Asset[]>;
+
   getAssetCount(options?: AssetGetOptions): Promise<number>;
 
   createAsset(newAsset: NewAsset): Promise<BaseAsset | null>;
@@ -108,6 +110,28 @@ export class DrizzleAssetRepository implements AssetRepository {
       .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
       .groupBy(assetTable.id, dateTable.id)
       .orderBy(desc(assetTable.id));
+
+    return options ? this.buildQueryWithOptions(query.$dynamic(), options) : query;
+  }
+
+  async getRandomAssets(count: number, options?: AssetGetOptions): Promise<Asset[]> {
+    const query = db
+      .select({
+        ...getTableColumns(assetTable),
+        date: {
+          ...getTableColumns(dateTable)
+        },
+        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+          'tags'
+        )
+      })
+      .from(assetTable)
+      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
+      .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
+      .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
+      .groupBy(assetTable.id, dateTable.id)
+      .orderBy(sql`random()`)
+      .limit(count);
 
     return options ? this.buildQueryWithOptions(query.$dynamic(), options) : query;
   }

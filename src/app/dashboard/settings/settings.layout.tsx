@@ -27,7 +27,6 @@ export default function SettingsLayout() {
         >
           Oś czasu
         </SettingsNavLink>
-        <SettingsNavLink to={'splash'}>Slajdy tytułowe</SettingsNavLink>
         {isSuperuser && <SettingsNavLink to={'users'}>Użytkownicy</SettingsNavLink>}
       </SettingsNav>
       <div className={'grow'}>
