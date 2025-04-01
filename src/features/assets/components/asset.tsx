@@ -23,6 +23,7 @@ export function Asset({ assetType, fullUrl, fileName, description, className }: 
         src={fullUri}
         alt={description || 'Brak opisu.'}
         className={cn('max-h-full max-w-full rounded-xl', className)}
+        loading={'lazy'}
       />
     );
   } else if (assetType === 'video') {

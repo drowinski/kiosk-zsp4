@@ -14,6 +14,8 @@ export interface TimelineRepository {
 
   getAssetsByTimelineRangeId(id: number, tagId?: number): Promise<Asset[]>;
 
+  getUniqueTagsByTimelineRangeId(id: number): Promise<Tag[]>;
+
   createTimelineRange(newTimelineRange: NewTimelineRange): Promise<number | null>;
 
   updateTimelineRange(updatedTimelineRange: UpdatedTimelineRange): Promise<void>;
@@ -79,6 +81,28 @@ export class DrizzleTimelineRepository implements TimelineRepository {
         )
       )
       .groupBy(assetTable.id, dateTable.id);
+  }
+
+  async getUniqueTagsByTimelineRangeId(id: number): Promise<Tag[]> {
+    return db
+      .select({
+        id: tagTable.id,
+        name: tagTable.name
+      })
+      .from(tagTable)
+      .innerJoin(assetTagJunctionTable, eq(assetTagJunctionTable.tagId, tagTable.id))
+      .innerJoin(assetTable, eq(assetTable.id, assetTagJunctionTable.assetId))
+      .innerJoin(dateTable, eq(dateTable.id, assetTable.dateId))
+      .innerJoin(timelineRangeTable, eq(timelineRangeTable.id, id))
+      .where(
+        and(
+          isNotNull(dateTable.dateMin),
+          isNotNull(dateTable.dateMax),
+          sql`daterange(${dateTable.dateMin}, ${dateTable.dateMax}, '[]') && daterange(${timelineRangeTable.minDate}, ${timelineRangeTable.maxDate}, '[]')`
+        )
+      )
+      .groupBy(tagTable.id)
+      .orderBy(tagTable.name);
   }
 
   async createTimelineRange(newTimelineRange: NewTimelineRange): Promise<number | null> {

@@ -12,7 +12,7 @@ export async function loader({ context: { logger } }: Route.LoaderArgs) {
   const [assets, assetsOk, assetsError] = await tryAsync(assetRepository.getRandomAssets(5));
   if (!assetsOk) {
     logger.error(assetsError);
-    return status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw status(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 
   return { assets };

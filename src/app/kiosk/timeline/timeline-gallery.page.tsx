@@ -10,12 +10,12 @@ import { ChevronLeftIcon, ChevronRightIcon, InfoIcon, XIcon } from '@/components
 import { formatDate } from '@/features/assets/utils/dates';
 import { Button } from '@/components/base/button';
 import { Asset } from '@/features/assets/assets.validation';
-import { Tag, tagSchema } from '@/features/tags/tags.validation';
+import { tagSchema } from '@/features/tags/tags.validation';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogOverlay, DialogTitle } from '@radix-ui/react-dialog';
 import { cn } from '@/utils/styles';
 import { timelineRangeSchema } from '@/features/timeline/timeline.validation';
-import { tryAsync, trySync } from '@/utils/try';
+import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';
 
 import 'swiper/css';
@@ -50,16 +50,7 @@ export async function loader({ request, params, context: { logger } }: Route.Loa
   }
 
   logger.info('Getting available tags...');
-  const [tags, tagsOk, tagsError] = trySync(() =>
-    Array.from(
-      assets
-        .reduce<Map<Tag['id'], Tag>>((map, asset) => {
-          asset.tags.forEach((tag) => map.set(tag.id, tag));
-          return map;
-        }, new Map())
-        .values()
-    ).sort((a, b) => (a.name > b.name ? 1 : -1))
-  );
+  const [tags, tagsOk, tagsError] = await tryAsync(timelineRepository.getUniqueTagsByTimelineRangeId(timelineRangeId));
   if (!tagsOk) {
     logger.error(tagsError);
     throw status(StatusCodes.INTERNAL_SERVER_ERROR);
@@ -82,7 +73,7 @@ export default function TimelineGalleryPage({ loaderData: { assets, tags } }: Ro
 
   return (
     <main className={'flex h-full flex-col gap-1'}>
-      <Card className={'bg-primary p-0 text-primary-foreground'}>
+      <Card className={'z-10 bg-primary p-0 text-primary-foreground'}>
         <nav className={'flex gap-1 p-1'}>
           <Button
             className={cn('grow', !tagId && 'bg-accent text-accent-foreground')}
@@ -116,7 +107,7 @@ export default function TimelineGalleryPage({ loaderData: { assets, tags } }: Ro
           <GalleryGridItem
             key={asset.id}
             asset={asset}
-            enableDebugView={true}
+            // enableDebugView={true}
             tabIndex={0}
             role={'button'}
             onClick={() => openDetailModal(index)}
@@ -159,9 +150,11 @@ export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChan
       open={isOpen}
       onOpenChange={setIsOpen}
     >
-      <DialogOverlay className={cn('absolute inset-0 bg-black', 'data-[state=open]:animate-gallery-detail-fade-in')} />
+      <DialogOverlay
+        className={cn('absolute inset-0 bg-black', 'z-20 data-[state=open]:animate-gallery-detail-fade-in')}
+      />
       <DialogContent
-        className={cn('absolute inset-0 flex h-full w-full', 'data-[state=open]:animate-gallery-detail-scale-in')}
+        className={cn('absolute inset-0 flex h-full w-full', 'z-20 data-[state=open]:animate-gallery-detail-scale-in')}
       >
         <div className={'max-w-4/5 flex w-4/5 items-center justify-center overflow-hidden'}>
           <Swiper
