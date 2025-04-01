@@ -1,13 +1,6 @@
 import type { Route } from './+types/list.page';
 import { AssetFiltering, assetRepository } from '@/features/assets/assets.repository';
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunctionArgs,
-  useLocation,
-  useSearchParams,
-  useSubmit
-} from 'react-router';
+import { Link, Outlet, ShouldRevalidateFunctionArgs, useLocation, useSearchParams, useSubmit } from 'react-router';
 import { AssetList, AssetListItem } from '@/app/dashboard/assets/_components/asset-list';
 import { AssetFilters } from '@/app/dashboard/assets/_components/asset-filters';
 import { ParamPagination } from '@/components/param-pagination';
@@ -167,7 +160,15 @@ export default function AssetListPage({ loaderData: { assets, assetCount } }: Ro
   const [selectedAssetIds, setSelectedAssetIds] = useState<Set<Asset['id']>>(new Set());
 
   useEffect(() => {
-    setSelectedAssetIds(new Set());
+    setSelectedAssetIds((prev) => {
+      const newSet = new Set<number>();
+      for (const id of assets.map((asset) => asset.id)) {
+        if (prev.has(id)) {
+          newSet.add(id);
+        }
+      }
+      return newSet;
+    });
   }, [assets]);
 
   return (
