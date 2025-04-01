@@ -6,7 +6,8 @@ import {
   useLoaderData,
   useLocation,
   useNavigate,
-  useNavigation
+  useNavigation,
+  redirect
 } from 'react-router';
 import { assetRepository } from '@/features/assets/assets.repository';
 import { useForm } from '@conform-to/react';
@@ -31,13 +32,18 @@ import { tagRepository } from '@/features/tags/tags.repository';
 import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 import { status, StatusCodes } from '@/utils/status-response';
 import { tryAsync } from '@/utils/try';
+import { z } from '@/lib/zod';
 
-const assetEditFormSchema = assetUpdateSchema.pick({
-  id: true,
-  description: true,
-  date: true,
-  tagIds: true
-});
+const assetEditFormSchema = assetUpdateSchema
+  .pick({
+    id: true,
+    description: true,
+    date: true,
+    tagIds: true
+  })
+  .extend({
+    callbackUrl: z.string().min(1).optional()
+  });
 
 export async function loader({ params, context: { logger } }: LoaderFunctionArgs) {
   logger.info('Parsing params...');
@@ -86,15 +92,17 @@ export async function action({ request, context: { logger } }: ActionFunctionArg
   }
   logger.info({ data: submission.value }, 'Form data parsed.');
 
+  const { callbackUrl, ...assetData } = submission.value;
+
   logger.info('Updating asset...');
-  const [, updateAssetOk, updateAssetError] = await tryAsync(assetService.updateAsset(submission.value));
+  const [, updateAssetOk, updateAssetError] = await tryAsync(assetService.updateAsset(assetData));
   if (!updateAssetOk) {
     logger.error(updateAssetError);
     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
   }
 
   logger.info('Success.');
-  return { lastResult: submission.reply({ resetForm: true }) };
+  return callbackUrl ? redirect(callbackUrl) : { lastResult: submission.reply({ resetForm: true }) };
 }
 
 export default function AssetEditModal() {
@@ -107,6 +115,8 @@ export default function AssetEditModal() {
   const navigation = useNavigation();
   const location = useLocation();
 
+  const callbackUrl: string = location.state?.previousPathname + location.state?.previousSearch;
+
   const [form, fields] = useForm({
     lastResult: navigation.state === 'idle' ? actionData?.lastResult || null : null,
     onValidate: ({ formData }) => {
@@ -117,6 +127,7 @@ export default function AssetEditModal() {
     constraint: getZodConstraint(assetEditFormSchema),
     shouldRevalidate: 'onInput',
     defaultValue: {
+      callbackUrl: callbackUrl,
       ...asset,
       date: asset.date
         ? {
@@ -152,19 +163,11 @@ export default function AssetEditModal() {
     [showDatePicker, dateMin, dateMax, datePrecision]
   );
 
-  // const dirtyCheck =
-  //   fields.description.dirty ||
-  //   dateMin !== dateFieldset.dateMin.initialValue ||
-  //   dateMax !== dateFieldset.dateMax.initialValue ||
-  //   datePrecision != dateFieldset.datePrecision.initialValue ||
-  //   showDatePicker !== (asset.date !== null) ||
-  //   tags.map((tag) => tag.id);
+  const navigateBack = () => navigate(callbackUrl || '..');
 
   return (
     <Modal
-      onOpenChange={(open) =>
-        !open && navigate(location.state?.previousPathname + location.state?.previousSearch || '..')
-      }
+      onOpenChange={(open) => !open && navigateBack()}
       defaultOpen
     >
       <ModalContent>
@@ -192,6 +195,11 @@ export default function AssetEditModal() {
           state={{ previousPathname: location.state?.previousPathname, previousSearch: location.state?.previousSearch }}
         >
           <InputErrorMessage>{form.errors}</InputErrorMessage>
+          <input
+            type={'hidden'}
+            name={fields.callbackUrl.name}
+            value={fields.callbackUrl.value}
+          />
           <input
             type={'hidden'}
             name={fields.id.name}
