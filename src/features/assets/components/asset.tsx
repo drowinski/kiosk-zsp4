@@ -1,6 +1,7 @@
 import { cn } from '@/utils/styles';
 import { AssetType } from '@/features/assets/assets.validation';
 import { Video } from '@/components/video';
+import { Document } from '@/components/document.client';
 
 interface AssetProps {
   assetType: AssetType;
@@ -36,7 +37,13 @@ export function Asset({ assetType, fullUrl, fileName, description, className }: 
   } else if (assetType === 'audio') {
     return <audio src={fullUri}></audio>;
   } else if (assetType === 'document') {
-    return <div>Dokument</div>;
+    return (
+      <Document
+        src={fullUri}
+        className={cn('rounded-xl', className)}
+        fill={'contain'}
+      />
+    );
   } else {
     return <audio src={fullUri} />;
   }

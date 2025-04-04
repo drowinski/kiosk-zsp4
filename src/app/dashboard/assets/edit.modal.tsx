@@ -33,6 +33,7 @@ import { status, StatusCodes } from '@/utils/status-response';
 import { tryAsync } from '@/utils/try';
 import { z } from '@/lib/zod';
 import { Asset } from '@/features/assets/components/asset';
+import { ClientOnly } from 'remix-utils/client-only';
 
 const assetEditFormSchema = assetUpdateSchema
   .pick({
@@ -179,12 +180,16 @@ export default function AssetEditModal() {
             <DialogDescription>Edycja metadanych zawartości multimedialnej</DialogDescription>
           </VisuallyHidden>
         </ModalHeader>
-        <div className={'flex max-h-60 max-w-full items-start justify-center'}>
-          <Asset
-            assetType={asset.assetType}
-            fileName={asset.assetType !== 'image' ? asset.fileName : undefined}
-            fullUrl={asset.assetType === 'image' ? getAssetThumbnailUri(asset.fileName) : undefined}
-          />
+        <div className={'flex max-h-60 max-w-full h-60 items-start justify-center overflow-hidden'}>
+          <ClientOnly>
+            {() => (
+              <Asset
+                assetType={asset.assetType}
+                fileName={asset.assetType !== 'image' ? asset.fileName : undefined}
+                fullUrl={asset.assetType === 'image' ? getAssetThumbnailUri(asset.fileName) : undefined}
+              />
+            )}
+          </ClientOnly>
         </div>
         <Form
           method={'post'}
