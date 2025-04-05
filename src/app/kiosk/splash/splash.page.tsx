@@ -1,11 +1,12 @@
 import type { Route } from './+types/splash.page';
 import { Card } from '@/components/base/card';
 import { Carousel, CarouselItem } from '@/app/kiosk/splash/_components/carousel';
-import { Link } from 'react-router';
+import { Link, useRouteError } from 'react-router';
 import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';
 import { getAssetUri } from '@/features/assets/utils/uris';
 import { assetRepository } from '@/features/assets/assets.repository';
+import { CircleExclamationIcon } from '@/components/icons';
 
 export async function loader({ context: { logger } }: Route.LoaderArgs) {
   logger.info('Getting carousel entries...');
@@ -25,7 +26,7 @@ export default function KioskSplashPage({ loaderData: { assets } }: Route.Compon
       className={'flex h-full cursor-default items-center gap-2'}
       aria-labelledby={'title-card'}
     >
-      <div className={'relative flex h-full flex-grow items-center justify-center overflow-hidden'}>
+      <main className={'relative flex h-full flex-grow items-center justify-center overflow-hidden'}>
         <Carousel
           intervalMs={5000}
           className={'absolute left-0 top-0 h-full w-full scale-110'}
@@ -62,7 +63,21 @@ export default function KioskSplashPage({ loaderData: { assets } }: Route.Compon
             Dotknij aby rozpocząć
           </Card>
         </div>
-      </div>
+      </main>
     </Link>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  console.error(error);
+  return (
+    <main className={'flex h-full w-full items-center justify-center'}>
+      <Card>
+        <span className={'inline-flex items-center gap-2 text-xl font-medium'}>
+          <CircleExclamationIcon /> Wystąpił błąd
+        </span>
+      </Card>
+    </main>
   );
 }
