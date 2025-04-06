@@ -14,7 +14,7 @@ const Slider = React.forwardRef<
     <SliderPrimitive.Root
       ref={ref}
       className={cn(
-        'relative flex w-full touch-none select-none items-center data-[orientation=vertical]:h-full data-[orientation=vertical]:w-fit data-[orientation=vertical]:flex-col',
+        'relative flex w-full touch-none select-none items-center data-[orientation=vertical]:h-24 data-[orientation=vertical]:w-fit data-[orientation=vertical]:flex-col',
         className
       )}
       {...props}
@@ -24,7 +24,7 @@ const Slider = React.forwardRef<
           'relative h-2 w-full grow overflow-hidden rounded-full bg-accent data-[orientation=vertical]:h-full data-[orientation=vertical]:w-2'
         }
       >
-        <SliderPrimitive.Range className={'absolute h-full bg-primary'} />
+        <SliderPrimitive.Range className={'absolute h-full bg-primary data-[orientation=vertical]:w-full'} />
       </SliderPrimitive.Track>
       {initialValue?.map((_, index) => (
         <SliderPrimitive.Thumb

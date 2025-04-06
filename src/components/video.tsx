@@ -2,8 +2,9 @@ import React, { ReactEventHandler, useCallback, useEffect, useRef, useState } fr
 import { Button } from '@/components/base/button';
 import { ProgressBar } from '@/components/base/progress-bar';
 import { Slider } from '@/components/base/slider';
-import { PauseIcon, PlayIcon } from '@/components/icons';
+import { PauseIcon, PlayIcon, VolumeIcon } from '@/components/icons';
 import { cn } from '@/utils/styles';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/base/popover';
 
 interface VideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
   showPlayOverlay?: boolean;
@@ -18,6 +19,7 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
   const [isPointerDownOnProgressBar, setIsPointerDownOnProgressBar] = useState(false);
   const [shouldResumeOnScrubEnd, setShouldResumeOnScrubEnd] = useState(false);
   const [showPlayOverlay, setShowPlayOverlay] = useState(_showPlayOverlay);
+  const [volume, _setVolume] = useState(videoRef.current?.volume ?? 1);
 
   const handleProgress: ReactEventHandler<HTMLVideoElement> = (e) => {
     const video = e.currentTarget;
@@ -79,7 +81,12 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
     const video = videoRef.current;
     if (!video) return;
     video.volume = volume;
+    _setVolume(volume);
   };
+
+  if (videoRef.current?.volume && videoRef.current?.volume !== volume) {
+    setVolume(videoRef.current.volume);
+  }
 
   useEffect(() => {
     const handleWindowPointerMove = (e: PointerEvent) => isPointerDownOnProgressBar && scrub(e);
@@ -95,6 +102,7 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
 
   return (
     <div className={cn('relative h-full w-fit overflow-hidden rounded-xl', className)}>
+      {/*TODO: Fix scaling issues*/}
       <video
         ref={videoRef}
         src={src}
@@ -123,31 +131,44 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
           </div>
         </Button>
       ) : (
-        <div className={'swiper-no-swiping absolute bottom-2 left-2 right-2 flex h-9 gap-2'}>
-          <Button
-            size={'square'}
-            onClick={() => togglePlay()}
-            aria-label={isPaused ? 'Odtwórz film' : 'Wstrzymaj film'}
-          >
-            {isPaused ? <PlayIcon /> : <PauseIcon />}
-          </Button>
-          <div className={'flex h-full w-full flex-col justify-between'}>
-            <ProgressBar
-              ref={progressBarRef}
-              value={progress * 100}
-              onPointerDown={handleScrubStart}
-              onClick={(e) => scrub(e.nativeEvent)}
-              aria-label={'Suwak czasu'}
-            />
-            <Slider
-              defaultValue={[videoRef.current?.volume || 1]}
-              min={0}
-              max={1}
-              step={0.05}
-              onValueChange={(value) => setVolume(value[0])}
-              aria-label={'Suwak głośności'}
-            />
+        <div className={'swiper-no-swiping absolute bottom-2 left-2 right-2 flex flex-col gap-2'}>
+          <div className={'flex w-full justify-between gap-1'}>
+            <Button
+              size={'icon'}
+              onClick={() => togglePlay()}
+              aria-label={isPaused ? 'Odtwórz film' : 'Wstrzymaj film'}
+            >
+              {isPaused ? <PlayIcon /> : <PauseIcon />}
+            </Button>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button size={'icon'}>
+                  <VolumeIcon />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className={'h-fit w-fit'}>
+                <Slider
+                  className={'min-h-64'}
+                  orientation={'vertical'}
+                  value={[volume]}
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  onValueChange={(value) => setVolume(value[0])}
+                  aria-label={'Suwak głośności'}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
+          <ProgressBar
+            ref={progressBarRef}
+            value={progress * 100}
+            onPointerDown={handleScrubStart}
+            onClick={(e) => scrub(e.nativeEvent)}
+            aria-label={'Suwak czasu'}
+            className={'grow'}
+          />
         </div>
       )}
     </div>

@@ -30,7 +30,8 @@ import {
   FaEye,
   FaEyeSlash,
   FaFile,
-  FaMusic
+  FaMusic,
+  FaVolumeHigh
 } from 'react-icons/fa6';
 import React from 'react';
 
@@ -42,6 +43,10 @@ export function PlayIcon(props: IconProps) {
 
 export function PauseIcon(props: IconProps) {
   return <FaPause {...props} />;
+}
+
+export function VolumeIcon(props: IconProps) {
+  return <FaVolumeHigh {...props} />;
 }
 
 export function ArrowLeftIcon(props: IconProps) {
