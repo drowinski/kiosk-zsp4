@@ -9,6 +9,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import * as path from 'node:path';
 import { tryAsync } from '@/utils/try';
 import { logger } from '@/lib/logging';
+import { ThumbnailGenerator } from '@/lib/thumbnail-generator';
 
 export class AssetService {
   private readonly assetRepository: AssetRepository;
@@ -110,32 +111,17 @@ export class AssetService {
   }
 
   async generateThumbnail(fileName: string, assetType: AssetType): Promise<void> {
-    const originalFilePath = this.fileManager._definePathInsideRootDir(fileName);
-    const thumbnailFileName = this.getThumbnailFileName(fileName);
-
-    await new Promise<void>((resolve, reject) => {
-      const ffmpegCommand = ffmpeg(originalFilePath)
-        .on('end', () => {
-          resolve();
-        })
-        .on('error', (error) => {
-          reject(error);
-        });
-
-      if (assetType === 'image') {
-        const outputPath = this.fileManager._definePathInsideRootDir(this.thumbnailDirectory, thumbnailFileName);
-        ffmpegCommand.outputFormat('mjpeg').videoFilter('scale=640:-2').save(outputPath);
-      } else if (assetType === 'video') {
-        ffmpegCommand.thumbnail({
-          filename: thumbnailFileName,
-          folder: this.fileManager._definePathInsideRootDir(this.thumbnailDirectory),
-          timestamps: ['5%'],
-          size: '640x?'
-        });
-      } else {
-        reject();
-      }
-    });
+    const thumbnailGenerator = new ThumbnailGenerator(this.fileManager, this.thumbnailDirectory, 1024);
+    if (assetType === 'image') {
+      await thumbnailGenerator.generateFromImage(fileName);
+      return;
+    } else if (assetType === 'video') {
+      await thumbnailGenerator.generateFromVideo(fileName);
+      return;
+    } else if (assetType === 'document') {
+      await thumbnailGenerator.generateFromPDF(fileName);
+      return;
+    }
   }
 
   private generateFileName(mimeType: string): string {
