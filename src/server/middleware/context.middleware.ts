@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { logger } from '@/lib/logging';
+import { logger } from '@/lib/.server/logging';
 import { NextFunction, Request, Response } from 'express';
 
 export function contextMiddleware(request: Request, response: Response, next: NextFunction) {

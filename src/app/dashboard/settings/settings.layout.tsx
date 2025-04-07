@@ -1,7 +1,7 @@
 import { Card } from '@/components/base/card';
 import { Outlet, useLoaderData, LoaderFunctionArgs } from 'react-router';
 import { SettingsNav, SettingsNavLink } from '@/app/dashboard/settings/_components/settings-nav';
-import { userRepository } from '@/features/users/users.repository';
+import { userRepository } from '@/features/users/.server/users.repository';
 
 export async function loader({ context: { session } }: LoaderFunctionArgs) {
   if (!session) {

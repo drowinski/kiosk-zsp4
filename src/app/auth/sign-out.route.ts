@@ -1,9 +1,9 @@
 import type { Route } from './+types/sign-out.route';
 import { redirect } from 'react-router';
-import { getDeleteSessionTokenCookie } from '@/features/sessions/sessions.cookies';
+import { getDeleteSessionTokenCookie } from '@/features/sessions/.server/sessions.cookies';
 import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';
-import { sessionService } from '@/features/sessions/sessions.service';
+import { sessionService } from '@/features/sessions/.server/sessions.service';
 
 export async function action({ context: { logger, session } }: Route.ActionArgs) {
   logger.info('Sign out requested...');

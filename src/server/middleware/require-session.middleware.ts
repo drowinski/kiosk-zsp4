@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getDeleteSessionTokenCookie } from '@/features/sessions/sessions.cookies';
+import { getDeleteSessionTokenCookie } from '@/features/sessions/.server/sessions.cookies';
 
 export function requireSessionMiddleware(request: Request, response: Response, next: NextFunction) {
   if (!request.context.session) {

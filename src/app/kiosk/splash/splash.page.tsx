@@ -5,7 +5,7 @@ import { Link, useRouteError } from 'react-router';
 import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';
 import { getAssetUri } from '@/features/assets/utils/uris';
-import { assetRepository } from '@/features/assets/assets.repository';
+import { assetRepository } from '@/features/assets/.server/assets.repository';
 import { CircleExclamationIcon } from '@/components/icons';
 
 export async function loader({ context: { logger } }: Route.LoaderArgs) {

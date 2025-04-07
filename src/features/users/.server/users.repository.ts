@@ -4,8 +4,8 @@ import {
   User,
   UserWithPasswordHash
 } from '@/features/users/users.validation';
-import { db } from '@/lib/db/connection';
-import { userTable } from '@/features/users/users.db';
+import { db } from '@/lib/.server/db/connection';
+import { userTable } from '@/features/users/.server/users.db';
 import { eq, getTableColumns } from 'drizzle-orm';
 
 export interface UserRepository {

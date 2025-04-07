@@ -1,4 +1,4 @@
-import { userRepository } from '@/features/users/users.repository';
+import { userRepository } from '@/features/users/.server/users.repository';
 import {
   Link,
   Outlet,

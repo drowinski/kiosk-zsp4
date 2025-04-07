@@ -1,4 +1,4 @@
-import { FileManager } from '@/lib/files';
+import { FileManager } from '@/lib/.server/files';
 import { spawn } from 'cross-spawn';
 import * as path from 'node:path';
 import ffmpeg from 'fluent-ffmpeg';

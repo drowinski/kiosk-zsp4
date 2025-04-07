@@ -1,7 +1,7 @@
 import { boolean, check, date, integer, pgEnum, pgTable, timestamp, varchar } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 import { ASSET_TYPE_ARRAY, DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
-import { assetTagJunctionTable } from '@/features/tags/tags.db';
+import { assetTagJunctionTable } from '@/features/tags/.server/tags.db';
 
 export const assetTypeEnum = pgEnum('asset_type', ASSET_TYPE_ARRAY);
 

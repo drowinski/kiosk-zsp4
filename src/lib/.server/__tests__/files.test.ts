@@ -1,4 +1,4 @@
-import { FileManager } from '@/lib/files';
+import { FileManager } from '@/lib/.server/files';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as fs from 'node:fs';
 import { Readable, Writable } from 'node:stream';

@@ -1,4 +1,4 @@
-import { tagRepository } from '@/features/tags/tags.repository';
+import { tagRepository } from '@/features/tags/.server/tags.repository';
 import { Link, Outlet, useLoaderData, useLocation, useSubmit, ActionFunctionArgs } from 'react-router';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/base/table';
 import { EditIcon, PlusIcon } from '@/components/icons';

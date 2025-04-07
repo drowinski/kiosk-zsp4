@@ -1,6 +1,6 @@
 import { check, date, integer, pgTable, varchar } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { assetTable } from '@/features/assets/assets.db';
+import { assetTable } from '@/features/assets/.server/assets.db';
 
 export const timelineRangeTable = pgTable(
   'timeline_ranges',

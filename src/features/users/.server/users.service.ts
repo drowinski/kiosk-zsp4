@@ -1,6 +1,6 @@
-import { userRepository, UserRepository } from '@/features/users/users.repository';
+import { userRepository, UserRepository } from '@/features/users/.server/users.repository';
 import { UpdatedUser, User } from '@/features/users/users.validation';
-import { hashPassword, verifyPassword } from '@/lib/crypto';
+import { hashPassword, verifyPassword } from '@/lib/.server/crypto';
 
 export class UserService {
   private readonly userRepository: UserRepository;

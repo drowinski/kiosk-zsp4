@@ -1,10 +1,10 @@
 import { NewTimelineRange, TimelineRange, UpdatedTimelineRange } from '@/features/timeline/timeline.validation';
-import { db } from '@/lib/db/connection';
-import { timelineRangeTable } from '@/features/timeline/timeline.db';
+import { db } from '@/lib/.server/db/connection';
+import { timelineRangeTable } from '@/features/timeline/.server/timeline.db';
 import { and, asc, eq, exists, getTableColumns, isNotNull, sql } from 'drizzle-orm';
-import { assetTable, dateTable } from '@/features/assets/assets.db';
+import { assetTable, dateTable } from '@/features/assets/.server/assets.db';
 import { Asset } from '@/features/assets/assets.validation';
-import { assetTagJunctionTable, tagTable } from '@/features/tags/tags.db';
+import { assetTagJunctionTable, tagTable } from '@/features/tags/.server/tags.db';
 import { Tag } from '@/features/tags/tags.validation';
 
 export interface TimelineRepository {

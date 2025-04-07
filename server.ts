@@ -1,6 +1,6 @@
 import express from 'express';
-import { logger } from '@/lib/logging';
-import { env, IS_PRODUCTION_ENV } from '@/lib/env';
+import { logger } from '@/lib/.server/logging';
+import { env, IS_PRODUCTION_ENV } from '@/lib/.server/env';
 
 const BUILD_PATH = './build/server/index.js';
 

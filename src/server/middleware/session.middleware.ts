@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as cookieParser from 'cookie';
-import { sessionService } from '@/features/sessions/sessions.service';
+import { sessionService } from '@/features/sessions/.server/sessions.service';
 import { tryAsync } from '@/utils/try';
 
 export async function sessionMiddleware(request: Request, response: Response, next: NextFunction) {

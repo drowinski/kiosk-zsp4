@@ -1,15 +1,14 @@
-import { AssetRepository, assetRepository } from '@/features/assets/assets.repository';
+import { AssetRepository, assetRepository } from '@/features/assets/.server/assets.repository';
 import { ReadStream } from 'node:fs';
-import { FileManager } from '@/lib/files';
-import { env } from '@/lib/env';
+import { FileManager } from '@/lib/.server/files';
+import { env } from '@/lib/.server/env';
 import * as crypto from 'node:crypto';
 import { AssetType, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
 import * as mime from 'mime-types';
-import ffmpeg from 'fluent-ffmpeg';
 import * as path from 'node:path';
 import { tryAsync } from '@/utils/try';
-import { logger } from '@/lib/logging';
-import { ThumbnailGenerator } from '@/lib/thumbnail-generator';
+import { logger } from '@/lib/.server/logging';
+import { ThumbnailGenerator } from '@/lib/.server/thumbnail-generator';
 
 export class AssetService {
   private readonly assetRepository: AssetRepository;

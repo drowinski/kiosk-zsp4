@@ -1,12 +1,12 @@
 import { Asset, AssetType, BaseAsset, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
-import { db } from '@/lib/db/connection';
-import { assetTable, dateTable } from '@/features/assets/assets.db';
+import { db } from '@/lib/.server/db/connection';
+import { assetTable, dateTable } from '@/features/assets/.server/assets.db';
 import { and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, lte, notInArray, sql } from 'drizzle-orm';
 import { PgSelect } from 'drizzle-orm/pg-core';
-import { assetTagJunctionTable, tagTable } from '@/features/tags/tags.db';
+import { assetTagJunctionTable, tagTable } from '@/features/tags/.server/tags.db';
 import { Tag } from '@/features/tags/tags.validation';
-import { Transaction } from '@/lib/db/types';
-import { logger } from '@/lib/logging';
+import { Transaction } from '@/lib/.server/db/types';
+import { logger } from '@/lib/.server/logging';
 
 export interface AssetFiltering {
   assetType?: AssetType[];

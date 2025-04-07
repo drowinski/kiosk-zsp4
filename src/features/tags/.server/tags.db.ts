@@ -1,5 +1,5 @@
 import { integer, pgTable, primaryKey, varchar } from 'drizzle-orm/pg-core';
-import { assetTable } from '@/features/assets/assets.db';
+import { assetTable } from '@/features/assets/.server/assets.db';
 import { relations } from 'drizzle-orm';
 
 export const tagTable = pgTable('tags', {

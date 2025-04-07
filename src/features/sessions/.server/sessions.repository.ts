@@ -1,9 +1,9 @@
 import { NewSession, Session } from '@/features/sessions/sessions.validation';
-import { db } from '@/lib/db/connection';
-import { sessionTable } from '@/features/sessions/sessions.db';
-import { userTable } from '@/features/users/users.db';
+import { db } from '@/lib/.server/db/connection';
+import { sessionTable } from '@/features/sessions/.server/sessions.db';
+import { userTable } from '@/features/users/.server/users.db';
 import { eq, getTableColumns } from 'drizzle-orm';
-import { getColumns } from '@/lib/db/helpers/get-columns';
+import { getColumns } from '@/lib/.server/db/helpers/get-columns';
 
 export interface SessionRepository {
   getSessionById(id: string): Promise<Session | null>;

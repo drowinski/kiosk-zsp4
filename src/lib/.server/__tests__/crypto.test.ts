@@ -1,4 +1,4 @@
-import { hashPassword, KEY_SIZE, SALT_SIZE, verifyPassword } from '@/lib/crypto';
+import { hashPassword, KEY_SIZE, SALT_SIZE, verifyPassword } from '@/lib/.server/crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('crypto', () => {

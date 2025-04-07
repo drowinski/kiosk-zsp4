@@ -1,6 +1,6 @@
 import { NewTag, Tag, UpdatedTag } from '@/features/tags/tags.validation';
-import { db } from '@/lib/db/connection';
-import { assetTagJunctionTable, tagTable } from '@/features/tags/tags.db';
+import { db } from '@/lib/.server/db/connection';
+import { assetTagJunctionTable, tagTable } from '@/features/tags/.server/tags.db';
 import { and, eq, inArray } from 'drizzle-orm';
 
 export interface TagRepository {

@@ -11,7 +11,7 @@ import {
 import { Input, InputErrorMessage } from '@/components/base/input';
 import { getYYYYMMDD } from '@/utils/dates';
 import { TimelineRange, timelineRangeSchema, updateTimelineRangeSchema } from '@/features/timeline/timeline.validation';
-import { timelineRepository } from '@/features/timeline/timeline.repository';
+import { timelineRepository } from '@/features/timeline/.server/timeline.repository';
 import { SubmissionResult, useForm, useInputControl } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { Asset } from '@/features/assets/assets.validation';

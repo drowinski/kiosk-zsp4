@@ -1,6 +1,6 @@
 import type { Route } from './+types/edit-many.modal';
 import { Form, redirect, useLocation, useNavigate, useNavigation } from 'react-router';
-import { assetRepository } from '@/features/assets/assets.repository';
+import { assetRepository } from '@/features/assets/.server/assets.repository';
 import { useForm } from '@conform-to/react';
 import { Asset, AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
@@ -17,13 +17,13 @@ import { InputErrorMessage } from '@/components/base/input';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { TagSelector } from '@/features/tags/components/tag-selector';
-import { tagRepository } from '@/features/tags/tags.repository';
+import { tagRepository } from '@/features/tags/.server/tags.repository';
 import { status, StatusCodes } from '@/utils/status-response';
 import { tryAsync } from '@/utils/try';
 import { z } from '@/lib/zod';
 import { Checkbox } from '@/components/base/checkbox';
 import { applyDeclension } from '@/utils/language';
-import { assetService } from '@/features/assets/assets.service';
+import { assetService } from '@/features/assets/.server/assets.service';
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
 
 const searchParamsSchema = z.object({

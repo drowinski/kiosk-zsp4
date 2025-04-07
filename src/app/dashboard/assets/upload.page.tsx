@@ -1,6 +1,6 @@
 import type { Route } from './+types/upload.page';
 import { parseWithZod } from '@conform-to/zod';
-import { assetService } from '@/features/assets/assets.service';
+import { assetService } from '@/features/assets/.server/assets.service';
 import { ReadStream } from 'node:fs';
 import { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { useFetcher } from 'react-router';

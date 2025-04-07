@@ -1,6 +1,6 @@
 import type { Route } from './+types/timeline.page';
 import { Timeline, TimelineItem } from '@/features/timeline/components/timeline';
-import { timelineRepository } from '@/features/timeline/timeline.repository';
+import { timelineRepository } from '@/features/timeline/.server/timeline.repository';
 import { getAssetUri } from '@/features/assets/utils/uris';
 import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';

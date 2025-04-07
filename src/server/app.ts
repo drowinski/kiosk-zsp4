@@ -1,7 +1,7 @@
 import 'react-router';
 import { createRequestHandler } from '@react-router/express';
 import express from 'express';
-import { env } from '@/lib/env';
+import { env } from '@/lib/.server/env';
 import { contextMiddleware } from '@/server/middleware/context.middleware';
 import { sessionMiddleware } from '@/server/middleware/session.middleware';
 import { requireSessionMiddleware } from '@/server/middleware/require-session.middleware';

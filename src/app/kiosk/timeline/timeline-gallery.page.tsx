@@ -1,7 +1,7 @@
 import type { Route } from './+types/timeline-gallery.page';
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
 import { Link, useLocation } from 'react-router';
-import { timelineRepository } from '@/features/timeline/timeline.repository';
+import { timelineRepository } from '@/features/timeline/.server/timeline.repository';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Mousewheel, Navigation, Pagination, Zoom } from 'swiper/modules';
 import { Asset as AssetComponent } from '@/features/assets/components/asset';

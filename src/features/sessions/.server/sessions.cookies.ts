@@ -1,4 +1,4 @@
-import { IS_PRODUCTION_ENV } from '@/lib/env';
+import { IS_PRODUCTION_ENV } from '@/lib/.server/env';
 import * as cookieParser from 'cookie';
 
 export function getSessionTokenCookie(token: string, expiresAt: Date): string {

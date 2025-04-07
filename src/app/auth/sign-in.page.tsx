@@ -4,12 +4,12 @@ import { useForm } from '@conform-to/react';
 import { z } from '@/lib/zod';
 import { userPasswordSchema, userSchema } from '@/features/users/users.validation';
 import { parseWithZod } from '@conform-to/zod';
-import { userService } from '@/features/users/users.service';
+import { userService } from '@/features/users/.server/users.service';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
 import { Input } from '@/components/base/input';
-import { sessionService } from '@/features/sessions/sessions.service';
-import { getSessionTokenCookie } from '@/features/sessions/sessions.cookies';
+import { sessionService } from '@/features/sessions/.server/sessions.service';
+import { getSessionTokenCookie } from '@/features/sessions/.server/sessions.cookies';
 
 const formSchema = z.object({
   username: userSchema.shape.username,

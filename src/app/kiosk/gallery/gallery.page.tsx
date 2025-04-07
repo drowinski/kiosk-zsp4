@@ -1,5 +1,5 @@
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
-import { assetRepository, AssetSorting } from '@/features/assets/assets.repository';
+import { assetRepository, AssetSorting } from '@/features/assets/.server/assets.repository';
 import { Outlet, useLoaderData, useNavigate, LoaderFunctionArgs } from 'react-router';
 
 export async function loader({ request }: LoaderFunctionArgs) {

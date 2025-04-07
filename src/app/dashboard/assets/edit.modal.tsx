@@ -9,7 +9,7 @@ import {
   useNavigation,
   redirect
 } from 'react-router';
-import { assetRepository } from '@/features/assets/assets.repository';
+import { assetRepository } from '@/features/assets/.server/assets.repository';
 import { useForm } from '@conform-to/react';
 import { AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
@@ -23,11 +23,11 @@ import { formatDate } from '@/features/assets/utils/dates';
 import { useMemo, useState } from 'react';
 import { getYYYYMMDD } from '@/utils/dates';
 import { InputErrorMessage } from '@/components/base/input';
-import { assetService } from '@/features/assets/assets.service';
+import { assetService } from '@/features/assets/.server/assets.service';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { TagSelector } from '@/features/tags/components/tag-selector';
-import { tagRepository } from '@/features/tags/tags.repository';
+import { tagRepository } from '@/features/tags/.server/tags.repository';
 import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 import { status, StatusCodes } from '@/utils/status-response';
 import { tryAsync } from '@/utils/try';

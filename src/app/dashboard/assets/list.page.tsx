@@ -1,5 +1,5 @@
 import type { Route } from './+types/list.page';
-import { AssetFiltering, assetRepository } from '@/features/assets/assets.repository';
+import { AssetFiltering, assetRepository } from '@/features/assets/.server/assets.repository';
 import { Link, Outlet, ShouldRevalidateFunctionArgs, useLocation, useSubmit } from 'react-router';
 import { AssetList, AssetListItem } from '@/app/dashboard/assets/_components/asset-list';
 import { AssetFilters } from '@/app/dashboard/assets/_components/asset-filters';
@@ -10,12 +10,12 @@ import { Button } from '@/components/base/button';
 import { PlusIcon } from '@/components/icons';
 import { assetSchema } from '@/features/assets/assets.validation';
 import { z } from '@/lib/zod';
-import { assetService } from '@/features/assets/assets.service';
+import { assetService } from '@/features/assets/.server/assets.service';
 import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';
 import { AssetSortDropdown } from '@/app/dashboard/assets/_components/asset-sort-dropdown';
 import { AssetSelectionTools, useAssetSelection } from '@/app/dashboard/assets/_components/asset-selection-tools';
-import { tagRepository } from '@/features/tags/tags.repository';
+import { tagRepository } from '@/features/tags/.server/tags.repository';
 import { tagSchema } from '@/features/tags/tags.validation';
 
 const DEFAULT_PAGE_SIZE = 10;

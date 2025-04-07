@@ -1,6 +1,6 @@
 import { Button } from '@/components/base/button';
 import { NavLink, Outlet, useLoaderData } from 'react-router';
-import { timelineRepository } from '@/features/timeline/timeline.repository';
+import { timelineRepository } from '@/features/timeline/.server/timeline.repository';
 import { formatCaption } from '@/features/timeline/utils/strings';
 
 export async function loader() {

@@ -15,7 +15,7 @@ import { parseWithZod } from '@conform-to/zod';
 import { Input, InputDescription, InputErrorMessage } from '@/components/base/input';
 import { Label } from '@/components/base/label';
 import { Button } from '@/components/base/button';
-import { userService } from '@/features/users/users.service';
+import { userService } from '@/features/users/.server/users.service';
 import { Checkbox } from '@/components/base/checkbox';
 import { status, StatusCodes } from '@/utils/status-response';
 import { tryAsync } from '@/utils/try';

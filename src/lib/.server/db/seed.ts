@@ -1,5 +1,5 @@
 import * as readline from 'node:readline/promises';
-import { assetTable } from '@/features/assets/assets.db';
+import { assetTable } from '@/features/assets/.server/assets.db';
 import { Buffer } from 'node:buffer';
 import { Readable } from 'node:stream';
 import { ReadStream } from 'node:fs';
@@ -26,11 +26,11 @@ async function testSeed() {
     process.exit(2);
   }
 
-  const { db } = await import('@/lib/db/connection');
+  const { db } = await import('@/lib/.server/db/connection');
 
   await db.delete(assetTable);
 
-  const { assetService } = await import('@/features/assets/assets.service');
+  const { assetService } = await import('@/features/assets/.server/assets.service');
 
   for (let i = 0; i < 200; i++) {
     const imageBuffer = Buffer.from(base64TestImage, 'base64');

@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { SessionRepository, sessionRepository } from '@/features/sessions/sessions.repository';
+import { SessionRepository, sessionRepository } from '@/features/sessions/.server/sessions.repository';
 import { Session } from '@/features/sessions/sessions.validation';
 
 export class SessionService {

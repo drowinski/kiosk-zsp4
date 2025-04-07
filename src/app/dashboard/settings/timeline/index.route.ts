@@ -1,7 +1,7 @@
 import type { Route } from './+types/index.route';
 import { redirect } from 'react-router';
 import { tryAsync } from '@/utils/try';
-import { timelineRepository } from '@/features/timeline/timeline.repository';
+import { timelineRepository } from '@/features/timeline/.server/timeline.repository';
 import { status, StatusCodes } from '@/utils/status-response';
 
 export async function loader({ context: { logger } }: Route.LoaderArgs) {
