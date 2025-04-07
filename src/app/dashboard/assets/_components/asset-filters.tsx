@@ -1,6 +1,5 @@
 import { Input } from '@/components/base/input';
 import { Card } from '@/components/base/card';
-import { useSearchParams } from '@/hooks/use-search-params';
 import { cn } from '@/utils/styles';
 import { Label } from '@/components/base/label';
 import { FilterIcon } from '@/components/icons';
@@ -8,55 +7,77 @@ import { Checkbox } from '@/components/base/checkbox';
 import { RangePicker } from '@/components/range-picker';
 import { useDebouncedCallback } from 'use-debounce';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
+import {
+  parseAsArrayOf,
+  parseAsBoolean,
+  parseAsInteger,
+  parseAsString,
+  parseAsStringLiteral,
+  useQueryState
+} from 'nuqs';
+import { ASSET_TYPE_ARRAY } from '@/features/assets/assets.constants';
+import { AssetType } from '@/features/assets/assets.validation';
 
 interface AssetFilterProps {
   className?: string;
 }
 
 export function AssetFilters({ className }: AssetFilterProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const yearRangeMin = 1915;
+  const yearRangeMax = 2025;
 
-  const setOrDeleteSearchParam = (searchParams: URLSearchParams, key: string, value: string) => {
-    if (value) {
-      searchParams.set(key, value);
-    } else {
-      searchParams.delete(key);
-    }
-  };
+  const [description, setDescription] = useQueryState(
+    'description',
+    parseAsString.withDefault('').withOptions({
+      shallow: false,
+      clearOnDefault: true
+    })
+  );
+  const [assetType, setAssetType] = useQueryState(
+    'assetType',
+    parseAsArrayOf(parseAsStringLiteral(ASSET_TYPE_ARRAY)).withDefault([]).withOptions({
+      shallow: false,
+      clearOnDefault: true
+    })
+  );
+  const [isPublished, setIsPublished] = useQueryState(
+    'isPublished',
+    parseAsBoolean.withOptions({
+      shallow: false,
+      clearOnDefault: true
+    })
+  );
+  const [minYear, setMinYear] = useQueryState(
+    'minYear',
+    parseAsInteger.withDefault(yearRangeMin).withOptions({
+      shallow: false,
+      clearOnDefault: true
+    })
+  );
+  const [maxYear, setMaxYear] = useQueryState(
+    'maxYear',
+    parseAsInteger.withDefault(yearRangeMax).withOptions({
+      shallow: false,
+      clearOnDefault: true
+    })
+  );
 
-  const updateDescription = useDebouncedCallback((description: string) => {
-    setSearchParams((prev) => {
-      prev.delete('page');
-      setOrDeleteSearchParam(prev, 'description', description);
-      return prev;
-    });
+  const setDescriptionDebounced = useDebouncedCallback(async (description: string) => {
+    await setDescription(description);
   }, 250);
 
-  const onAssetTypeCheckboxChange = (value: string, checked: boolean) => {
-    const assetTypeParam = searchParams.get('assetType');
-    const assetTypes = assetTypeParam?.split('_') || [];
-    if (!checked && assetTypes.includes(value)) {
-      assetTypes.splice(assetTypes.indexOf(value), 1);
-    } else if (checked && !assetTypes.includes(value)) {
-      assetTypes.push(value);
-    }
-    setSearchParams((prev) => {
-      prev.delete('page');
-      setOrDeleteSearchParam(prev, 'assetType', assetTypes.join('_'));
-      return prev;
+  const toggleAssetType = async (assetType: AssetType, enabled: boolean) => {
+    await setAssetType((prev) => {
+      const s = new Set(prev);
+      if (enabled) s.add(assetType);
+      else s.delete(assetType);
+      return Array.from(s);
     });
   };
 
-  const minYear = 1915;
-  const maxYear = 2025;
-
-  const updateYearRange = useDebouncedCallback((range: [number, number]) => {
-    setSearchParams((prev) => {
-      prev.delete('page');
-      setOrDeleteSearchParam(prev, 'minYear', range[0] !== minYear ? range[0].toString() : '');
-      setOrDeleteSearchParam(prev, 'maxYear', range[1] !== maxYear ? range[1].toString() : '');
-      return prev;
-    });
+  const setYearRangeDebounced = useDebouncedCallback(async (range: [number, number]) => {
+    await setMinYear(range.at(0) ?? null);
+    await setMaxYear(range.at(1) ?? null);
   }, 250);
 
   return (
@@ -72,11 +93,10 @@ export function AssetFilters({ className }: AssetFilterProps) {
         <Label>
           Według opisu
           <Input
-            key={searchParams.get('description')}
             type={'text'}
             placeholder={'Opis...'}
-            defaultValue={searchParams.get('description') ?? ''}
-            onChange={(event) => updateDescription(event.target.value)}
+            defaultValue={description ?? ''}
+            onChange={(event) => setDescriptionDebounced(event.target.value)}
           />
         </Label>
         <fieldset className={'flex flex-col gap-2 pt-2'}>
@@ -85,27 +105,32 @@ export function AssetFilters({ className }: AssetFilterProps) {
           </Label>
           <Label variant={'horizontal'}>
             <Checkbox
-              key={searchParams.get('assetType')}
-              defaultChecked={searchParams.get('assetType')?.split('_').includes('image')}
-              onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('image', checked)}
+              defaultChecked={assetType?.includes('image')}
+              onCheckedChange={(checked: boolean) => toggleAssetType('image', checked)}
               aria-label={'pokaż zdjęcia'}
             />
             Zdjęcia
           </Label>
           <Label variant={'horizontal'}>
             <Checkbox
-              key={searchParams.get('assetType')}
-              defaultChecked={searchParams.get('assetType')?.split('_').includes('video')}
-              onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('video', checked)}
+              defaultChecked={assetType?.includes('video')}
+              onCheckedChange={(checked: boolean) => toggleAssetType('video', checked)}
               aria-label={'pokaż filmy'}
             />
             Filmy
           </Label>
           <Label variant={'horizontal'}>
             <Checkbox
-              key={searchParams.get('assetType')}
-              defaultChecked={searchParams.get('assetType')?.split('_').includes('audio')}
-              onCheckedChange={(checked) => typeof checked === 'boolean' && onAssetTypeCheckboxChange('audio', checked)}
+              defaultChecked={assetType?.includes('document')}
+              onCheckedChange={(checked: boolean) => toggleAssetType('document', checked)}
+              aria-label={'pokaż dokumenty'}
+            />
+            Dokumenty
+          </Label>
+          <Label variant={'horizontal'}>
+            <Checkbox
+              defaultChecked={assetType?.includes('audio')}
+              onCheckedChange={(checked: boolean) => toggleAssetType('audio', checked)}
               aria-label={'pokaż dźwięki'}
             />
             Audio
@@ -114,15 +139,12 @@ export function AssetFilters({ className }: AssetFilterProps) {
         <Label className={'w-full'}>
           Status publikacji
           <Select
-            defaultValue={searchParams.get('isPublished') ?? 'none'}
-            onValueChange={(value) => {
-              setSearchParams((prev) => {
-                setOrDeleteSearchParam(prev, 'isPublished', value);
-                return prev;
-              });
+            defaultValue={isPublished !== null ? String(isPublished) : 'none'}
+            onValueChange={async (value) => {
+              await setIsPublished(value === 'true' ? true : value === 'false' ? false : null);
             }}
           >
-            <SelectTrigger className={'w-full'}/>
+            <SelectTrigger className={'w-full'} />
             <SelectContent>
               <SelectOption value={'none'}>Dowolny</SelectOption>
               <SelectOption value={'true'}>Opublikowane</SelectOption>
@@ -131,15 +153,11 @@ export function AssetFilters({ className }: AssetFilterProps) {
           </Select>
         </Label>
         <RangePicker
-          key={searchParams.get('minYear') + '' + searchParams.get('maxYear')}
           label={'Zakres lat'}
-          min={minYear}
-          max={maxYear}
-          defaultValue={[
-            searchParams.get('minYear') ? parseInt(searchParams.get('minYear')!) : minYear,
-            searchParams.get('maxYear') ? parseInt(searchParams.get('maxYear')!) : maxYear
-          ]}
-          onValueChange={updateYearRange}
+          min={yearRangeMin}
+          max={yearRangeMax}
+          defaultValue={[minYear, maxYear]}
+          onValueChange={setYearRangeDebounced}
         />
       </div>
     </Card>

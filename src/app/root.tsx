@@ -1,6 +1,7 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import './globals.css';
 import React, { useEffect } from 'react';
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v7';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   // Prevent default pinch to zoom
@@ -39,5 +40,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <NuqsAdapter>
+      <Outlet />
+    </NuqsAdapter>
+  );
 }

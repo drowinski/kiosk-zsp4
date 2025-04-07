@@ -1,5 +1,5 @@
 import type { Route } from './+types/edit-many.modal';
-import { Form, useLocation, useNavigate, useNavigation } from 'react-router';
+import { Form, redirect, useLocation, useNavigate, useNavigation } from 'react-router';
 import { assetRepository } from '@/features/assets/assets.repository';
 import { useForm } from '@conform-to/react';
 import { Asset, AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
@@ -154,7 +154,8 @@ export async function action({ request, context: { logger } }: Route.ActionArgs)
   }
 
   logger.info('Success.');
-  return { lastResult: submission.reply({ resetForm: true }) };
+  const callbackUrl = new URL(request.url).searchParams.get('callbackUrl');
+  return callbackUrl ? redirect(callbackUrl) : redirect('..');
 }
 
 export default function AssetEditModal({
@@ -169,8 +170,11 @@ export default function AssetEditModal({
   const navigation = useNavigation();
   const location = useLocation();
 
+  const callbackUrl: string = (location.state?.previousPathname ?? '') + (location.state?.previousSearch ?? '');
+  const navigateBack = () => navigate(callbackUrl || '..');
+
   const [form, fields] = useForm({
-    // lastResult: navigation.state === 'idle' ? actionData?.lastResult || null : null,
+    lastResult: navigation.state === 'idle' ? actionData?.lastResult || null : null,
     onValidate: ({ formData }) => {
       const result = parseWithZod(formData, { schema: assetEditManyFormSchema });
       console.log(result);
@@ -220,9 +224,7 @@ export default function AssetEditModal({
 
   return (
     <Modal
-      onOpenChange={(open) =>
-        !open && navigate(location.state?.previousPathname + location.state?.previousSearch || '..')
-      }
+      onOpenChange={(open) => !open && navigateBack()}
       defaultOpen
     >
       <ModalContent>
@@ -250,6 +252,7 @@ export default function AssetEditModal({
         </GalleryGrid>
         <Form
           method={'post'}
+          action={`${location.pathname}${location.search ? location.search + '&' : '?'}callbackUrl=${encodeURIComponent(callbackUrl)}`}
           id={form.id}
           onSubmit={form.onSubmit}
           noValidate

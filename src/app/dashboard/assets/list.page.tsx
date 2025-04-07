@@ -24,7 +24,7 @@ const loaderParamsSchema = z.object({
   description: assetSchema.shape.description.optional(),
   assetType: z
     .string()
-    .transform((assetType) => Array.from(new Set(assetType.split('_'))))
+    .transform((assetType) => Array.from(new Set(assetType.split(','))))
     .pipe(z.array(assetSchema.shape.assetType))
     .optional(),
   minYear: z.coerce

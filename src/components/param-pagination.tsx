@@ -7,7 +7,8 @@ import {
   PaginationNext,
   PaginationPrevious
 } from '@/components/base/pagination';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
+import { useEffect, useState } from 'react';
 
 interface ParamPaginationProps {
   itemCount: number;
@@ -17,7 +18,9 @@ interface ParamPaginationProps {
 
 export function ParamPagination({ itemCount, defaultPageSize = 3, maxVisiblePageLinks = 5 }: ParamPaginationProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
 
+  const [previousLocation, setPreviousLocation] = useState(location);
   const currentPage = parseInt(searchParams.get('page')!) || 0;
   const pageSize = parseInt(searchParams.get('pageSize')!) || defaultPageSize;
   const pageCount = Math.ceil(itemCount / pageSize);
@@ -30,6 +33,21 @@ export function ParamPagination({ itemCount, defaultPageSize = 3, maxVisiblePage
   previousPageSearchParams.set('page', (currentPage - 1).toString());
   const nextPageSearchParams = new URLSearchParams(searchParams);
   nextPageSearchParams.set('page', (currentPage + 1).toString());
+
+  useEffect(() => {
+    setPreviousLocation(location);
+    if (location.search === previousLocation.search) return;
+    const params = new URLSearchParams(location.search);
+    const previousParams = new URLSearchParams(previousLocation.search);
+    if (params.get('page') === '0') return;
+    if (params.get('page') !== previousParams.get('page')) return;
+    if (params.get('pageSize') !== previousParams.get('pageSize')) return;
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('page', '0');
+      return newParams;
+    });
+  }, [location, previousLocation, setSearchParams]);
 
   return (
     <Pagination>

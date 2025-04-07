@@ -47,8 +47,7 @@ const assetEditFormSchema = assetUpdateSchema
     isPublished: z
       .string()
       .transform((isPublished) => isPublished === 'true')
-      .pipe(assetUpdateSchema.shape.isPublished),
-    callbackUrl: z.string().min(1).optional()
+      .pipe(assetUpdateSchema.shape.isPublished)
   });
 
 export async function loader({ params, context: { logger } }: LoaderFunctionArgs) {
@@ -98,16 +97,15 @@ export async function action({ request, context: { logger } }: ActionFunctionArg
   }
   logger.info({ data: submission.value }, 'Form data parsed.');
 
-  const { callbackUrl, ...assetData } = submission.value;
-
   logger.info('Updating asset...');
-  const [, updateAssetOk, updateAssetError] = await tryAsync(assetService.updateAsset(assetData));
+  const [, updateAssetOk, updateAssetError] = await tryAsync(assetService.updateAsset(submission.value));
   if (!updateAssetOk) {
     logger.error(updateAssetError);
     return { lastResult: submission.reply({ formErrors: ['Błąd przy aktualizacji danych'] }) };
   }
 
   logger.info('Success.');
+  const callbackUrl = new URL(request.url).searchParams.get('callbackUrl');
   return callbackUrl ? redirect(callbackUrl) : redirect('..');
 }
 
@@ -121,7 +119,8 @@ export default function AssetEditModal() {
   const navigation = useNavigation();
   const location = useLocation();
 
-  const callbackUrl: string = location.state?.previousPathname ?? '' + location.state?.previousSearch ?? '';
+  const callbackUrl: string = (location.state?.previousPathname ?? '') + (location.state?.previousSearch ?? '');
+  const navigateBack = () => navigate(callbackUrl || '..');
 
   const [form, fields] = useForm({
     lastResult: navigation.state === 'idle' ? actionData?.lastResult || null : null,
@@ -133,7 +132,6 @@ export default function AssetEditModal() {
     constraint: getZodConstraint(assetEditFormSchema),
     shouldRevalidate: 'onInput',
     defaultValue: {
-      callbackUrl: callbackUrl,
       ...asset,
       isPublished: String(asset.isPublished),
       date: asset.date
@@ -170,8 +168,6 @@ export default function AssetEditModal() {
     [showDatePicker, dateMin, dateMax, datePrecision]
   );
 
-  const navigateBack = () => navigate(callbackUrl || '..');
-
   return (
     <Modal
       onOpenChange={(open) => !open && navigateBack()}
@@ -199,6 +195,7 @@ export default function AssetEditModal() {
         </div>
         <Form
           method={'post'}
+          action={`${location.pathname}?callbackUrl=${encodeURIComponent(callbackUrl)}`}
           id={form.id}
           onSubmit={form.onSubmit}
           noValidate
@@ -206,11 +203,6 @@ export default function AssetEditModal() {
           state={{ previousPathname: location.state?.previousPathname, previousSearch: location.state?.previousSearch }}
         >
           <InputErrorMessage>{form.errors}</InputErrorMessage>
-          <input
-            type={'hidden'}
-            name={fields.callbackUrl.name}
-            value={fields.callbackUrl.value}
-          />
           <input
             type={'hidden'}
             name={fields.id.name}

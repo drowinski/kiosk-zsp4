@@ -1,24 +1,24 @@
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
-import { useSearchParams } from 'react-router';
 import { cn } from '@/utils/styles';
+import { parseAsString, useQueryState } from 'nuqs';
 
 interface AssetSortDropdownProps {
   className?: string;
 }
 
 export function AssetSortDropdown({ className }: AssetSortDropdownProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [sort, setSort] = useQueryState(
+    'sort',
+    parseAsString.withDefault('updatedAt_desc').withOptions({
+      shallow: false,
+      clearOnDefault: true
+    })
+  );
 
   return (
     <Select
-      defaultValue={searchParams.get('sort') || 'updatedAt_desc'}
-      onValueChange={(value) =>
-        setSearchParams((prev) => {
-          prev.delete('page');
-          prev.set('sort', value);
-          return prev;
-        })
-      }
+      value={sort}
+      onValueChange={setSort}
     >
       <SelectTrigger className={'min-w-64'} />
       <SelectContent
