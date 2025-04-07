@@ -2,7 +2,7 @@ import React, { ReactEventHandler, useCallback, useEffect, useRef, useState } fr
 import { Button } from '@/components/base/button';
 import { ProgressBar } from '@/components/base/progress-bar';
 import { Slider } from '@/components/base/slider';
-import { PauseIcon, PlayIcon, VolumeIcon } from '@/components/icons';
+import { PauseIcon, PlayIcon, VolumeIcon, VolumeOffIcon } from '@/components/icons';
 import { cn } from '@/utils/styles';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/base/popover';
 
@@ -193,11 +193,9 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button size={'icon'}>
-                  <VolumeIcon />
-                </Button>
+                <Button size={'icon'}>{volume === 0 ? <VolumeOffIcon /> : <VolumeIcon />}</Button>
               </PopoverTrigger>
-              <PopoverContent className={'h-fit w-fit'}>
+              <PopoverContent className={'h-fit w-fit border-none bg-transparent shadow-none'}>
                 <Slider
                   className={'min-h-64'}
                   orientation={'vertical'}
