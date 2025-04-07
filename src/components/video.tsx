@@ -4,7 +4,6 @@ import { ProgressBar } from '@/components/base/progress-bar';
 import { Slider } from '@/components/base/slider';
 import { PauseIcon, PlayIcon, VolumeIcon, VolumeOffIcon } from '@/components/icons';
 import { cn } from '@/utils/styles';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/base/popover';
 
 interface VideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
   showPlayOverlay?: boolean;
@@ -31,21 +30,21 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
   };
 
   const togglePlay = (force?: boolean) => {
-    const videoElement = videoRef.current;
-    if (!videoElement) return;
+    const video = videoRef.current;
+    if (!video) return;
 
     if (force !== undefined && force) {
-      videoElement.play();
+      video.play();
       return;
     } else if (force !== undefined && !force) {
-      videoElement.pause();
+      video.pause();
       return;
     }
 
-    if (videoElement.paused || videoElement.ended) {
-      videoElement.play();
+    if (video.paused || video.ended) {
+      video.play();
     } else {
-      videoElement.pause();
+      video.pause();
     }
   };
 
@@ -182,7 +181,7 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
         </Button>
       ) : (
         <div className={'swiper-no-swiping absolute bottom-2 left-2 right-2 flex flex-col gap-2'}>
-          <div className={'flex w-full justify-between gap-1'}>
+          <div className={'flex w-full justify-between gap-1 items-end'}>
             <Button
               size={'icon'}
               onClick={() => togglePlay()}
@@ -190,24 +189,20 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
             >
               {isPaused ? <PlayIcon /> : <PauseIcon />}
             </Button>
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button size={'icon'}>{volume === 0 ? <VolumeOffIcon /> : <VolumeIcon />}</Button>
-              </PopoverTrigger>
-              <PopoverContent className={'h-fit w-fit border-none bg-transparent shadow-none'}>
-                <Slider
-                  className={'min-h-64'}
-                  orientation={'vertical'}
-                  value={[volume]}
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  onValueChange={(value) => setVolume(value[0])}
-                  aria-label={'Suwak głośności'}
-                />
-              </PopoverContent>
-            </Popover>
+            <div className={'flex gap-1 max-w-[50%] items-center'}>
+              <Slider
+                className={'max-w-full w-32'}
+                value={[volume]}
+                min={0}
+                max={1}
+                step={0.05}
+                onValueChange={(value) => setVolume(value[0])}
+                aria-label={'Suwak głośności'}
+              />
+              <div className={'h-fit w-fit rounded-lg bg-primary p-1 text-primary-foreground'}>
+                {volume === 0 ? <VolumeOffIcon /> : <VolumeIcon />}
+              </div>
+            </div>
           </div>
           <ProgressBar
             ref={progressBarRef}
