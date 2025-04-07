@@ -9,7 +9,7 @@ const labelVariants = cva(
   {
     variants: {
       variant: {
-        vertical: 'flex-col gap-1 w-fit items-start',
+        vertical: 'flex-col gap-1.5 w-fit items-start',
         horizontal: 'flex-row gap-2 items-center w-fit'
       }
     },

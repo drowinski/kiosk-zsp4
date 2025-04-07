@@ -112,7 +112,7 @@ export function AssetFilters({ className }: AssetFilterProps) {
           </Label>
         </fieldset>
         <Label className={'w-full'}>
-          <span className={'inline-flex gap-1'}>Status publikacji</span>
+          Status publikacji
           <Select
             defaultValue={searchParams.get('isPublished') ?? 'none'}
             onValueChange={(value) => {

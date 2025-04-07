@@ -34,6 +34,7 @@ import { tryAsync } from '@/utils/try';
 import { z } from '@/lib/zod';
 import { Asset } from '@/features/assets/components/asset';
 import { ClientOnly } from 'remix-utils/client-only';
+import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 
 const assetEditFormSchema = assetUpdateSchema
   .pick({
@@ -43,6 +44,10 @@ const assetEditFormSchema = assetUpdateSchema
     tagIds: true
   })
   .extend({
+    isPublished: z
+      .string()
+      .transform((isPublished) => isPublished === 'true')
+      .pipe(assetUpdateSchema.shape.isPublished),
     callbackUrl: z.string().min(1).optional()
   });
 
@@ -130,6 +135,7 @@ export default function AssetEditModal() {
     defaultValue: {
       callbackUrl: callbackUrl,
       ...asset,
+      isPublished: String(asset.isPublished),
       date: asset.date
         ? {
             dateMin: getYYYYMMDD(asset.date.dateMin),
@@ -180,7 +186,7 @@ export default function AssetEditModal() {
             <DialogDescription>Edycja metadanych zawartości multimedialnej</DialogDescription>
           </VisuallyHidden>
         </ModalHeader>
-        <div className={'flex max-h-60 max-w-full h-60 items-start justify-center overflow-hidden'}>
+        <div className={'flex h-60 max-h-60 max-w-full items-start justify-center overflow-hidden'}>
           <ClientOnly>
             {() => (
               <Asset
@@ -196,7 +202,7 @@ export default function AssetEditModal() {
           id={form.id}
           onSubmit={form.onSubmit}
           noValidate
-          className={'flex grow flex-col gap-2'}
+          className={'flex grow flex-col gap-3'}
           state={{ previousPathname: location.state?.previousPathname, previousSearch: location.state?.previousSearch }}
         >
           <InputErrorMessage>{form.errors}</InputErrorMessage>
@@ -210,16 +216,19 @@ export default function AssetEditModal() {
             name={fields.id.name}
             value={fields.id.value}
           />
-          <Label htmlFor={fields.description.id}>Opis</Label>
-          <TextArea
-            key={fields.description.key}
-            id={fields.description.id}
-            name={fields.description.name}
-            defaultValue={fields.description.initialValue}
-            placeholder={'Opis'}
-            className={'h-32 resize-none'}
-            maxLength={512}
-          />
+          <Label className={'w-full'}>
+            Opis
+            <TextArea
+              key={fields.description.key}
+              id={fields.description.id}
+              name={fields.description.name}
+              defaultValue={fields.description.initialValue}
+              placeholder={'Opis'}
+              className={'h-32 resize-none'}
+              maxLength={512}
+            />
+          </Label>
+          <InputErrorMessage>{fields.description.errors}</InputErrorMessage>
           <fieldset className={'flex flex-col gap-1 pt-1'}>
             <Label asChild>
               <legend>Tagi</legend>
@@ -229,8 +238,9 @@ export default function AssetEditModal() {
               initialSelectedTags={tags}
               name={fields.tagIds.name}
             />
+            <InputErrorMessage>{fields.tagIds.errors}</InputErrorMessage>
           </fieldset>
-          <fieldset className={'flex flex-col gap-1 pt-1'}>
+          <fieldset className={'flex flex-col gap-1 rounded-xl border border-muted p-4 pt-3'}>
             <Label asChild>
               <legend>Data</legend>
             </Label>
@@ -256,6 +266,20 @@ export default function AssetEditModal() {
               }}
             />
           </fieldset>
+          <Label>
+            Status publikacji
+            <Select
+              defaultValue={fields.isPublished.initialValue}
+              name={fields.isPublished.name}
+            >
+              <SelectTrigger className={'w-full'} />
+              <SelectContent>
+                <SelectOption value={'true'}>Opublikowane</SelectOption>
+                <SelectOption value={'false'}>Ukryte</SelectOption>
+              </SelectContent>
+            </Select>
+          </Label>
+          <InputErrorMessage>{fields.isPublished.errors}</InputErrorMessage>
           <Button
             type={'submit'}
             variant={'success'}
