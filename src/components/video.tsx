@@ -11,8 +11,11 @@ interface VideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
 }
 
 export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true, ...props }: VideoProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
+
+  const [wrapperFillDimension, setWrapperFillDimension] = useState<'width' | 'height'>('width');
 
   const [isPaused, setIsPaused] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -100,14 +103,61 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
     };
   }, [handleScrubEnd, isPointerDownOnProgressBar]);
 
+  const resize = useCallback(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const wrapperWidth = wrapper.getBoundingClientRect().width;
+    const wrapperHeight = wrapper.getBoundingClientRect().height;
+
+    const parent = wrapper.parentElement;
+    if (parent) {
+      const parentStyle = window.getComputedStyle(parent);
+      const parentWidth =
+        parent.getBoundingClientRect().width -
+        (parseFloat(parentStyle.paddingLeft) + parseFloat(parentStyle.paddingRight));
+      const parentHeight =
+        parent.getBoundingClientRect().height -
+        (parseFloat(parentStyle.paddingTop) + parseFloat(parentStyle.paddingBottom));
+
+      const parentAspectRatio = parentWidth / parentHeight;
+      const wrapperAspectRatio = wrapperWidth / wrapperHeight;
+
+      if (parentAspectRatio < wrapperAspectRatio) {
+        setWrapperFillDimension('width');
+      } else {
+        setWrapperFillDimension('height');
+      }
+    } else {
+      setWrapperFillDimension('width');
+    }
+  }, []);
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    const wrapperParent = wrapperRef.current?.parentElement;
+    if (!wrapper || !wrapperParent) return;
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(wrapper);
+    resizeObserver.observe(wrapperParent);
+    resize();
+    return () => resizeObserver.disconnect();
+  }, [resize]);
+
   return (
-    <div className={cn('relative h-full w-fit overflow-hidden rounded-xl', className)}>
-      {/*TODO: Fix scaling issues*/}
+    <div
+      ref={wrapperRef}
+      className={cn(
+        'relative overflow-hidden rounded-xl',
+        wrapperFillDimension === 'width' && 'h-fit w-full',
+        wrapperFillDimension === 'height' && 'h-full w-fit',
+        className
+      )}
+    >
       <video
         ref={videoRef}
         src={src}
         controls={false}
-        className={'max-h-full max-w-full'}
+        className={'h-full w-full'}
         onPlay={() => setIsPaused(false)}
         onPause={() => setIsPaused(true)}
         onClick={() => togglePlay()}
