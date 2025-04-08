@@ -6,7 +6,6 @@ import { PgSelect } from 'drizzle-orm/pg-core';
 import { assetTagJunctionTable, tagTable } from '@/features/tags/.server/tags.db';
 import { Tag } from '@/features/tags/tags.schemas';
 import { Transaction } from '@/lib/.server/db/types';
-import { logger } from '@/lib/.server/logging';
 
 export interface AssetFiltering {
   assetType?: AssetType[];
@@ -14,6 +13,7 @@ export interface AssetFiltering {
   dateMin?: Date;
   dateMax?: Date;
   isPublished?: boolean;
+  tagIds?: number[];
 }
 
 export interface AssetSorting {
@@ -55,119 +55,81 @@ export interface AssetRepository {
 }
 
 export class DrizzleAssetRepository implements AssetRepository {
-  async getAssetById(id: number): Promise<Asset | null> {
-    const assets = await db
+  private readonly assetJsonTags = db.$with('asset_json_tags').as(
+    db
       .select({
-        ...getTableColumns(assetTable),
-        date: {
-          ...getTableColumns(dateTable)
-        },
+        assetId: assetTagJunctionTable.assetId,
         tags: sql<
           Tag[]
-        >`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
-          'tags'
+        >`COALESCE(JSONB_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::jsonb)`.as(
+          'json_tags'
         )
       })
-      .from(assetTable)
-      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
-      .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
-      .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
-      .groupBy(assetTable.id, dateTable.id)
-      .where(eq(assetTable.id, id));
+      .from(assetTagJunctionTable)
+      .leftJoin(tagTable, eq(assetTagJunctionTable.tagId, tagTable.id))
+      .groupBy(assetTagJunctionTable.assetId)
+  );
+  private readonly fullSelectQuery = db
+    .with(this.assetJsonTags)
+    .select({
+      ...getTableColumns(assetTable),
+      date: {
+        ...getTableColumns(dateTable)
+      },
+      tags: sql<Tag[]>`COALESCE(${this.assetJsonTags.tags}, '[]'::jsonb)`.as('tags')
+    })
+    .from(assetTable)
+    .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
+    .leftJoin(this.assetJsonTags, eq(this.assetJsonTags.assetId, assetTable.id));
 
-    return assets.at(0) ?? null;
+  async getAssetById(id: number): Promise<Asset | null> {
+    const [asset] = await this.fullSelectQuery.where(eq(assetTable.id, id));
+
+    return asset ?? null;
   }
 
   async getAssetsByIds(...ids: number[]): Promise<Asset[]> {
-    return db
-      .select({
-        ...getTableColumns(assetTable),
-        date: {
-          ...getTableColumns(dateTable)
-        },
-        tags: sql<
-          Tag[]
-        >`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
-          'tags'
-        )
-      })
-      .from(assetTable)
-      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
-      .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
-      .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
-      .groupBy(assetTable.id, dateTable.id)
-      .where(inArray(assetTable.id, ids));
+    return this.fullSelectQuery.where(inArray(assetTable.id, ids));
   }
 
   async getAssets(options?: AssetGetOptions): Promise<Asset[]> {
-    const query = db
-      .select({
-        ...getTableColumns(assetTable),
-        date: {
-          ...getTableColumns(dateTable)
-        },
-        tags: sql<
-          Tag[]
-        >`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
-          'tags'
-        )
-      })
-      .from(assetTable)
-      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
-      .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
-      .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
-      .groupBy(assetTable.id, dateTable.id)
-      .orderBy(desc(assetTable.id));
+    const query = this.fullSelectQuery.orderBy(desc(assetTable.id));
 
     return options ? this.buildQueryWithOptions(query.$dynamic(), options) : query;
   }
 
-  async getRandomAssets(count: number, options?: AssetGetOptions): Promise<Asset[]> {
-    const query = db
-      .select({
-        ...getTableColumns(assetTable),
-        date: {
-          ...getTableColumns(dateTable)
-        },
-        tags: sql<
-          Tag[]
-        >`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
-          'tags'
-        )
-      })
-      .from(assetTable)
-      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
-      .leftJoin(assetTagJunctionTable, eq(assetTagJunctionTable.assetId, assetTable.id))
-      .leftJoin(tagTable, eq(tagTable.id, assetTagJunctionTable.tagId))
-      .groupBy(assetTable.id, dateTable.id)
-      .orderBy(sql`random()`)
-      .limit(count);
+  async getRandomAssets(count: number, options?: Omit<AssetGetOptions, 'sorting'>): Promise<Asset[]> {
+    const query = this.fullSelectQuery.orderBy(sql`random()`).limit(count);
 
     return options ? this.buildQueryWithOptions(query.$dynamic(), options) : query;
   }
 
   async getAssetCount(options?: Omit<AssetGetOptions, 'sorting'>): Promise<number> {
     const query = db
+      .with(this.assetJsonTags)
       .select({ count: count() })
       .from(assetTable)
-      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id));
+      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id))
+      .leftJoin(this.assetJsonTags, eq(this.assetJsonTags.assetId, assetTable.id));
 
-    const result = options ? await this.buildQueryWithOptions(query.$dynamic(), options) : await query;
+    const [result] = options ? await this.buildQueryWithOptions(query.$dynamic(), options) : await query;
 
-    return result.at(0)?.count || 0;
+    return result?.count ?? 0;
   }
 
   private buildQueryWithOptions<T extends PgSelect>(query: T, options: AssetGetOptions): T {
     if (options.filters) {
-      const { assetType, description, dateMin, dateMax, isPublished } = options.filters;
-      logger.info({ isPublished, t: typeof isPublished });
+      const { assetType, description, dateMin, dateMax, isPublished, tagIds } = options.filters;
       query = query.where(
         and(
-          assetType && assetType.length > 0 ? inArray(assetTable.assetType, assetType) : undefined,
-          description ? ilike(assetTable.description, `%${description}%`) : undefined,
-          dateMin ? gte(dateTable.dateMax, dateMin) : undefined,
-          dateMax ? lte(dateTable.dateMin, dateMax) : undefined,
-          isPublished !== undefined ? eq(assetTable.isPublished, isPublished) : undefined
+          assetType !== undefined && assetType.length > 0 ? inArray(assetTable.assetType, assetType) : undefined,
+          description !== undefined ? ilike(assetTable.description, `%${description}%`) : undefined,
+          dateMin !== undefined ? gte(dateTable.dateMax, dateMin) : undefined,
+          dateMax !== undefined ? lte(dateTable.dateMin, dateMax) : undefined,
+          isPublished !== undefined ? eq(assetTable.isPublished, isPublished) : undefined,
+          tagIds !== undefined
+            ? sql`${this.assetJsonTags.tags} @> '${sql.raw(JSON.stringify(tagIds.map((id) => ({ id }))))}'::jsonb`
+            : undefined
         )
       );
     }

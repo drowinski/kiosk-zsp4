@@ -37,6 +37,11 @@ const loaderParamsSchema = z.object({
     .positive()
     .transform((maxYear) => new Date(maxYear, 11, 31))
     .optional(),
+  tagIds: z
+    .string()
+    .transform((tagIds) => Array.from(new Set(tagIds.split(','))))
+    .pipe(z.array(tagSchema.shape.id))
+    .optional(),
   isPublished: z
     .enum(['true', 'false'])
     .transform((isPublished) => isPublished === 'true')
@@ -84,7 +89,8 @@ export async function loader({ request, context: { logger } }: Route.LoaderArgs)
     assetType: params?.assetType ?? undefined,
     dateMin: params?.minYear ?? undefined,
     dateMax: params?.maxYear ?? undefined,
-    isPublished: params?.isPublished ?? undefined
+    isPublished: params?.isPublished ?? undefined,
+    tagIds: params?.tagIds ?? undefined
   };
 
   logger.info('Getting asset count...');
