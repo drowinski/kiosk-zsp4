@@ -16,7 +16,7 @@ import {
   useQueryState
 } from 'nuqs';
 import { ASSET_TYPE_ARRAY } from '@/features/assets/assets.constants';
-import { AssetType } from '@/features/assets/assets.validation';
+import { AssetType } from '@/features/assets/assets.schemas';
 
 interface AssetFilterProps {
   className?: string;

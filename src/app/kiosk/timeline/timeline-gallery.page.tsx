@@ -9,12 +9,12 @@ import { Card } from '@/components/base/card';
 import { ChevronLeftIcon, ChevronRightIcon, InfoIcon, XIcon } from '@/components/icons';
 import { formatDate } from '@/features/assets/utils/dates';
 import { Button } from '@/components/base/button';
-import { Asset } from '@/features/assets/assets.validation';
-import { tagSchema } from '@/features/tags/tags.validation';
+import { Asset } from '@/features/assets/assets.schemas';
+import { tagSchema } from '@/features/tags/tags.schemas';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogOverlay, DialogTitle } from '@radix-ui/react-dialog';
 import { cn } from '@/utils/styles';
-import { timelineRangeSchema } from '@/features/timeline/timeline.validation';
+import { timelineRangeSchema } from '@/features/timeline/timeline.schemas';
 import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';
 

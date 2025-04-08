@@ -8,7 +8,7 @@ import { Label } from '@/components/base/label';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
 import { PlusIcon } from '@/components/icons';
-import { assetSchema } from '@/features/assets/assets.validation';
+import { assetSchema } from '@/features/assets/assets.schemas';
 import { z } from '@/lib/zod';
 import { assetService } from '@/features/assets/.server/assets.service';
 import { tryAsync } from '@/utils/try';
@@ -16,7 +16,7 @@ import { status, StatusCodes } from '@/utils/status-response';
 import { AssetSortDropdown } from '@/app/dashboard/assets/_components/asset-sort-dropdown';
 import { AssetSelectionTools, useAssetSelection } from '@/app/dashboard/assets/_components/asset-selection-tools';
 import { tagRepository } from '@/features/tags/.server/tags.repository';
-import { tagSchema } from '@/features/tags/tags.validation';
+import { tagSchema } from '@/features/tags/tags.schemas';
 
 const DEFAULT_PAGE_SIZE = 10;
 

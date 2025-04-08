@@ -10,11 +10,11 @@ import {
 } from 'react-router';
 import { Input, InputErrorMessage } from '@/components/base/input';
 import { getYYYYMMDD } from '@/utils/dates';
-import { TimelineRange, timelineRangeSchema, updateTimelineRangeSchema } from '@/features/timeline/timeline.validation';
+import { TimelineRange, timelineRangeSchema, updateTimelineRangeSchema } from '@/features/timeline/timeline.schemas';
 import { timelineRepository } from '@/features/timeline/.server/timeline.repository';
 import { SubmissionResult, useForm, useInputControl } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
-import { Asset } from '@/features/assets/assets.validation';
+import { Asset } from '@/features/assets/assets.schemas';
 import { Button } from '@/components/base/button';
 import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle, ModalTrigger } from '@/components/base/modal';
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';

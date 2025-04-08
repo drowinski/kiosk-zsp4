@@ -3,10 +3,10 @@ import { Button } from '@/components/base/button';
 import { Link, LinkProps } from 'react-router';
 import { EditIcon, MinusIcon, PlusIcon, TagIcon } from '@/components/icons';
 import { AssetDeleteModal } from '@/app/dashboard/assets/_components/asset-delete-modal';
-import { Asset } from '@/features/assets/assets.validation';
+import { Asset } from '@/features/assets/assets.schemas';
 import { useEffect, useMemo, useState } from 'react';
 import { TagCombobox } from '@/features/tags/components/tag-selector';
-import { Tag } from '@/features/tags/tags.validation';
+import { Tag } from '@/features/tags/tags.schemas';
 import { cn } from '@/utils/styles';
 
 export function useAssetSelection(assets: Asset[]) {

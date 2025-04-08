@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { EditIcon, PlusIcon } from '@/components/icons';
 import { Button } from '@/components/base/button';
 import { TagDeleteModal } from '@/app/dashboard/settings/tags/_components/tag-delete-modal';
-import { tagSchema } from '@/features/tags/tags.validation';
+import { tagSchema } from '@/features/tags/tags.schemas';
 import { z } from '@/lib/zod';
 
 const tagDeleteRequestSchema = z.object({ id: tagSchema.shape.id });

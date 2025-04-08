@@ -14,7 +14,7 @@ import { Input, InputErrorMessage } from '@/components/base/input';
 import { Label } from '@/components/base/label';
 import { Button } from '@/components/base/button';
 import { tagRepository } from '@/features/tags/.server/tags.repository';
-import { createTagSchema } from '@/features/tags/tags.validation';
+import { createTagSchema } from '@/features/tags/tags.schemas';
 import { tryAsync } from '@/utils/try';
 
 const tagCreateFormSchema = createTagSchema;

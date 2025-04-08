@@ -3,7 +3,7 @@ import {
   UpdatedUserWithPasswordHash,
   User,
   UserWithPasswordHash
-} from '@/features/users/users.validation';
+} from '@/features/users/users.schemas';
 import { db } from '@/lib/.server/db/connection';
 import { userTable } from '@/features/users/.server/users.db';
 import { eq, getTableColumns } from 'drizzle-orm';

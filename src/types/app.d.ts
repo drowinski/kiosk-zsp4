@@ -1,5 +1,5 @@
 import { pino } from 'pino';
-import { Session } from '@/features/sessions/sessions.validation';
+import { Session } from '@/features/sessions/sessions.schemas';
 
 declare module 'express-serve-static-core' {
   interface Request {

@@ -3,7 +3,7 @@ import { ReadStream } from 'node:fs';
 import { FileManager } from '@/lib/.server/files';
 import { env } from '@/lib/.server/env';
 import * as crypto from 'node:crypto';
-import { AssetType, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
+import { AssetType, NewAsset, UpdatedAsset } from '@/features/assets/assets.schemas';
 import * as mime from 'mime-types';
 import * as path from 'node:path';
 import { tryAsync } from '@/utils/try';

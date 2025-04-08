@@ -1,4 +1,4 @@
-import { Tag } from '@/features/tags/tags.validation';
+import { Tag } from '@/features/tags/tags.schemas';
 import { cn } from '@/utils/styles';
 import React, { Fragment, useMemo, useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/base/popover';

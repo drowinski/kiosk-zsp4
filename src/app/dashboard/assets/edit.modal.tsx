@@ -11,7 +11,7 @@ import {
 } from 'react-router';
 import { assetRepository } from '@/features/assets/.server/assets.repository';
 import { useForm } from '@conform-to/react';
-import { AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
+import { AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.schemas';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
 import { Button } from '@/components/base/button';
 import { CheckIcon, PencilIcon } from '@/components/icons';

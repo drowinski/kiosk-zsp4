@@ -10,7 +10,7 @@ import {
   LoaderFunctionArgs,
   redirect
 } from 'react-router';
-import { updateUserSchema } from '@/features/users/users.validation';
+import { updateUserSchema } from '@/features/users/users.schemas';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { userRepository } from '@/features/users/.server/users.repository';

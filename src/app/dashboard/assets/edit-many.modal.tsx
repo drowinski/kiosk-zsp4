@@ -2,7 +2,7 @@ import type { Route } from './+types/edit-many.modal';
 import { Form, redirect, useLocation, useNavigate, useNavigation } from 'react-router';
 import { assetRepository } from '@/features/assets/.server/assets.repository';
 import { useForm } from '@conform-to/react';
-import { Asset, AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.validation';
+import { Asset, AssetDatePrecision, assetUpdateSchema } from '@/features/assets/assets.schemas';
 import { getZodConstraint, parseWithZod } from '@conform-to/zod';
 import { Button } from '@/components/base/button';
 import { CheckIcon, EllipsisIcon, PencilIcon } from '@/components/icons';

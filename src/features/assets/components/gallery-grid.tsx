@@ -1,6 +1,6 @@
 import { cn } from '@/utils/styles';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Asset } from '@/features/assets/assets.validation';
+import { Asset } from '@/features/assets/assets.schemas';
 import { formatDate } from '@/features/assets/utils/dates';
 import { CircleExclamationIcon, SpinnerIcon } from '@/components/icons';
 import { getAssetThumbnailUri } from '@/features/assets/utils/uris';

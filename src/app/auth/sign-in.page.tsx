@@ -2,7 +2,7 @@ import type { Route } from './+types/sign-in.page';
 import { data, Form, useNavigation, redirect } from 'react-router';
 import { useForm } from '@conform-to/react';
 import { z } from '@/lib/zod';
-import { userPasswordSchema, userSchema } from '@/features/users/users.validation';
+import { userPasswordSchema, userSchema } from '@/features/users/users.schemas';
 import { parseWithZod } from '@conform-to/zod';
 import { userService } from '@/features/users/.server/users.service';
 import { Card } from '@/components/base/card';

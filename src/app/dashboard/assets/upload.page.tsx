@@ -6,7 +6,7 @@ import { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { useFetcher } from 'react-router';
 import { tryAsync } from '@/utils/try';
 import { z } from '@/lib/zod';
-import { assetCreateSchema } from '@/features/assets/assets.validation';
+import { assetCreateSchema } from '@/features/assets/assets.schemas';
 import { useForm } from '@conform-to/react';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';

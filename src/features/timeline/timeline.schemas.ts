@@ -1,5 +1,5 @@
 import { z } from '@/lib/zod';
-import { assetBaseSchema } from '@/features/assets/assets.validation';
+import { assetBaseSchema } from '@/features/assets/assets.schemas';
 
 const baseTimelineRangeSchema = z.object({
   id: z.coerce.number().positive().int(),

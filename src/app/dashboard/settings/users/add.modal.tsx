@@ -9,7 +9,7 @@ import {
   LoaderFunctionArgs,
   redirect
 } from 'react-router';
-import { createUserSchema } from '@/features/users/users.validation';
+import { createUserSchema } from '@/features/users/users.schemas';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { Input, InputDescription, InputErrorMessage } from '@/components/base/input';

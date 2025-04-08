@@ -1,10 +1,10 @@
-import { Asset, AssetType, BaseAsset, NewAsset, UpdatedAsset } from '@/features/assets/assets.validation';
+import { Asset, AssetType, BaseAsset, NewAsset, UpdatedAsset } from '@/features/assets/assets.schemas';
 import { db } from '@/lib/.server/db/connection';
 import { assetTable, dateTable } from '@/features/assets/.server/assets.db';
 import { and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, lte, notInArray, sql } from 'drizzle-orm';
 import { PgSelect } from 'drizzle-orm/pg-core';
 import { assetTagJunctionTable, tagTable } from '@/features/tags/.server/tags.db';
-import { Tag } from '@/features/tags/tags.validation';
+import { Tag } from '@/features/tags/tags.schemas';
 import { Transaction } from '@/lib/.server/db/types';
 import { logger } from '@/lib/.server/logging';
 

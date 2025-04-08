@@ -1,4 +1,4 @@
-import { AssetDatePrecision, UpdatedAssetDate } from '@/features/assets/assets.validation';
+import { AssetDatePrecision, UpdatedAssetDate } from '@/features/assets/assets.schemas';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 import { DATE_PRECISION_ARRAY, DATE_PRECISION_ARRAY_IN_POLISH, MONTHS_IN_POLISH } from '@/lib/constants';
 import { Fragment, useEffect, useState } from 'react';

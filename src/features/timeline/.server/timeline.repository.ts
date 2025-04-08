@@ -1,11 +1,11 @@
-import { NewTimelineRange, TimelineRange, UpdatedTimelineRange } from '@/features/timeline/timeline.validation';
+import { NewTimelineRange, TimelineRange, UpdatedTimelineRange } from '@/features/timeline/timeline.schemas';
 import { db } from '@/lib/.server/db/connection';
 import { timelineRangeTable } from '@/features/timeline/.server/timeline.db';
 import { and, asc, eq, exists, getTableColumns, isNotNull, sql } from 'drizzle-orm';
 import { assetTable, dateTable } from '@/features/assets/.server/assets.db';
-import { Asset } from '@/features/assets/assets.validation';
+import { Asset } from '@/features/assets/assets.schemas';
 import { assetTagJunctionTable, tagTable } from '@/features/tags/.server/tags.db';
-import { Tag } from '@/features/tags/tags.validation';
+import { Tag } from '@/features/tags/tags.schemas';
 
 export interface TimelineRepository {
   getTimelineRangeById(id: number): Promise<TimelineRange | null>;

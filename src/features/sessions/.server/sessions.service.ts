@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { SessionRepository, sessionRepository } from '@/features/sessions/.server/sessions.repository';
-import { Session } from '@/features/sessions/sessions.validation';
+import { Session } from '@/features/sessions/sessions.schemas';
 
 export class SessionService {
   private readonly sessionsRepository: SessionRepository;

@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/base/button';
 import { CheckIcon, EditIcon, PlusIcon, XIcon } from '@/components/icons';
 import { UserDeleteModal } from '@/app/dashboard/settings/users/_components/user-delete-modal';
-import { updateUserSchema } from '@/features/users/users.validation';
+import { updateUserSchema } from '@/features/users/users.schemas';
 import { status, StatusCodes } from '@/utils/status-response';
 
 const userDeleteRequestSchema = updateUserSchema.pick({ id: true });

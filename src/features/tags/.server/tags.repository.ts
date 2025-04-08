@@ -1,4 +1,4 @@
-import { NewTag, Tag, UpdatedTag } from '@/features/tags/tags.validation';
+import { NewTag, Tag, UpdatedTag } from '@/features/tags/tags.schemas';
 import { db } from '@/lib/.server/db/connection';
 import { assetTagJunctionTable, tagTable } from '@/features/tags/.server/tags.db';
 import { and, eq, inArray } from 'drizzle-orm';

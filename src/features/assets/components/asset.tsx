@@ -1,5 +1,5 @@
 import { cn } from '@/utils/styles';
-import { AssetType } from '@/features/assets/assets.validation';
+import { AssetType } from '@/features/assets/assets.schemas';
 import { Video } from '@/components/video';
 import { Document } from '@/components/document.client';
 

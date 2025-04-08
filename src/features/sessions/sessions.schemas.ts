@@ -1,5 +1,5 @@
 import { z } from '@/lib/zod';
-import { userSchema } from '@/features/users/users.validation';
+import { userSchema } from '@/features/users/users.schemas';
 
 export const sessionBaseSchema = z.object({
   id: z.string().length(64),

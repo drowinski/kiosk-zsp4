@@ -1,5 +1,5 @@
 import { userRepository, UserRepository } from '@/features/users/.server/users.repository';
-import { UpdatedUser, User } from '@/features/users/users.validation';
+import { UpdatedUser, User } from '@/features/users/users.schemas';
 import { hashPassword, verifyPassword } from '@/lib/.server/crypto';
 
 export class UserService {

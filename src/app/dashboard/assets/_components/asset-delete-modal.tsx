@@ -2,7 +2,7 @@ import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle, ModalTr
 import { Button } from '@/components/base/button';
 import { TrashIcon } from '@/components/icons';
 import { useState } from 'react';
-import { Asset } from '@/features/assets/assets.validation';
+import { Asset } from '@/features/assets/assets.schemas';
 import { applyDeclension } from '@/utils/language';
 
 interface AssetDeleteModalProps {

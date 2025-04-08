@@ -1,4 +1,4 @@
-import { NewSession, Session } from '@/features/sessions/sessions.validation';
+import { NewSession, Session } from '@/features/sessions/sessions.schemas';
 import { db } from '@/lib/.server/db/connection';
 import { sessionTable } from '@/features/sessions/.server/sessions.db';
 import { userTable } from '@/features/users/.server/users.db';

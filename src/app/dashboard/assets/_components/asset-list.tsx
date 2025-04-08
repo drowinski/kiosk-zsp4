@@ -1,4 +1,4 @@
-import { Asset } from '@/features/assets/assets.validation';
+import { Asset } from '@/features/assets/assets.schemas';
 import React from 'react';
 import { cn } from '@/utils/styles';
 import { Card } from '@/components/base/card';

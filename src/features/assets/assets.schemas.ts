@@ -1,7 +1,7 @@
 import { z } from '@/lib/zod';
 import { ASSET_TYPE_ARRAY, DATE_PRECISION_ARRAY } from '@/features/assets/assets.constants';
 import { truncateDate } from '@/features/assets/utils/dates';
-import { tagSchema } from '@/features/tags/tags.validation';
+import { tagSchema } from '@/features/tags/tags.schemas';
 
 // Asset Date
 export const assetDatePrecisionSchema = z.enum(DATE_PRECISION_ARRAY);

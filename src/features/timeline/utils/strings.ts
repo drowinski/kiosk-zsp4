@@ -1,4 +1,4 @@
-import { TimelineRange } from '@/features/timeline/timeline.validation';
+import { TimelineRange } from '@/features/timeline/timeline.schemas';
 
 export function formatCaption({
   caption,

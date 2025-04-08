@@ -1,6 +1,6 @@
 import { Form, useActionData, ActionFunctionArgs, redirect } from 'react-router';
 import { Input, InputErrorMessage } from '@/components/base/input';
-import { createTimelineRangeSchema } from '@/features/timeline/timeline.validation';
+import { createTimelineRangeSchema } from '@/features/timeline/timeline.schemas';
 import { timelineRepository } from '@/features/timeline/.server/timeline.repository';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
