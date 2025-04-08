@@ -19,3 +19,5 @@ export type ClientEnv = z.infer<typeof clientEnvSchema>;
 export const env = envSchema.parse(process.env);
 export const clientEnv = clientEnvSchema.parse(process.env);
 export const IS_PRODUCTION_ENV = env.NODE_ENV === 'production';
+
+globalThis.CLIENT_ENV = clientEnv;

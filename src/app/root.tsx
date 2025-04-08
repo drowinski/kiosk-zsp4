@@ -6,7 +6,7 @@ import { clientEnv } from '@/lib/.server/env';
 
 export function loader() {
   return {
-    env: clientEnv
+    CLIENT_ENV: clientEnv
   };
 }
 
@@ -44,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {loaderData && (
           <script
             dangerouslySetInnerHTML={{
-              __html: `window.env = ${JSON.stringify(loaderData.env)}`
+              __html: `window.CLIENT_ENV = ${JSON.stringify(loaderData.CLIENT_ENV)}`
             }}
           />
         )}
