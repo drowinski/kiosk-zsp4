@@ -10,7 +10,9 @@ import { CircleExclamationIcon } from '@/components/icons';
 
 export async function loader({ context: { logger } }: Route.LoaderArgs) {
   logger.info('Getting carousel entries...');
-  const [assets, assetsOk, assetsError] = await tryAsync(assetRepository.getRandomAssets(5));
+  const [assets, assetsOk, assetsError] = await tryAsync(
+    assetRepository.getRandomAssets(5, { filters: { assetType: ['image'] } })
+  );
   if (!assetsOk) {
     logger.error(assetsError);
     throw status(StatusCodes.INTERNAL_SERVER_ERROR);
