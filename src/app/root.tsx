@@ -1,9 +1,18 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from 'react-router';
 import './globals.css';
 import React, { useEffect } from 'react';
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v7';
+import { clientEnv } from '@/lib/.server/env';
+
+export function loader() {
+  return {
+    env: clientEnv
+  };
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const loaderData = useRouteLoaderData<typeof loader>('root');
+
   // Prevent default pinch to zoom
   useEffect(() => {
     const listener = (event: WheelEvent) => {
@@ -32,6 +41,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body className={'bg-background text-foreground'}>
         {children}
+        {loaderData && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.env = ${JSON.stringify(loaderData.env)}`
+            }}
+          />
+        )}
         <ScrollRestoration />
         <Scripts />
       </body>
