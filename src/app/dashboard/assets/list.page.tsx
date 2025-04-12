@@ -100,6 +100,13 @@ export async function loader({ request, context: { logger } }: Route.LoaderArgs)
     throw status(StatusCodes.INTERNAL_SERVER_ERROR);
   }
 
+  logger.info('Getting asset stats...');
+  const [assetStats, assetStatsOk, assetStatsError] = await tryAsync(assetRepository.getAssetStats());
+  if (!assetStatsOk) {
+    logger.error(assetStatsError);
+    throw status(StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+
   logger.info('Getting assets...');
   const [assets, assetsOk, assetsError] = await tryAsync(
     assetRepository.getAssets({
@@ -127,7 +134,7 @@ export async function loader({ request, context: { logger } }: Route.LoaderArgs)
   }
 
   logger.info('Success.');
-  return { assets, assetCount, tags };
+  return { assets, assetCount, assetStats, tags };
 }
 
 const assetsDeleteSchema = z.object({
@@ -242,7 +249,7 @@ export function shouldRevalidate({ nextUrl, actionResult, defaultShouldRevalidat
   return defaultShouldRevalidate;
 }
 
-export default function AssetListPage({ loaderData: { assets, assetCount, tags } }: Route.ComponentProps) {
+export default function AssetListPage({ loaderData: { assets, assetCount, assetStats, tags } }: Route.ComponentProps) {
   const location = useLocation();
   const submit = useSubmit();
 
@@ -259,7 +266,11 @@ export default function AssetListPage({ loaderData: { assets, assetCount, tags }
             <PlusIcon /> Dodaj nową zawartość
           </Link>
         </Button>
-        <AssetFilters />
+        <AssetFilters
+          tags={tags}
+          yearRangeMin={assetStats.minDate?.getFullYear() ?? undefined}
+          yearRangeMax={assetStats.maxDate?.getFullYear() ?? undefined}
+        />
       </div>
       <div className={'flex grow flex-col gap-1'}>
         <Card className={'flex items-center gap-2 bg-secondary px-4 py-2 text-secondary-foreground'}>

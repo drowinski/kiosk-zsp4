@@ -2,7 +2,7 @@ import { Input } from '@/components/base/input';
 import { Card } from '@/components/base/card';
 import { cn } from '@/utils/styles';
 import { Label } from '@/components/base/label';
-import { FilterIcon } from '@/components/icons';
+import { AudioIcon, DocumentIcon, FilmIcon, FilterIcon, ImageIcon } from '@/components/icons';
 import { Checkbox } from '@/components/base/checkbox';
 import { RangePicker } from '@/components/range-picker';
 import { useDebouncedCallback } from 'use-debounce';
@@ -17,18 +17,31 @@ import {
 } from 'nuqs';
 import { ASSET_TYPE_ARRAY } from '@/features/assets/assets.constants';
 import { AssetType } from '@/features/assets/assets.schemas';
+import { Tag } from '@/features/tags/tags.schemas';
 
-interface AssetFilterProps {
+interface AssetFiltersProps {
+  tags?: Tag[];
+  yearRangeMin?: number;
+  yearRangeMax?: number;
   className?: string;
 }
 
-export function AssetFilters({ className }: AssetFilterProps) {
-  const yearRangeMin = 1915;
-  const yearRangeMax = 2025;
-
+export function AssetFilters({
+  tags,
+  yearRangeMin = 1900,
+  yearRangeMax = 2025,
+  className
+}: AssetFiltersProps) {
   const [description, setDescription] = useQueryState(
     'description',
     parseAsString.withDefault('').withOptions({
+      shallow: false,
+      clearOnDefault: true
+    })
+  );
+  const [tagIds, setTagIds] = useQueryState(
+    'tagIds',
+    parseAsArrayOf(parseAsInteger).withDefault([]).withOptions({
       shallow: false,
       clearOnDefault: true
     })
@@ -66,6 +79,15 @@ export function AssetFilters({ className }: AssetFilterProps) {
     await setDescription(description);
   }, 250);
 
+  const toggleId = async (id: number, included: boolean) => {
+    await setTagIds((prev) => {
+      const s = new Set(prev);
+      if (included) s.add(id);
+      else s.delete(id);
+      return Array.from(s);
+    });
+  };
+
   const toggleAssetType = async (assetType: AssetType, enabled: boolean) => {
     await setAssetType((prev) => {
       const s = new Set(prev);
@@ -82,60 +104,14 @@ export function AssetFilters({ className }: AssetFilterProps) {
 
   return (
     <Card className={cn('flex h-fit flex-col gap-2 bg-secondary text-secondary-foreground', className)}>
-      <span className={'inline-flex items-center gap-2 font-medium'}>
-        <FilterIcon /> Filtrowanie
-      </span>
       <div
         role={'group'}
         aria-label={'filtry'}
         className={'flex flex-col gap-3'}
       >
-        <Label>
-          Według opisu
-          <Input
-            type={'text'}
-            placeholder={'Opis...'}
-            defaultValue={description ?? ''}
-            onChange={(event) => setDescriptionDebounced(event.target.value)}
-          />
-        </Label>
-        <fieldset className={'flex flex-col gap-2 pt-2'}>
-          <Label asChild>
-            <legend>Typy plików</legend>
-          </Label>
-          <Label variant={'horizontal'}>
-            <Checkbox
-              defaultChecked={assetType?.includes('image')}
-              onCheckedChange={(checked: boolean) => toggleAssetType('image', checked)}
-              aria-label={'pokaż zdjęcia'}
-            />
-            Zdjęcia
-          </Label>
-          <Label variant={'horizontal'}>
-            <Checkbox
-              defaultChecked={assetType?.includes('video')}
-              onCheckedChange={(checked: boolean) => toggleAssetType('video', checked)}
-              aria-label={'pokaż filmy'}
-            />
-            Filmy
-          </Label>
-          <Label variant={'horizontal'}>
-            <Checkbox
-              defaultChecked={assetType?.includes('document')}
-              onCheckedChange={(checked: boolean) => toggleAssetType('document', checked)}
-              aria-label={'pokaż dokumenty'}
-            />
-            Dokumenty
-          </Label>
-          <Label variant={'horizontal'}>
-            <Checkbox
-              defaultChecked={assetType?.includes('audio')}
-              onCheckedChange={(checked: boolean) => toggleAssetType('audio', checked)}
-              aria-label={'pokaż dźwięki'}
-            />
-            Audio
-          </Label>
-        </fieldset>
+        <span className={'inline-flex items-center gap-2 font-medium'}>
+          <FilterIcon /> Filtrowanie
+        </span>
         <Label className={'w-full'}>
           Status publikacji
           <Select
@@ -152,6 +128,72 @@ export function AssetFilters({ className }: AssetFilterProps) {
             </SelectContent>
           </Select>
         </Label>
+        <Label>
+          Opis
+          <Input
+            type={'text'}
+            placeholder={'Opis...'}
+            defaultValue={description ?? ''}
+            onChange={(event) => setDescriptionDebounced(event.target.value)}
+          />
+        </Label>
+        <fieldset className={'flex flex-col gap-2 pt-2'}>
+          <Label asChild>
+            <legend>Typy plików</legend>
+          </Label>
+          <Label variant={'horizontal'}>
+            <Checkbox
+              defaultChecked={assetType.includes('image')}
+              onCheckedChange={(checked: boolean) => toggleAssetType('image', checked)}
+              aria-label={'pokaż zdjęcia'}
+            />
+            <ImageIcon /> Zdjęcia
+          </Label>
+          <Label variant={'horizontal'}>
+            <Checkbox
+              defaultChecked={assetType.includes('video')}
+              onCheckedChange={(checked: boolean) => toggleAssetType('video', checked)}
+              aria-label={'pokaż filmy'}
+            />
+            <FilmIcon /> Filmy
+          </Label>
+          <Label variant={'horizontal'}>
+            <Checkbox
+              defaultChecked={assetType.includes('document')}
+              onCheckedChange={(checked: boolean) => toggleAssetType('document', checked)}
+              aria-label={'pokaż dokumenty'}
+            />
+            <DocumentIcon /> Dokumenty
+          </Label>
+          <Label variant={'horizontal'}>
+            <Checkbox
+              defaultChecked={assetType.includes('audio')}
+              onCheckedChange={(checked: boolean) => toggleAssetType('audio', checked)}
+              aria-label={'pokaż dźwięki'}
+            />
+            <AudioIcon /> Audio
+          </Label>
+        </fieldset>
+        {tags && (
+          <fieldset className={'flex flex-col gap-2 pt-2'}>
+            <Label asChild>
+              <legend>Tagi</legend>
+            </Label>
+            {tags.map((tag) => (
+              <Label
+                key={tag.id}
+                variant={'horizontal'}
+              >
+                <Checkbox
+                  defaultChecked={tagIds.includes(tag.id)}
+                  onCheckedChange={(checked: boolean) => toggleId(tag.id, checked)}
+                  aria-label={'pokaż zdjęcia'}
+                />
+                {tag.name}
+              </Label>
+            ))}
+          </fieldset>
+        )}
         <RangePicker
           label={'Zakres lat'}
           min={yearRangeMin}

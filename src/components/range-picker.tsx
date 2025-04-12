@@ -44,7 +44,7 @@ export function RangePicker({ label, min, max, defaultValue, value, onValueChang
         className={'flex w-[480px] gap-2 bg-white border-accent'}
       >
         <div className={'flex w-full items-center gap-1'}>
-          {min}
+          {range[0].toString().padStart(min.toString().length, ' ')}
           <Slider
             min={min}
             max={max}
@@ -54,7 +54,7 @@ export function RangePicker({ label, min, max, defaultValue, value, onValueChang
               onValueChange?.([minValue, maxValue]);
             }}
           />
-          {max}
+          {range[1].toString().padEnd(min.toString().length, ' ')}
         </div>
         <Button
           onClick={() => {

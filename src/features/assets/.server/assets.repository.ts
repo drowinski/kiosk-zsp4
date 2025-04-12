@@ -1,7 +1,21 @@
 import { Asset, AssetType, BaseAsset, NewAsset, UpdatedAsset } from '@/features/assets/assets.schemas';
 import { db } from '@/lib/.server/db/connection';
 import { assetTable, dateTable } from '@/features/assets/.server/assets.db';
-import { and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, lte, notInArray, sql } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  gte,
+  ilike,
+  inArray,
+  lte, max,
+  min,
+  notInArray,
+  sql
+} from 'drizzle-orm';
 import { PgSelect } from 'drizzle-orm/pg-core';
 import { assetTagJunctionTable, tagTable } from '@/features/tags/.server/tags.db';
 import { Tag } from '@/features/tags/tags.schemas';
@@ -42,6 +56,12 @@ export interface AssetRepository {
   getRandomAssets(count: number, options?: AssetGetOptions): Promise<Asset[]>;
 
   getAssetCount(options?: AssetGetOptions): Promise<number>;
+
+  getAssetStats(options?: AssetGetOptions): Promise<{
+    count: number;
+    minDate: Date | null;
+    maxDate: Date | null;
+  }>;
 
   createAsset(newAsset: NewAsset): Promise<BaseAsset | null>;
 
@@ -115,6 +135,19 @@ export class DrizzleAssetRepository implements AssetRepository {
     const [result] = options ? await this.buildQueryWithOptions(query.$dynamic(), options) : await query;
 
     return result?.count ?? 0;
+  }
+
+  async getAssetStats(options?: Omit<AssetGetOptions, 'sorting'>) {
+    const query = db
+      .with(this.assetJsonTags)
+      .select({ count: count(), minDate: min(dateTable.dateMin), maxDate: max(dateTable.dateMax) })
+      .from(assetTable)
+      .leftJoin(dateTable, eq(assetTable.dateId, dateTable.id))
+      .leftJoin(this.assetJsonTags, eq(this.assetJsonTags.assetId, assetTable.id));
+
+    const [result] = options ? await this.buildQueryWithOptions(query.$dynamic(), options) : await query;
+
+    return result;
   }
 
   private buildQueryWithOptions<T extends PgSelect>(query: T, options: AssetGetOptions): T {
