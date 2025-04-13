@@ -43,7 +43,7 @@ export default function KioskSplashPage({ loaderData: { assets } }: Route.Compon
             </CarouselItem>
           ))}
         </Carousel>
-        <div className={'absolute flex flex-col gap-2'}>
+        <div className={'absolute flex flex-col gap-2 animate-scale-100-105-pulse'}>
           <Card
             id={'title-card'}
             className={'flex flex-col items-center bg-primary p-8 text-center text-primary-foreground'}

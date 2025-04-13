@@ -54,11 +54,16 @@ export default {
         'fade-in': {
           '0%': { opacity: '0%' },
           '100%': { opacity: '100%' }
+        },
+        'scale-100-105': {
+          '0%': { scale: '99%' },
+          '100%': { scale: '101%' }
         }
       },
       animation: {
         'gallery-detail-scale-in': 'scale-in 50ms ease-in-out',
-        'gallery-detail-fade-in': 'fade-in 50ms linear'
+        'gallery-detail-fade-in': 'fade-in 50ms linear',
+        'scale-100-105-pulse': 'scale-100-105 2500ms ease-in-out infinite alternate'
       }
     }
   },
