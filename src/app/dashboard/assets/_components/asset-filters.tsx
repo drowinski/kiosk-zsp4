@@ -8,6 +8,8 @@ import { RangePicker } from '@/components/range-picker';
 import { useDebouncedCallback } from 'use-debounce';
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 import {
+  createLoader,
+  LoaderInput,
   parseAsArrayOf,
   parseAsBoolean,
   parseAsInteger,
@@ -16,8 +18,51 @@ import {
   useQueryState
 } from 'nuqs';
 import { ASSET_TYPE_ARRAY } from '@/features/assets/assets.constants';
-import { AssetType } from '@/features/assets/assets.schemas';
-import { Tag } from '@/features/tags/tags.schemas';
+import { assetSchema, AssetType } from '@/features/assets/assets.schemas';
+import { Tag, tagSchema } from '@/features/tags/tags.schemas';
+import { z } from '@/lib/zod';
+
+export const assetFilterSearchParamsSchema = z.object({
+  description: assetSchema.shape.description.optional(),
+  tagIds: z.array(tagSchema.shape.id),
+  assetType: z.array(assetSchema.shape.assetType),
+  isPublished: z.boolean().nullable(),
+  minYear: z.coerce
+    .number()
+    .positive()
+    .nullable()
+    .transform((minYear) => (minYear ? new Date(minYear, 0, 1) : null)),
+  maxYear: z.coerce
+    .number()
+    .positive()
+    .nullable()
+    .transform((maxYear) => (maxYear ? new Date(maxYear, 11, 31) : null))
+});
+
+export const assetFilterSearchParams = {
+  description: parseAsString.withDefault('').withOptions({
+    shallow: false
+  }),
+  tagIds: parseAsArrayOf(parseAsInteger).withDefault([]).withOptions({
+    shallow: false
+  }),
+  assetType: parseAsArrayOf(parseAsStringLiteral(ASSET_TYPE_ARRAY)).withDefault([]).withOptions({
+    shallow: false
+  }),
+  isPublished: parseAsBoolean.withOptions({
+    shallow: false
+  }),
+  minYear: parseAsInteger.withOptions({
+    shallow: false
+  }),
+  maxYear: parseAsInteger.withOptions({
+    shallow: false
+  })
+};
+
+export async function parseAssetFilterSearchParams(input: LoaderInput) {
+  return assetFilterSearchParamsSchema.parseAsync(createLoader(assetFilterSearchParams)(input));
+}
 
 interface AssetFiltersProps {
   tags?: Tag[];
@@ -26,54 +71,13 @@ interface AssetFiltersProps {
   className?: string;
 }
 
-export function AssetFilters({
-  tags,
-  yearRangeMin = 1900,
-  yearRangeMax = 2025,
-  className
-}: AssetFiltersProps) {
-  const [description, setDescription] = useQueryState(
-    'description',
-    parseAsString.withDefault('').withOptions({
-      shallow: false,
-      clearOnDefault: true
-    })
-  );
-  const [tagIds, setTagIds] = useQueryState(
-    'tagIds',
-    parseAsArrayOf(parseAsInteger).withDefault([]).withOptions({
-      shallow: false,
-      clearOnDefault: true
-    })
-  );
-  const [assetType, setAssetType] = useQueryState(
-    'assetType',
-    parseAsArrayOf(parseAsStringLiteral(ASSET_TYPE_ARRAY)).withDefault([]).withOptions({
-      shallow: false,
-      clearOnDefault: true
-    })
-  );
-  const [isPublished, setIsPublished] = useQueryState(
-    'isPublished',
-    parseAsBoolean.withOptions({
-      shallow: false,
-      clearOnDefault: true
-    })
-  );
-  const [minYear, setMinYear] = useQueryState(
-    'minYear',
-    parseAsInteger.withDefault(yearRangeMin).withOptions({
-      shallow: false,
-      clearOnDefault: true
-    })
-  );
-  const [maxYear, setMaxYear] = useQueryState(
-    'maxYear',
-    parseAsInteger.withDefault(yearRangeMax).withOptions({
-      shallow: false,
-      clearOnDefault: true
-    })
-  );
+export function AssetFilters({ tags, yearRangeMin = 1900, yearRangeMax = 2025, className }: AssetFiltersProps) {
+  const [description, setDescription] = useQueryState('description', assetFilterSearchParams.description);
+  const [tagIds, setTagIds] = useQueryState('tagIds', assetFilterSearchParams.tagIds);
+  const [assetType, setAssetType] = useQueryState('assetType', assetFilterSearchParams.assetType);
+  const [isPublished, setIsPublished] = useQueryState('isPublished', assetFilterSearchParams.isPublished);
+  const [minYear, setMinYear] = useQueryState('minYear', assetFilterSearchParams.minYear.withDefault(yearRangeMin));
+  const [maxYear, setMaxYear] = useQueryState('maxYear', assetFilterSearchParams.maxYear.withDefault(yearRangeMax));
 
   const setDescriptionDebounced = useDebouncedCallback(async (description: string) => {
     await setDescription(description);

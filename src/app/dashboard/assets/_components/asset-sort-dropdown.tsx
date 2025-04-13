@@ -1,24 +1,38 @@
 import { Select, SelectContent, SelectOption, SelectTrigger } from '@/components/base/select';
 import { cn } from '@/utils/styles';
-import { parseAsString, useQueryState } from 'nuqs';
+import { createLoader, LoaderInput, parseAsString, useQueryStates } from 'nuqs';
+import { z } from '@/lib/zod';
+
+export const assetSortSearchParamsSchema = z.object({
+  sortBy: z.enum(['updatedAt' , 'description' , 'date' , 'createdAt']),
+  sortDir: z.enum(['asc', 'desc'])
+});
+
+export const assetSortSearchParams = {
+  sortBy: parseAsString.withDefault('updatedAt').withOptions({ shallow: false }),
+  sortDir: parseAsString.withDefault('desc').withOptions({ shallow: false })
+};
+
+export function parseAssetSortSearchParams(input: LoaderInput) {
+  return assetSortSearchParamsSchema.parseAsync(createLoader(assetSortSearchParams)(input));
+}
 
 interface AssetSortDropdownProps {
   className?: string;
 }
 
 export function AssetSortDropdown({ className }: AssetSortDropdownProps) {
-  const [sort, setSort] = useQueryState(
-    'sort',
-    parseAsString.withDefault('updatedAt_desc').withOptions({
-      shallow: false,
-      clearOnDefault: true
-    })
-  );
+  const [sort, setSort] = useQueryStates(assetSortSearchParams);
 
   return (
     <Select
-      value={sort}
-      onValueChange={setSort}
+      value={Object.values(sort).join('_')}
+      onValueChange={(value) =>
+        setSort({
+          sortBy: value.split('_')[0],
+          sortDir: value.split('_')[1]
+        })
+      }
     >
       <SelectTrigger className={'min-w-64'} />
       <SelectContent

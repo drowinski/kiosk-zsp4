@@ -2,7 +2,7 @@ import type { Route } from './+types/list.page';
 import { AssetFiltering, assetRepository } from '@/features/assets/.server/assets.repository';
 import { Link, Outlet, ShouldRevalidateFunctionArgs, useLocation, useSubmit } from 'react-router';
 import { AssetList, AssetListItem } from '@/app/dashboard/assets/_components/asset-list';
-import { AssetFilters } from '@/app/dashboard/assets/_components/asset-filters';
+import { AssetFilters, parseAssetFilterSearchParams } from '@/app/dashboard/assets/_components/asset-filters';
 import { ParamPagination } from '@/components/param-pagination';
 import { Label } from '@/components/base/label';
 import { Card } from '@/components/base/card';
@@ -13,7 +13,7 @@ import { z } from '@/lib/zod';
 import { assetService } from '@/features/assets/.server/assets.service';
 import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';
-import { AssetSortDropdown } from '@/app/dashboard/assets/_components/asset-sort-dropdown';
+import { AssetSortDropdown, parseAssetSortSearchParams } from '@/app/dashboard/assets/_components/asset-sort-dropdown';
 import { AssetSelectionTools, useAssetSelection } from '@/app/dashboard/assets/_components/asset-selection-tools';
 import { tagRepository } from '@/features/tags/.server/tags.repository';
 import { tagSchema } from '@/features/tags/tags.schemas';
@@ -21,76 +21,41 @@ import { tagSchema } from '@/features/tags/tags.schemas';
 const DEFAULT_PAGE_SIZE = 10;
 
 const loaderParamsSchema = z.object({
-  description: assetSchema.shape.description.optional(),
-  assetType: z
-    .string()
-    .transform((assetType) => Array.from(new Set(assetType.split(','))))
-    .pipe(z.array(assetSchema.shape.assetType))
-    .optional(),
-  minYear: z.coerce
-    .number()
-    .positive()
-    .transform((minYear) => new Date(minYear, 0, 1))
-    .optional(),
-  maxYear: z.coerce
-    .number()
-    .positive()
-    .transform((maxYear) => new Date(maxYear, 11, 31))
-    .optional(),
-  tagIds: z
-    .string()
-    .transform((tagIds) => Array.from(new Set(tagIds.split(','))))
-    .pipe(z.array(tagSchema.shape.id))
-    .optional(),
-  isPublished: z
-    .enum(['true', 'false'])
-    .transform((isPublished) => isPublished === 'true')
-    .optional(),
-  sort: z
-    .string()
-    .optional()
-    .transform((sort) =>
-      sort
-        ? {
-            property: sort.split('_').at(0),
-            direction: sort.split('_').at(1)
-          }
-        : undefined
-    )
-    .pipe(
-      z
-        .object({
-          property: z.enum(['description', 'date', 'createdAt', 'updatedAt']),
-          direction: z.enum(['asc', 'desc'])
-        })
-        .default({
-          property: 'updatedAt',
-          direction: 'desc'
-        })
-    ),
   page: z.coerce.number().nonnegative().optional().default(0),
   pageSize: z.coerce.number().positive().optional().default(DEFAULT_PAGE_SIZE)
 });
 
 export async function loader({ request, context: { logger } }: Route.LoaderArgs) {
-  const url = new URL(request.url);
-
-  logger.info('Parsing params...');
-  const [params, parsedParamsOk, parsedParamsError] = await tryAsync(
-    loaderParamsSchema.parseAsync(Object.fromEntries(url.searchParams.entries()))
-  );
+  logger.info('Parsing filter params...');
+  const [filterParams, parsedParamsOk, parsedParamsError] = await tryAsync(parseAssetFilterSearchParams(request.url));
   if (!parsedParamsOk) {
     logger.error(parsedParamsError);
     throw status(StatusCodes.BAD_REQUEST);
   }
 
+  logger.info('Parsing sort params...');
+  const [sortParams, sortParamsOk, sortParamsError] = await tryAsync(parseAssetSortSearchParams(request.url));
+  if (!sortParamsOk) {
+    logger.error(sortParamsError);
+    throw status(StatusCodes.BAD_REQUEST);
+  }
+
+  logger.info('Parsing page params...');
+  const [pageParams, pageParamsOk, pageParamsError] = await tryAsync(
+    loaderParamsSchema.parseAsync(Object.fromEntries(new URL(request.url).searchParams.entries()))
+  );
+  if (!pageParamsOk) {
+    logger.error(pageParamsError);
+    throw status(StatusCodes.BAD_REQUEST);
+  }
+
   const filters: AssetFiltering = {
-    description: params?.description ?? undefined,
-    assetType: params?.assetType ?? undefined,
-    dateMin: params?.minYear ?? undefined,
-    dateMax: params?.maxYear ?? undefined,
-    isPublished: params?.isPublished ?? undefined,
-    tagIds: params?.tagIds ?? undefined
+    description: filterParams?.description ?? undefined,
+    assetType: filterParams?.assetType ?? undefined,
+    dateMin: filterParams?.minYear ?? undefined,
+    dateMax: filterParams?.maxYear ?? undefined,
+    isPublished: filterParams?.isPublished ?? undefined,
+    tagIds: filterParams?.tagIds ?? undefined
   };
 
   logger.info('Getting asset count...');
@@ -108,15 +73,16 @@ export async function loader({ request, context: { logger } }: Route.LoaderArgs)
   }
 
   logger.info('Getting assets...');
+  logger.debug({ sortParams });
   const [assets, assetsOk, assetsError] = await tryAsync(
     assetRepository.getAssets({
       pagination: {
-        page: params.page,
-        pageSize: params.pageSize
+        page: pageParams.page,
+        pageSize: pageParams.pageSize
       },
       sorting: {
-        property: params.sort.property,
-        direction: params.sort.direction
+        property: sortParams.sortBy,
+        direction: sortParams.sortDir
       },
       filters
     })
