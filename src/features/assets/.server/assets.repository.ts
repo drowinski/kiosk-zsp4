@@ -160,7 +160,7 @@ export class DrizzleAssetRepository implements AssetRepository {
           dateMin !== undefined ? gte(dateTable.dateMax, dateMin) : undefined,
           dateMax !== undefined ? lte(dateTable.dateMin, dateMax) : undefined,
           isPublished !== undefined ? eq(assetTable.isPublished, isPublished) : undefined,
-          tagIds !== undefined
+          tagIds !== undefined && tagIds.length > 0
             ? sql`${this.assetJsonTags.tags} @> '${sql.raw(JSON.stringify(tagIds.map((id) => ({ id }))))}'::jsonb`
             : undefined
         )
