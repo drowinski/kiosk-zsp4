@@ -3,21 +3,25 @@ import { parseWithZod } from '@conform-to/zod';
 import { assetService } from '@/features/assets/.server/assets.service';
 import { ReadStream } from 'node:fs';
 import { ReadableStream as NodeReadableStream } from 'node:stream/web';
-import { useFetcher } from 'react-router';
+import { useFetcher, useFormAction, useLocation, useNavigate } from 'react-router';
 import { tryAsync } from '@/utils/try';
 import { z } from '@/lib/zod';
 import { assetCreateSchema } from '@/features/assets/assets.schemas';
 import { useForm } from '@conform-to/react';
 import { Card } from '@/components/base/card';
 import { Button } from '@/components/base/button';
-import { CheckIcon, PlusIcon, SpinnerIcon, UploadIcon } from '@/components/icons';
+import { CheckIcon, PlusIcon, SpinnerIcon, TrashIcon, UploadIcon, XIcon } from '@/components/icons';
 import React, { useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { Asset } from '@/features/assets/components/asset';
-import { InputErrorMessage } from '@/components/base/input';
+import { Input, InputErrorMessage } from '@/components/base/input';
 import { Label } from '@/components/base/label';
 import { TextArea } from '@/components/base/text-area';
 import { status, StatusCodes } from '@/utils/status-response';
 import { useObjectUrl } from '@/hooks/use-object-url';
+import { cn } from '@/utils/styles';
+import { AssetThumbnail } from '@/features/assets/components/asset-thumbnail';
+import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from '@/components/base/modal';
+import { SeamlessInput } from '@/components/base/seamless-input';
 
 const assetFormSchema = z
   .object({
@@ -30,6 +34,7 @@ export async function action({ request, context: { logger } }: Route.ActionArgs)
   const formData = await request.formData();
   const submission = await parseWithZod(formData, { schema: assetFormSchema, async: true });
   if (submission.status !== 'success') {
+    logger.warn('Submission validation failed.');
     return { lastResult: submission.reply(), success: false };
   }
   const asset = submission.value;
@@ -51,6 +56,13 @@ export async function action({ request, context: { logger } }: Route.ActionArgs)
 }
 
 export default function AssetUploadPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const actionurl = useFormAction();
+
+  const callbackUrl: string = (location.state?.previousPathname ?? '') + (location.state?.previousSearch ?? '');
+  const navigateBack = () => navigate(callbackUrl || '..');
+
   const formsRef = useRef<Map<string, AssetUploadFormRef> | null>(null);
 
   const formsMap = () => {
@@ -89,39 +101,49 @@ export default function AssetUploadPage() {
   };
 
   return (
-    <main>
-      <div className={'flex w-full flex-col gap-3'}>
-        <AssetUploadFormToolbar
-          assetCount={fileCount}
-          isUploading={isUploading}
-          onSubmit={uploadAllForms}
-          onAddFiles={addFiles}
-        />
-        <div className={'grid grid-cols-3 gap-2'}>
-          {fileCount > 0 ? (
-            Array.from(files.entries()).map(([key, file]) => (
-              <AssetUploadForm
-                key={key}
-                ref={(node) => {
-                  const assetUploadForms = formsMap();
-                  if (node) {
-                    assetUploadForms.set(key, node);
-                  } else {
-                    assetUploadForms.delete(key);
-                  }
-                }}
-                initialFile={file}
-                onDelete={() => deleteFile(key)}
-              />
-            ))
-          ) : (
-            <Card className={'col-span-3 flex justify-center font-medium text-muted'}>
-              Kliknij &#34;Dodaj pliki...&#34; aby rozpocząć.
-            </Card>
-          )}
+    <Modal
+      onOpenChange={(open) => !open && navigateBack()}
+      defaultOpen
+    >
+      <ModalContent className={'flex max-h-[95%] flex-col overflow-hidden'}>
+        <ModalHeader>
+          <ModalTitle className={'flex gap-1'}>
+            <UploadIcon /> <span>Prześlij pliki</span>
+          </ModalTitle>
+          <ModalDescription className={'sr-only'}>Wybierz pliki do przesłania</ModalDescription>
+        </ModalHeader>
+        <div className={'flex h-full w-full flex-col gap-3 overflow-auto p-1'}>
+          <div className={'flex flex-col gap-2'}>
+            {fileCount > 0 &&
+              Array.from(files.entries()).map(([key, file]) => (
+                <AssetUploadForm
+                  key={key}
+                  ref={(node) => {
+                    const assetUploadForms = formsMap();
+                    if (node) {
+                      assetUploadForms.set(key, node);
+                    } else {
+                      assetUploadForms.delete(key);
+                    }
+                  }}
+                  initialFile={file}
+                  onDelete={() => deleteFile(key)}
+                />
+              ))}
+            <AssetUploadFormFileInput
+              onAddFiles={addFiles}
+              className={cn(fileCount === 0 && 'col-span-3')}
+            />
+          </div>
         </div>
-      </div>
-    </main>
+        <Button
+          className={'h-12'}
+          onClick={uploadAllForms}
+        >
+          Prześlij
+        </Button>
+      </ModalContent>
+    </Modal>
   );
 }
 
@@ -134,176 +156,175 @@ export interface AssetUploadForm {
   onDelete?: () => void;
 }
 
-export const AssetUploadForm = React.forwardRef<AssetUploadFormRef, AssetUploadForm>(
-  ({ initialFile, onDelete }, ref) => {
-    const formRef = useRef<HTMLFormElement>(null);
-    const fetcher = useFetcher<typeof action>();
-    const isUploading = fetcher.state !== 'idle';
-    const isUploaded = fetcher.data?.success === true;
+const AssetUploadForm = React.forwardRef<AssetUploadFormRef, AssetUploadForm>(({ initialFile, onDelete }, ref) => {
+  const formRef = useRef<HTMLFormElement>(null);
+  const fetcher = useFetcher<typeof action>();
+  const isUploading = fetcher.state !== 'idle';
+  const isUploaded = fetcher.data?.success === true;
 
-    const [form, fields] = useForm({
-      lastResult: fetcher.data?.lastResult,
-      onValidate: ({ formData }) => {
-        console.log(formData);
-        const result = parseWithZod(formData, { schema: assetFormSchema });
-        console.log(result);
-        return result;
-      }
-    });
+  const [form, fields] = useForm({
+    lastResult: fetcher.data?.lastResult,
+    onValidate: ({ formData }) => {
+      console.log(formData);
+      const result = parseWithZod(formData, { schema: assetFormSchema });
+      console.log(result);
+      return result;
+    }
+  });
 
-    const handleSubmit = async () => {
-      if (isUploading || isUploaded) return;
-      await fetcher.submit(formRef.current, { method: 'post' });
-    };
+  const handleSubmit = async () => {
+    if (isUploading || isUploaded) return;
+    await fetcher.submit(formRef.current, { method: 'post' });
+  };
 
-    useImperativeHandle(ref, () => ({
-      submit: handleSubmit
-    }));
+  useImperativeHandle(ref, () => ({
+    submit: handleSubmit
+  }));
 
-    const [file, setFile] = useState<File | undefined>(initialFile);
-    const fileObjectURL = useObjectUrl(file);
+  const [file, setFile] = useState<File | undefined>(initialFile);
+  const fileObjectURL = useObjectUrl(file);
 
-    const fileInputRefCallback = useCallback(
-      (ref: HTMLInputElement | null) => {
-        if (!ref || !file) return;
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        ref.files = dataTransfer.files;
-      },
-      [file]
-    );
+  const fileInputRefCallback = useCallback(
+    (ref: HTMLInputElement | null) => {
+      if (!ref || !file) return;
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      ref.files = dataTransfer.files;
+    },
+    [file]
+  );
 
-    return (
-      <Card className={'relative flex flex-col gap-2 overflow-hidden'}>
-        <div className={'flex h-48 items-center justify-center'}>
-          <Asset
-            fullUrl={fileObjectURL}
-            assetType={file?.type.startsWith('application') ? 'document' : (file?.type.split('/')[0] as never)}
+  return (
+    <Card className={'relative flex h-24 gap-2 overflow-hidden p-2'}>
+      <div className={'flex aspect-square h-full items-center justify-center'}>
+        {file && (
+          <AssetThumbnail
+            asset={file}
+            className={'h-full w-full object-cover'}
           />
+        )}
+      </div>
+
+      <fetcher.Form
+        ref={formRef}
+        method={'post'}
+        id={form.id}
+        onSubmit={handleSubmit}
+        encType={'multipart/form-data'}
+        className={'flex w-full gap-3'}
+        aria-disabled={isUploading}
+        hidden={isUploading || isUploaded}
+      >
+        <InputErrorMessage>{fields.file.errors}</InputErrorMessage>
+        <Label className={'w-full'}>
+          Opis
+          <TextArea
+            key={file?.name}
+            name={fields.description.name}
+            placeholder={'Opis'}
+            maxLength={512}
+            defaultValue={file?.name.replace(/\.[a-zA-Z0-9]+$/, '')}
+            className={'h-full resize-none'}
+          />
+        </Label>
+        <input
+          ref={fileInputRefCallback}
+          type={'file'}
+          accept={'image/jpeg, image/png, video/mp4'}
+          name={fields.file.name}
+          onChange={(event) => {
+            const fileList = event.currentTarget.files;
+            if (!fileList) return;
+            const file = fileList.item(0);
+            if (!file) return;
+            setFile(file);
+          }}
+          hidden
+        />
+        <Button
+          type={'button'}
+          size={'icon'}
+          onClick={() => onDelete?.()}
+          aria-label={'Usuń'}
+          className={'h-full'}
+        >
+          <TrashIcon />
+        </Button>
+        {fields.description.errors && <InputErrorMessage>{fields.description.errors}</InputErrorMessage>}
+      </fetcher.Form>
+      {isUploaded && (
+        <div className={'flex h-full w-full items-center justify-center gap-2'}>
+          <CheckIcon /> <span>Przesłano</span>
         </div>
-        {!isUploaded ? (
-          <fetcher.Form
-            ref={formRef}
-            method={'post'}
-            id={form.id}
-            onSubmit={handleSubmit}
-            encType="multipart/form-data"
-            className={'flex w-full flex-col gap-3'}
-            aria-disabled={isUploading}
-          >
-            <div className={'flex items-center gap-1'}>
-              {file?.name && (
-                <div className={'flex h-full min-w-0 grow items-center px-2'}>
-                  <div className={'overflow-hidden text-ellipsis whitespace-nowrap'}>{file.name}</div>
-                </div>
-              )}
-              <Button asChild>
-                <label>
-                  <input
-                    ref={fileInputRefCallback}
-                    type={'file'}
-                    accept={'image/jpeg, image/png, video/mp4'}
-                    name={fields.file.name}
-                    onChange={(event) => {
-                      const fileList = event.currentTarget.files;
-                      if (!fileList) return;
-                      const file = fileList.item(0);
-                      if (!file) return;
-                      setFile(file);
-                    }}
-                    className={'hidden'}
-                  />
-                  Zmień plik...
-                </label>
-              </Button>
-              {fields.file.errors && <InputErrorMessage>{fields.file.errors}</InputErrorMessage>}
-              <Button
-                type={'button'}
-                onClick={() => onDelete?.()}
-              >
-                Usuń
-              </Button>
-            </div>
-            <Label className={'w-full'}>
-              Opis
-              <TextArea
-                key={fields.description.key}
-                name={fields.description.name}
-                placeholder={'Opis'}
-                className={'h-24 resize-none'}
-                maxLength={512}
-                defaultValue={file?.name.replace(/\.[a-zA-Z0-9]+$/, '')}
-              />
-            </Label>
-            {fields.description.errors && <InputErrorMessage>{fields.description.errors}</InputErrorMessage>}
-          </fetcher.Form>
-        ) : (
-          <div className={'flex h-full w-full items-center justify-center gap-2'}>
-            <CheckIcon /> <span>Przesłano</span>
-          </div>
-        )}
-        {isUploading && (
-          <div className={'absolute inset-0 flex h-full w-full items-center justify-center bg-black/50'}>
-            <Card className={'flex flex-col items-center justify-center gap-2'}>
-              <span>Trwa przesyłanie</span>
-              <SpinnerIcon className={'animate-spin text-xl'} />
-            </Card>
-          </div>
-        )}
-      </Card>
-    );
-  }
-);
+      )}
+      {isUploading && (
+        <div className={'absolute inset-0 flex h-full w-full items-center justify-center bg-black/10'}>
+          <Card className={'flex flex-col items-center justify-center gap-2'}>
+            <span>Trwa przesyłanie</span>
+            <SpinnerIcon className={'animate-spin text-xl'} />
+          </Card>
+        </div>
+      )}
+    </Card>
+  );
+});
 AssetUploadForm.displayName = 'AssetUploadForm';
 
-export interface AssetUploadFormToolbarProps {
-  assetCount: number;
-  isUploading?: boolean;
+interface AssetUploadFormFileInput {
   onAddFiles: (files: File[]) => void;
-  onSubmit: () => void;
+  className?: string;
 }
 
-export function AssetUploadFormToolbar({
-  assetCount,
-  isUploading = false,
-  onAddFiles,
-  onSubmit
-}: AssetUploadFormToolbarProps) {
+function AssetUploadFormFileInput({ onAddFiles, className }: AssetUploadFormFileInput) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
-    <div className={'sticky left-0 right-0 top-0'}>
-      <Card className={'flex gap-2'}>
-        <Button
-          className={'cursor-pointer'}
-          disabled={isUploading}
-          asChild={!isUploading}
+    <Card className={cn('flex gap-2', className)}>
+      <div className={'flex h-full w-full flex-col gap-1 overflow-hidden'}>
+        <div
+          tabIndex={0}
+          role={'button'}
+          aria-label={'Dodaj pliki'}
+          onClick={() => inputRef.current?.click()}
+          onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && inputRef.current?.click()}
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            const fileList = event.dataTransfer.files;
+            if (!fileList) return;
+            console.log('adding', fileList);
+            onAddFiles(Array.from(fileList));
+          }}
+          className={cn(
+            'flex h-full w-full cursor-pointer select-none overflow-hidden rounded-xl',
+            'border-2 border-dashed border-primary bg-accent text-accent-foreground hover:bg-accent/50'
+          )}
         >
-          <label className={'inline-flex items-center gap-1'}>
-            <input
-              type={'file'}
-              accept={'image/jpeg, image/png, video/mp4, application/pdf'}
-              onInput={(event) => {
-                const fileList = event.currentTarget.files;
-                if (!fileList) return;
-                console.log('adding', fileList);
-                onAddFiles(Array.from(fileList));
-                event.currentTarget.value = '';
-              }}
-              multiple
-              className={'hidden'}
-              disabled={isUploading}
-            />
-            <PlusIcon />
-            {assetCount === 0 ? 'Dodaj pliki...' : 'Dodaj więcej plików...'}
-          </label>
-        </Button>
-        <Button
-          onClick={onSubmit}
-          disabled={assetCount === 0 || isUploading}
-          className={'ml-auto inline-flex items-center gap-1'}
-        >
-          <UploadIcon /> Prześlij
-        </Button>
-      </Card>
-    </div>
+          <div className={'flex h-full w-full flex-col items-center gap-1 p-4'}>
+            <div className={'grow basis-0'} />
+            <div className={'text-3xl'}>
+              <PlusIcon />
+            </div>
+            <div className={'flex grow basis-0 flex-col items-center justify-end text-center text-muted'}>
+              <span>Kliknij lub przeciągnij tutaj pliki</span>
+            </div>
+          </div>
+        </div>
+        <input
+          ref={inputRef}
+          type={'file'}
+          accept={'image/jpeg, image/png, video/mp4, application/pdf'}
+          multiple
+          className={'sr-only'}
+          onChange={(event) => {
+            const fileList = event.currentTarget.files;
+            if (!fileList) return;
+            console.log('adding', fileList);
+            onAddFiles(Array.from(fileList));
+            event.currentTarget.value = '';
+          }}
+        />
+      </div>
+    </Card>
   );
 }

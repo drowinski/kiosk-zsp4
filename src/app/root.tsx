@@ -39,7 +39,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className={'bg-background text-foreground'}>
+      <body className={'bg-background text-foreground overflow-hidden'}>
         {children}
         {loaderData && (
           <script

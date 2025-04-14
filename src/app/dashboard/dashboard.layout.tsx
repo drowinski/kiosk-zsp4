@@ -6,7 +6,6 @@ import React, { useEffect, useRef } from 'react';
 import { cn } from '@/utils/styles';
 import { CircleExclamationIcon } from '@/components/icons';
 
-
 export function meta() {
   return [{ title: 'Kiosk Izby Pamięci ZSP4 - Panel sterowania' }];
 }
@@ -14,6 +13,7 @@ export function meta() {
 export interface Layout extends React.PropsWithChildren {}
 
 export function Layout({ children }: Layout) {
+  const headerParentRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
   const signOut = async () => {
@@ -25,12 +25,13 @@ export function Layout({ children }: Layout) {
 
   useEffect(() => {
     const header = headerRef.current;
-    if (!header) return;
+    const headerParent = headerParentRef.current;
+    if (!header || !headerParent) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         entry.target.toggleAttribute('data-stuck', entry.intersectionRatio < 1);
       },
-      { threshold: [1] }
+      { root: headerParent, threshold: [1] }
     );
     observer.observe(header);
 
@@ -38,15 +39,18 @@ export function Layout({ children }: Layout) {
   }, []);
 
   return (
-    <div className={'flex h-full flex-col gap-2 p-2'}>
+    <div
+      ref={headerParentRef}
+      className={'flex h-full flex-col gap-2 overflow-auto pt-2'}
+    >
       <header
         ref={headerRef}
-        className={'group container sticky -top-0.5'}
+        className={'group container sticky -top-2.5 z-40'}
       >
         <Card
           className={cn(
             'flex items-center gap-4 bg-primary px-4 py-2 text-primary-foreground',
-            'transition-all duration-100 group-data-[stuck]:rounded-t-none'
+            'transition-all duration-75 group-data-[stuck]:rounded-t-none'
           )}
         >
           <span className={'text-xl font-bold'}>Kiosk Izby Pamięci ZSP4</span>
@@ -68,7 +72,7 @@ export function Layout({ children }: Layout) {
           </Button>
         </Card>
       </header>
-      <div className={'container pb-2'}>{children}</div>
+      <div className={'container h-full pb-2'}>{children}</div>
     </div>
   );
 }

@@ -153,6 +153,7 @@ export class DrizzleAssetRepository implements AssetRepository {
   private buildQueryWithOptions<T extends PgSelect>(query: T, options: AssetGetOptions): T {
     if (options.filters) {
       const { assetType, description, dateMin, dateMax, isPublished, tagIds } = options.filters;
+      console.log('pub', isPublished);
       query = query.where(
         and(
           assetType !== undefined && assetType.length > 0 ? inArray(assetTable.assetType, assetType) : undefined,

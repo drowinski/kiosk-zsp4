@@ -49,6 +49,8 @@ export async function loader({ request, context: { logger } }: Route.LoaderArgs)
     throw status(StatusCodes.BAD_REQUEST);
   }
 
+  logger.debug(filterParams?.isPublished);
+
   const filters: AssetFiltering = {
     description: filterParams?.description ?? undefined,
     assetType: filterParams?.assetType ?? undefined,
