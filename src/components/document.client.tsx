@@ -69,7 +69,7 @@ export function Document({
         const parentAspectRatio = parentWidth / parentHeight;
         const wrapperAspectRatio = wrapperWidth / wrapperHeight;
 
-        if (parentAspectRatio < wrapperAspectRatio) {
+        if (parentAspectRatio <= wrapperAspectRatio) {
           setDimensions([wrapperWidth, undefined]);
           setWrapperClassName('w-full max-h-fit');
         } else {
