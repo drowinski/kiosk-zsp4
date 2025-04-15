@@ -18,20 +18,31 @@ interface AssetListItemProps {
 
 export function AssetListItem({ asset, linkTo, linkState, isSelected = false, onSelectedChange }: AssetListItemProps) {
   const accessibilityDescription =
-    (asset.assetType === 'image' ? 'zdjęcie: ' : asset.assetType === 'video' ? 'film: ' : '') +
-    (asset.description ?? 'Nieopisany zasób');
+    (asset.assetType === 'image'
+      ? 'zdjęcie'
+      : asset.assetType === 'video'
+        ? 'film'
+        : asset.assetType === 'audio'
+          ? 'audio'
+          : asset.assetType === 'document'
+            ? 'dokument'
+            : '') + ': ' + (asset.description ?? 'Nieopisany zasób');
 
   return (
-    <Card className={'flex w-full items-center gap-3 px-2 py-0 shadow-sm'}>
+    <Card
+      role={'listitem'}
+      aria-label={accessibilityDescription}
+      className={'flex w-full items-center gap-3 px-2 py-0 shadow-sm'}
+    >
       <Checkbox
         checked={isSelected}
         onCheckedChange={(checked) => onSelectedChange?.(checked === true)}
-        aria-label={`Zaznacz ${accessibilityDescription}`}
+        aria-label={'Zaznacz'}
       />
       <Link
         to={linkTo}
         state={linkState}
-        aria-label={`Edytuj ${accessibilityDescription}`}
+        aria-label={'Edytuj'}
         className={'flex w-full gap-3 py-2'}
       >
         <img
@@ -90,6 +101,8 @@ interface AssetListProps extends React.HTMLProps<HTMLDivElement> {}
 export function AssetList({ children, className, ...props }: AssetListProps) {
   return (
     <div
+      role={'list'}
+      aria-label={`lista materiałów`}
       className={cn('flex w-full flex-col gap-1', className)}
       {...props}
     >
