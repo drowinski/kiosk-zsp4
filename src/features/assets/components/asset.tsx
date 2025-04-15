@@ -1,31 +1,19 @@
 import { cn } from '@/utils/styles';
-import { Asset as AssetType } from '@/features/assets/assets.schemas';
+import { AssetType } from '@/features/assets/assets.schemas';
 import { Document } from '@/components/document.client';
-import { useEffect, useState } from 'react';
 import { getAssetUri } from '@/features/assets/utils/uris';
-import { getAssetTypeFromMimeType } from '@/features/assets/utils/mime-types';
 import { Video } from '@/components/video';
 
 interface AssetProps {
-  asset: AssetType | File;
+  fileName: string;
+  assetType: AssetType;
+  description?: string | null;
   playbackDisabled?: boolean;
   className?: string;
 }
 
-export function Asset({ asset, playbackDisabled, className }: AssetProps) {
-  const [_src, setSrc] = useState<string>('');
-  const isFile = asset instanceof File;
-  const src = isFile ? _src : getAssetUri(asset.fileName);
-  const assetType = isFile ? getAssetTypeFromMimeType(asset.type) : asset.assetType;
-  const description = isFile ? asset.name.replace(/\.[a-zA-Z0-9]+$/, '') : asset.fileName;
-
-  useEffect(() => {
-    if (!(asset instanceof File)) return;
-    const objectUrl = URL.createObjectURL(asset);
-    setSrc(objectUrl);
-
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [asset]);
+export function Asset({ fileName, assetType, description, playbackDisabled, className }: AssetProps) {
+  const src = getAssetUri(fileName);
 
   if (assetType === 'image') {
     return (

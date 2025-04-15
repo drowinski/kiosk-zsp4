@@ -28,7 +28,6 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { TagSelector } from '@/features/tags/components/tag-selector';
 import { tagRepository } from '@/features/tags/.server/tags.repository';
-import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 import { status, StatusCodes } from '@/utils/status-response';
 import { tryAsync } from '@/utils/try';
 import { z } from '@/lib/zod';
@@ -186,9 +185,9 @@ export default function AssetEditModal() {
           <ClientOnly>
             {() => (
               <Asset
+                fileName={asset.fileName}
                 assetType={asset.assetType}
-                fileName={asset.assetType !== 'image' ? asset.fileName : undefined}
-                fullUrl={asset.assetType === 'image' ? getAssetThumbnailUri(asset.fileName) : undefined}
+                description={asset.description}
               />
             )}
           </ClientOnly>

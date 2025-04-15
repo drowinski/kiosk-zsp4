@@ -88,10 +88,6 @@ function _Timeline({ children, className, ...props }: TimelineProps) {
 
   const itemsMapSize = getItemsMap().size;
 
-  // useLayoutEffect(() => {
-  //   sessionStorage.clear(); // TODO: Hacky solution for clearing scroll state of gallery, fix
-  // }, []);
-
   const childrenWithRef = React.Children.map(children, (child, index) => {
     if (React.isValidElement(child)) {
       return React.cloneElement(child, {

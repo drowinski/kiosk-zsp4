@@ -274,7 +274,9 @@ export function Slide({ asset }: SlideProps) {
         )}
       >
         <AssetComponent
-          asset={asset}
+          fileName={asset.fileName}
+          assetType={asset.assetType}
+          description={asset.description}
           playbackDisabled={!slide.isActive}
         />
       </div>
