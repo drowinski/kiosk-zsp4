@@ -22,8 +22,9 @@ export function Layout({ children }: Layout) {
 
   useIdleTimer({
     onIdle,
-    timeout: CLIENT_ENV.IDLE_TIMER_SECONDS * 1000,
-    throttle: 500
+    timeout: CLIENT_ENV.IDLE_TIMER_SECONDS === 0 ? 1 : CLIENT_ENV.IDLE_TIMER_SECONDS * 1000,
+    throttle: 500,
+    disabled: CLIENT_ENV.IDLE_TIMER_SECONDS === 0
   });
 
   return (
@@ -36,9 +37,9 @@ export function Layout({ children }: Layout) {
               size={'icon'}
               onClick={() => navigate(-1)}
               aria-label={'Cofnij'}
-              className={'basis-0'}
+              className={'basis-0 gap-2'}
             >
-              <ArrowLeftIcon />
+              <ArrowLeftIcon /> <span>Wróć</span>
             </Button>
           </div>
           <span className={'text-xl font-bold'}>Izba Pamięci</span>
