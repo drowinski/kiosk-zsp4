@@ -2,7 +2,7 @@ import { cn } from '@/utils/styles';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Asset } from '@/features/assets/assets.schemas';
 import { formatDate } from '@/features/assets/utils/dates';
-import { CircleExclamationIcon, SpinnerIcon } from '@/components/icons';
+import { CircleExclamationIcon, DocumentIcon, PlayIcon, SpinnerIcon } from '@/components/icons';
 import { getAssetThumbnailUri } from '@/features/assets/utils/uris';
 
 export interface GalleryGridItemProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -88,6 +88,22 @@ export function GalleryGridItem({ asset, enableDebugView = false, className, ...
           <span>Date precision: {asset.date?.datePrecision}</span>
           <span>Tags: {asset.tags.length > 0 ? asset.tags.map((tag) => tag.name).join(', ') : '❌'}</span>
           <span>Description: {asset.description}</span>
+        </div>
+      )}
+      {asset.assetType === 'video' && (
+        <div className={'pointer-events-none absolute flex h-full w-full items-center justify-center'}>
+          <div className={'rounded-lg bg-primary p-2 text-3xl text-primary-foreground'}>
+            <PlayIcon />
+          </div>
+        </div>
+      )}
+      {asset.assetType === 'document' && (
+        <div
+          className={
+            'pointer-events-none absolute bottom-2 left-2 rounded-lg bg-primary p-2 text-3xl text-primary-foreground'
+          }
+        >
+          <DocumentIcon />
         </div>
       )}
     </div>
