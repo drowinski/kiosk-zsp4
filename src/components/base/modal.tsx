@@ -5,7 +5,12 @@ import { cn } from '@/utils/styles';
 import { XIcon } from '@/components/icons';
 import { ClientOnly } from 'remix-utils/client-only';
 
-export const Modal = DialogPrimitive.Root;
+export const Modal = ({ modal, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root>) => (
+  <DialogPrimitive.Root
+    modal={modal ?? true}
+    {...props}
+  />
+);
 
 export const ModalTrigger = DialogPrimitive.Trigger;
 

@@ -217,6 +217,7 @@ export function shouldRevalidate({ nextUrl, actionResult, defaultShouldRevalidat
 
 export default function AssetListPage({ loaderData: { assets, assetCount, assetStats, tags } }: Route.ComponentProps) {
   const location = useLocation();
+  const modalLinkState = { previousPathname: location.pathname, previousSearch: location.search };
   const submit = useSubmit();
 
   const assetSelection = useAssetSelection(assets);
@@ -227,9 +228,10 @@ export default function AssetListPage({ loaderData: { assets, assetCount, assetS
         <Button asChild>
           <Link
             to={'upload'}
+            state={modalLinkState}
             className={'inline-flex items-center gap-1'}
           >
-            <PlusIcon /> Dodaj nową zawartość
+            <PlusIcon /> <span>Dodaj nową zawartość</span>
           </Link>
         </Button>
         <AssetFilters
@@ -285,7 +287,7 @@ export default function AssetListPage({ loaderData: { assets, assetCount, assetS
                 pathname: 'edit',
                 search: 'ids=' + Array.from(selectedIds.values()).join(',')
               },
-              state: { previousPathname: location.pathname, previousSearch: location.search }
+              state: modalLinkState
             })}
             {...assetSelection}
           />
@@ -305,7 +307,7 @@ export default function AssetListPage({ loaderData: { assets, assetCount, assetS
                 key={asset.id}
                 asset={asset}
                 linkTo={asset.id.toString()}
-                linkState={{ previousPathname: location.pathname, previousSearch: location.search }}
+                linkState={modalLinkState}
                 isSelected={assetSelection.selectedIds.has(asset.id)}
                 onSelectedChange={(selected) => {
                   if (selected) {

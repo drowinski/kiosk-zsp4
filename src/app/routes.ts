@@ -11,8 +11,8 @@ export default [
   ...prefix('dashboard', [
     layout('dashboard/dashboard.layout.tsx', [
       index('dashboard/home.route.ts'),
-      route('assets/upload', 'dashboard/assets/upload.page.tsx'),
       route('assets', 'dashboard/assets/list.page.tsx', [
+        route('upload', 'dashboard/assets/upload.modal.tsx'),
         route(':id', 'dashboard/assets/edit.modal.tsx'),
         route('edit', 'dashboard/assets/edit-many.modal.tsx')
       ]),

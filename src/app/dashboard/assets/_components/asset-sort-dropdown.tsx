@@ -26,7 +26,7 @@ export function AssetSortDropdown({ className }: AssetSortDropdownProps) {
 
   return (
     <Select
-      value={Object.values(sort).join('_')}
+      defaultValue={Object.values(sort).join('_')}
       onValueChange={(value) =>
         setSort({
           sortBy: value.split('_')[0],
