@@ -83,6 +83,7 @@ export class DrizzleTimelineRepository implements TimelineRepository {
             : undefined
         )
       )
+      .orderBy(sql`CASE WHEN ${assetTable.assetType} = 'video' THEN 0 ELSE 1 END`, dateTable.dateMin)
       .groupBy(assetTable.id, dateTable.id);
   }
 
