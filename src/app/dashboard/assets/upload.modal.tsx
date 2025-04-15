@@ -186,7 +186,7 @@ export default function AssetUploadPage() {
               asChild
             >
               <Link
-                to={'/dashboard/assets?isPublished=false&sortBy=createdAt'}
+                to={`/dashboard/assets?isPublished=false&sortBy=createdAt&pageSize=${fileCount}`}
                 reloadDocument
               >
                 Zobacz przesłane materiały
