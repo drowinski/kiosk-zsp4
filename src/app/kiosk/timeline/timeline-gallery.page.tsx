@@ -133,7 +133,7 @@ export interface GalleryDetailModalProps {
 }
 
 export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChange }: GalleryDetailModalProps) {
-  const [asset, setAsset] = useState<Asset>(assets[currentAssetIndex]);
+  const [asset, setAsset] = useState<Asset | undefined>(assets[currentAssetIndex]);
   const [isOpen, _setIsOpen] = useState(open);
 
   if (open !== isOpen) {
@@ -202,7 +202,7 @@ export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChan
               </h1>
             </DialogTitle>
             <DialogDescription className={'text-2xl'}>{asset?.description && asset.description}</DialogDescription>
-            {asset.tags.length > 0 && (
+            {asset && asset.tags.length > 0 && (
               <div
                 role={'list'}
                 className={'flex flex-wrap gap-1'}

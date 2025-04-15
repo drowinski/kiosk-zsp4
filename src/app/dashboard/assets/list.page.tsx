@@ -18,7 +18,7 @@ import { AssetSelectionTools, useAssetSelection } from '@/app/dashboard/assets/_
 import { tagRepository } from '@/features/tags/.server/tags.repository';
 import { tagSchema } from '@/features/tags/tags.schemas';
 
-const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 20;
 
 const loaderParamsSchema = z.object({
   page: z.coerce.number().nonnegative().optional().default(0),
@@ -224,7 +224,7 @@ export default function AssetListPage({ loaderData: { assets, assetCount, assetS
 
   return (
     <main className={'flex h-full gap-2'}>
-      <div className={'flex flex-col gap-1 max-w-[25%]'}>
+      <div className={'flex flex-col gap-1 min-w-[25%] max-w-[25%]'}>
         <Button asChild>
           <Link
             to={'upload'}
@@ -240,7 +240,7 @@ export default function AssetListPage({ loaderData: { assets, assetCount, assetS
           yearRangeMax={assetStats.maxDate?.getFullYear() ?? undefined}
         />
       </div>
-      <div className={'flex grow flex-col gap-1'}>
+      <div className={'flex grow flex-col gap-1 overflow-hidden'}>
         <Card className={'flex items-center gap-2 bg-secondary px-4 py-2 text-secondary-foreground'}>
           <AssetSelectionTools
             assets={assets}
