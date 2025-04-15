@@ -94,6 +94,7 @@ export default function TimelineGalleryPage({ loaderData: { assets, tags } }: Ro
             >
               <Link
                 to={{ search: `?tag=${tag.id}` }}
+                reloadDocument
                 replace
               >
                 {tag.name}
