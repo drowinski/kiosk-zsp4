@@ -1,8 +1,9 @@
 import { Card } from '@/components/base/card';
-import { Outlet, useNavigate, useRouteError } from 'react-router';
+import { Outlet, useLocation, useNavigate, useRouteError } from 'react-router';
 import { ArrowLeftIcon, CircleExclamationIcon } from '@/components/icons';
 import { Button } from '@/components/base/button';
 import React from 'react';
+import { useIdleTimer } from 'react-idle-timer';
 
 export function meta() {
   return [{ title: 'Kiosk Izby Pamięci ZSP4' }];
@@ -11,7 +12,19 @@ export function meta() {
 export interface Layout extends React.PropsWithChildren {}
 
 export function Layout({ children }: Layout) {
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const onIdle = () => {
+    if (location.pathname === '/') return;
+    navigate('/');
+  };
+
+  useIdleTimer({
+    onIdle,
+    timeout: CLIENT_ENV.IDLE_TIMER_SECONDS * 1000,
+    throttle: 500
+  });
 
   return (
     <div className={'flex h-full select-none flex-col'}>
