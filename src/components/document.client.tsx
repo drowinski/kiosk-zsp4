@@ -104,7 +104,6 @@ export function Document({
         loading={null}
         className={cn('overflow-hidden')}
         onLoadSuccess={(document) => {
-          console.log(document, document.numPages);
           setPageCount(document.numPages);
         }}
       >
