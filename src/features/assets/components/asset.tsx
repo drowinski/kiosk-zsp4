@@ -1,27 +1,36 @@
 import { cn } from '@/utils/styles';
-import { AssetType } from '@/features/assets/assets.schemas';
-import { Video } from '@/components/video';
+import { Asset as AssetType } from '@/features/assets/assets.schemas';
 import { Document } from '@/components/document.client';
+import { useEffect, useState } from 'react';
+import { getAssetUri } from '@/features/assets/utils/uris';
+import { getAssetTypeFromMimeType } from '@/features/assets/utils/mime-types';
+import { Video } from '@/components/video';
 
 interface AssetProps {
-  assetType: AssetType;
-  fullUrl?: string;
-  fileName?: string;
-  description?: string | null;
+  asset: AssetType | File;
+  playbackDisabled?: boolean;
   className?: string;
 }
 
-export function Asset({ assetType, fullUrl, fileName, description, className }: AssetProps) {
-  if (!fileName && !fullUrl) {
-    return null;
-  }
+export function Asset({ asset, playbackDisabled, className }: AssetProps) {
+  const [_src, setSrc] = useState<string>('');
+  const isFile = asset instanceof File;
+  const src = isFile ? _src : getAssetUri(asset.fileName);
+  const assetType = isFile ? getAssetTypeFromMimeType(asset.type) : asset.assetType;
+  const description = isFile ? asset.name.replace(/\.[a-zA-Z0-9]+$/, '') : asset.fileName;
 
-  const fullUri = fullUrl || '/media/' + fileName;
+  useEffect(() => {
+    if (!(asset instanceof File)) return;
+    const objectUrl = URL.createObjectURL(asset);
+    setSrc(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [asset]);
 
   if (assetType === 'image') {
     return (
       <img
-        src={fullUri}
+        src={src}
         alt={description || 'Brak opisu.'}
         className={cn('max-h-full max-w-full rounded-xl', className)}
         loading={'lazy'}
@@ -30,21 +39,22 @@ export function Asset({ assetType, fullUrl, fileName, description, className }: 
   } else if (assetType === 'video') {
     return (
       <Video
-        src={fullUri}
+        src={src}
         className={cn('max-h-full max-w-full', className)}
+        disabled={playbackDisabled}
       />
     );
   } else if (assetType === 'audio') {
-    return <audio src={fullUri}></audio>;
+    return <audio src={src}></audio>;
   } else if (assetType === 'document') {
     return (
       <Document
-        src={fullUri}
+        src={src}
         className={cn('rounded-xl', className)}
         fill={'contain'}
       />
     );
   } else {
-    return <audio src={fullUri} />;
+    return <audio src={src} />;
   }
 }

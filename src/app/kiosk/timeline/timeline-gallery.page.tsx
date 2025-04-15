@@ -2,8 +2,8 @@ import type { Route } from './+types/timeline-gallery.page';
 import { GalleryGrid, GalleryGridItem } from '@/features/assets/components/gallery-grid';
 import { Link, useLocation } from 'react-router';
 import { timelineRepository } from '@/features/timeline/.server/timeline.repository';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Mousewheel, Navigation, Pagination, Zoom } from 'swiper/modules';
+import { Swiper, SwiperSlide, useSwiperSlide } from 'swiper/react';
+import { A11y, Keyboard, Mousewheel, Navigation, Pagination, Zoom } from 'swiper/modules';
 import { Asset as AssetComponent } from '@/features/assets/components/asset';
 import { Card } from '@/components/base/card';
 import { ChevronLeftIcon, ChevronRightIcon, InfoIcon, XIcon } from '@/components/icons';
@@ -158,7 +158,8 @@ export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChan
       >
         <div className={'max-w-4/5 flex w-4/5 items-center justify-center overflow-hidden'}>
           <Swiper
-            modules={[Navigation, Pagination, Mousewheel, Zoom]}
+            // tabIndex={0}
+            modules={[Navigation, Pagination, Mousewheel, Zoom, Keyboard, A11y]}
             spaceBetween={50}
             slidesPerView={1}
             initialSlide={currentAssetIndex}
@@ -171,39 +172,63 @@ export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChan
             }}
             zoom={{ minRatio: 1, maxRatio: 3, toggle: true }}
             onSlideChange={(swiper) => setAsset(assets[swiper.activeIndex])}
+            keyboard={{
+              onlyInViewport: false
+            }}
+            a11y={{
+              containerMessage: 'slajdy z multimediami',
+              firstSlideMessage: 'to jest pierwszy slajd',
+              lastSlideMessage: 'to jest ostatni slajd',
+              nextSlideMessage: 'następny slajd',
+              prevSlideMessage: 'poprzedni slajd'
+            }}
             className={'h-full w-full rounded-xl'}
           >
-            {assets.map((asset, index) => (
-              <SwiperSlide key={index}>
-                <div
-                  className={cn(
-                    'flex h-full w-full items-center justify-center p-4',
-                    asset.assetType === 'image' && 'swiper-zoom-container'
-                  )}
-                >
-                  <AssetComponent
-                    assetType={asset.assetType}
-                    fileName={asset.fileName}
-                  />
-                </div>
+            {assets.map((asset) => (
+              <SwiperSlide key={asset.id}>
+                <Slide asset={asset} />
               </SwiperSlide>
             ))}
           </Swiper>
         </div>
         <div className={'h-full w-1/5 p-2 pl-0'}>
           <Card className={'flex h-full flex-col gap-4'}>
-            <DialogTitle className={'inline-flex items-center gap-2 text-3xl'}>
-              <InfoIcon /> O tym materiale
+            <DialogTitle
+              className={'inline-flex items-center gap-2 text-3xl'}
+              asChild
+            >
+              <h1>
+                <InfoIcon /> O tym materiale
+              </h1>
             </DialogTitle>
-            <DialogDescription className={'text-xl'}>{asset?.description && asset.description}</DialogDescription>
+            <DialogDescription className={'text-2xl'}>{asset?.description && asset.description}</DialogDescription>
+            {asset.tags.length > 0 && (
+              <div
+                role={'list'}
+                className={'flex flex-wrap gap-1'}
+              >
+                {asset.tags.map((tag) => (
+                  <div
+                    key={tag.id}
+                    role={'listitem'}
+                    className={cn(
+                      'flex w-fit items-center justify-center text-nowrap rounded-xl text-lg',
+                      'bg-secondary px-2 py-1 text-secondary-foreground'
+                    )}
+                  >
+                    {tag.name}
+                  </div>
+                ))}
+              </div>
+            )}
             <div className={'flex flex-col'}>
-              <span className={'text-xl'}>
+              <h2 className={'text-xl'}>
                 {asset?.date
                   ? asset.date.dateMin.getTime() !== asset.date.dateMax.getTime() && !asset.date.dateIsRange
                     ? 'Przybliżona data'
                     : 'Data'
                   : 'Data'}
-              </span>
+              </h2>
               <span className={'text-2xl font-medium'}>{asset?.date ? formatDate(asset.date) : 'Nieznana'}</span>
             </div>
             <div className={'mt-auto flex gap-2'}>
@@ -227,7 +252,32 @@ export function GalleryDetailModal({ assets, currentAssetIndex, open, onOpenChan
         >
           <XIcon color={'white'} />
         </Button>
+        ;
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface SlideProps {
+  asset: Asset;
+}
+
+export function Slide({ asset }: SlideProps) {
+  const slide = useSwiperSlide();
+
+  return (
+    <SwiperSlide>
+      <div
+        className={cn(
+          'flex h-full w-full items-center justify-center p-4',
+          asset.assetType === 'image' && 'swiper-zoom-container'
+        )}
+      >
+        <AssetComponent
+          asset={asset}
+          playbackDisabled={!slide.isActive}
+        />
+      </div>
+    </SwiperSlide>
   );
 }

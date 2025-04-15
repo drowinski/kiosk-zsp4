@@ -7,9 +7,10 @@ import { cn } from '@/utils/styles';
 
 interface VideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
   showPlayOverlay?: boolean;
+  disabled?: boolean;
 }
 
-export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true, ...props }: VideoProps) {
+export function Video({ src, showPlayOverlay: _showPlayOverlay = true, disabled, className, ...props }: VideoProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
@@ -47,6 +48,11 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
       video.pause();
     }
   };
+
+  useEffect(() => {
+    if (disabled === undefined || disabled) return;
+    togglePlay(false);
+  }, [disabled]);
 
   const scrub = (event: PointerEvent | MouseEvent) => {
     const video = videoRef.current;
@@ -181,7 +187,7 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
         </Button>
       ) : (
         <div className={'swiper-no-swiping absolute bottom-2 left-2 right-2 flex flex-col gap-2'}>
-          <div className={'flex w-full justify-between gap-1 items-end'}>
+          <div className={'flex w-full items-end justify-between gap-1'}>
             <Button
               size={'icon'}
               onClick={() => togglePlay()}
@@ -189,9 +195,9 @@ export function Video({ src, className, showPlayOverlay: _showPlayOverlay = true
             >
               {isPaused ? <PlayIcon /> : <PauseIcon />}
             </Button>
-            <div className={'flex gap-1 max-w-[50%] items-center'}>
+            <div className={'flex max-w-[50%] items-center gap-1'}>
               <Slider
-                className={'max-w-full w-32'}
+                className={'w-32 max-w-full'}
                 value={[volume]}
                 min={0}
                 max={1}

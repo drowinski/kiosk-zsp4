@@ -56,7 +56,9 @@ export class DrizzleTimelineRepository implements TimelineRepository {
       .select({
         ...getTableColumns(assetTable),
         date: getTableColumns(dateTable),
-        tags: sql<Tag[]>`COALESCE(JSON_AGG(${tagTable}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
+        tags: sql<
+          Tag[]
+        >`COALESCE(JSON_AGG(${tagTable} ORDER BY ${tagTable.name}) FILTER (WHERE ${tagTable.id} IS NOT NULL), '[]'::json)`.as(
           'tags'
         )
       })
