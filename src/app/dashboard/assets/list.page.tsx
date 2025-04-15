@@ -224,7 +224,7 @@ export default function AssetListPage({ loaderData: { assets, assetCount, assetS
 
   return (
     <main className={'flex h-full gap-2'}>
-      <div className={'flex flex-col gap-1'}>
+      <div className={'flex flex-col gap-1 max-w-[25%]'}>
         <Button asChild>
           <Link
             to={'upload'}

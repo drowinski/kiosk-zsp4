@@ -2,7 +2,7 @@ import { Input } from '@/components/base/input';
 import { Card } from '@/components/base/card';
 import { cn } from '@/utils/styles';
 import { Label } from '@/components/base/label';
-import { AudioIcon, DocumentIcon, FilmIcon, FilterIcon, ImageIcon } from '@/components/icons';
+import { AudioIcon, DocumentIcon, EyeIcon, FilmIcon, FilterIcon, ImageIcon } from '@/components/icons';
 import { Checkbox } from '@/components/base/checkbox';
 import { RangePicker } from '@/components/range-picker';
 import { useDebouncedCallback } from 'use-debounce';
@@ -117,7 +117,7 @@ export function AssetFilters({ tags, yearRangeMin = 1900, yearRangeMax = 2025, c
           <FilterIcon /> Filtrowanie
         </span>
         <Label className={'w-full'}>
-          Status publikacji
+          <span className={'inline-flex gap-2'}><EyeIcon/> Status publikacji</span>
           <Select
             defaultValue={isPublished !== null ? String(isPublished) : 'none'}
             onValueChange={async (value) => {
@@ -132,13 +132,14 @@ export function AssetFilters({ tags, yearRangeMin = 1900, yearRangeMax = 2025, c
             </SelectContent>
           </Select>
         </Label>
-        <Label>
+        <Label className={'w-full'}>
           Opis
           <Input
             type={'text'}
             placeholder={'Opis...'}
             defaultValue={description ?? ''}
             onChange={(event) => setDescriptionDebounced(event.target.value)}
+            className={'w-full'}
           />
         </Label>
         <fieldset className={'flex flex-col gap-2 pt-2'}>
@@ -183,19 +184,27 @@ export function AssetFilters({ tags, yearRangeMin = 1900, yearRangeMax = 2025, c
             <Label asChild>
               <legend>Tagi</legend>
             </Label>
-            {tags.map((tag) => (
-              <Label
-                key={tag.id}
-                variant={'horizontal'}
-              >
-                <Checkbox
-                  defaultChecked={tagIds.includes(tag.id)}
-                  onCheckedChange={(checked: boolean) => toggleId(tag.id, checked)}
-                  aria-label={'pokaż zdjęcia'}
-                />
-                {tag.name}
-              </Label>
-            ))}
+            <div className={'overflow-hidden rounded-xl p-0 bg-white text-black'}>
+              <div className={'overflow-y-auto'}>
+                <div className={'flex max-h-48 flex-col gap-2 pt-2 px-2'}>
+                  {tags.map((tag) => (
+                    <Label
+                      key={tag.id}
+                      variant={'horizontal'}
+                      className={'w-full'}
+                    >
+                      <Checkbox
+                        defaultChecked={tagIds.includes(tag.id)}
+                        onCheckedChange={(checked: boolean) => toggleId(tag.id, checked)}
+                        aria-label={'pokaż zdjęcia'}
+                      />
+                      {tag.name}
+                    </Label>
+                  ))}
+                  <div className={'min-h-1'}/>
+                </div>
+              </div>
+            </div>
           </fieldset>
         )}
         <RangePicker
