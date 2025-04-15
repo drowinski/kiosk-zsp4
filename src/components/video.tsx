@@ -50,7 +50,7 @@ export function Video({ src, showPlayOverlay: _showPlayOverlay = true, disabled,
   };
 
   useEffect(() => {
-    if (disabled === undefined || disabled) return;
+    if (disabled === undefined || !disabled) return;
     togglePlay(false);
   }, [disabled]);
 

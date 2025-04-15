@@ -36,10 +36,12 @@ export function Asset({ fileName, assetType, description, playbackDisabled, clas
     return <audio src={src}></audio>;
   } else if (assetType === 'document') {
     return (
+      // <DocumentViewer src={src} className={'max-w-full max-h-full'}/>
       <Document
         src={src}
         className={cn('rounded-xl', className)}
         fill={'contain'}
+        controls
       />
     );
   } else {
