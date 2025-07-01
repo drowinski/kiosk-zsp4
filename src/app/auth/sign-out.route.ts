@@ -1,6 +1,6 @@
 import type { Route } from './+types/sign-out.route';
 import { redirect } from 'react-router';
-import { getDeleteSessionTokenCookie } from '@/features/sessions/.server/sessions.cookies';
+import { getSessionTokenDeletionCookie } from '@/features/sessions/.server/sessions.cookies';
 import { tryAsync } from '@/utils/try';
 import { status, StatusCodes } from '@/utils/status-response';
 import { sessionService } from '@/features/sessions/.server/sessions.service';
@@ -19,7 +19,7 @@ export async function action({ context: { logger, session } }: Route.ActionArgs)
   logger.info('Deleting session cookie.');
   return redirect('/', {
     headers: {
-      'Set-Cookie': getDeleteSessionTokenCookie()
+      'Set-Cookie': getSessionTokenDeletionCookie()
     }
   });
 }

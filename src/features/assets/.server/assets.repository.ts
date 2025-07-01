@@ -89,21 +89,26 @@ export class DrizzleAssetRepository implements AssetRepository {
       .leftJoin(tagTable, eq(assetTagJunctionTable.tagId, tagTable.id))
       .groupBy(assetTagJunctionTable.assetId)
   );
-  private readonly fullSelectQuery = db
-    .with(this.assetJsonTags)
-    .select({
-      ...getTableColumns(assetTable),
-      date: {
-        ...getTableColumns(dateTable)
-      },
-      tags: sql<Tag[]>`COALESCE(${this.assetJsonTags.tags}, '[]'::jsonb)`.as('tags')
-    })
-    .from(assetTable)
-    .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
-    .leftJoin(this.assetJsonTags, eq(this.assetJsonTags.assetId, assetTable.id));
+
+  private get fullSelectQuery() {
+    return db
+      .with(this.assetJsonTags)
+      .select({
+        ...getTableColumns(assetTable),
+        date: {
+          ...getTableColumns(dateTable)
+        },
+        tags: sql<Tag[]>`COALESCE(${this.assetJsonTags.tags}, '[]'::jsonb)`.as('tags')
+      })
+      .from(assetTable)
+      .leftJoin(dateTable, eq(dateTable.id, assetTable.dateId))
+      .leftJoin(this.assetJsonTags, eq(this.assetJsonTags.assetId, assetTable.id));
+  }
 
   async getAssetById(id: number): Promise<Asset | null> {
+    console.log('asset id is', id);
     const [asset] = await this.fullSelectQuery.where(eq(assetTable.id, id));
+    console.log('returned asset', asset);
 
     return asset ?? null;
   }

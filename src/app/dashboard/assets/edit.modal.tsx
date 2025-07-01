@@ -1,9 +1,6 @@
+import type { Route } from './+types/edit.modal';
 import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
   Form,
-  useActionData,
-  useLoaderData,
   useLocation,
   useNavigate,
   useNavigation,
@@ -49,7 +46,7 @@ const assetEditFormSchema = assetUpdateSchema
       .pipe(assetUpdateSchema.shape.isPublished)
   });
 
-export async function loader({ params, context: { logger } }: LoaderFunctionArgs) {
+export async function loader({ params, context: { logger } }: Route.LoaderArgs) {
   logger.info('Parsing params...');
   const assetId = parseInt(params.id || '');
   if (!assetId) {
@@ -63,7 +60,7 @@ export async function loader({ params, context: { logger } }: LoaderFunctionArgs
     throw status(StatusCodes.INTERNAL_SERVER_ERROR);
   }
   if (!asset) {
-    logger.warn('Asset not found.');
+    logger.warn(`Asset not found. ${asset}`);
     throw status(StatusCodes.NOT_FOUND);
   }
 
@@ -78,7 +75,7 @@ export async function loader({ params, context: { logger } }: LoaderFunctionArgs
   return { asset, availableTags };
 }
 
-export async function action({ request, context: { logger } }: ActionFunctionArgs) {
+export async function action({ request, context: { logger } }: Route.ActionArgs) {
   logger.info('Parsing form data...');
   const formData = await request.formData();
   const submission = await parseWithZod(formData, {
@@ -108,12 +105,13 @@ export async function action({ request, context: { logger } }: ActionFunctionArg
   return callbackUrl ? redirect(callbackUrl) : redirect('..');
 }
 
-export default function AssetEditModal() {
-  const {
+export default function AssetEditModal({
+  loaderData: {
     asset: { tags, ...asset },
     availableTags
-  } = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
+  },
+  actionData
+}: Route.ComponentProps) {
   const navigate = useNavigate();
   const navigation = useNavigation();
   const location = useLocation();
@@ -194,7 +192,7 @@ export default function AssetEditModal() {
         </div>
         <Form
           method={'post'}
-          action={`${location.pathname}?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+          // action={`${location.pathname}?callbackUrl=${encodeURIComponent(callbackUrl)}`}
           id={form.id}
           onSubmit={form.onSubmit}
           noValidate

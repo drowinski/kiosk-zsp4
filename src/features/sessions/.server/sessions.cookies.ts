@@ -11,7 +11,7 @@ export function getSessionTokenCookie(token: string, expiresAt: Date): string {
   });
 }
 
-export function getDeleteSessionTokenCookie(): string {
+export function getSessionTokenDeletionCookie(): string {
   return cookieParser.serialize('session', '', {
     httpOnly: true,
     sameSite: 'lax',

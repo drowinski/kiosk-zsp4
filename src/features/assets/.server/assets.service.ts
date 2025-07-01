@@ -46,6 +46,8 @@ export class AssetService {
       throw new Error("Created asset wasn't returned from repository method.");
     }
 
+    // ...
+
     logger.debug('Saving asset file...');
     const [, saveFileOk, saveFileError] = await tryAsync(this.fileManager.saveFileFromStream(stream, fileName));
     if (!saveFileOk) {
@@ -57,7 +59,7 @@ export class AssetService {
         deleteAssetError.cause = saveFileError;
         throw deleteAssetError;
       } else if (!deletedAsset) {
-        logger.warn('No deleted assets returned, possible orphaned entries.');
+        logger.warn(`No deleted assets returned, possible orphaned entries (ID: ${createdAsset.id}).`);
       }
       throw saveFileError;
     }
