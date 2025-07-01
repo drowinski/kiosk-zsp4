@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    @font-face {
+        font-family: "Nunito";
+        src: url("/fonts/nunito/Nunito-VariableFont_wght.ttf"),
+        url("/fonts/nunito/Nunito-Italic-VariableFont_wght.ttf");
+        font-weight: 100 1000;
+    }
+
+    :root {
+        --color-background: 17 100% 96%;
+        --color-foreground: 0 0% 4%;
+        --color-primary: 15 81% 37%;
+        --color-primary-foreground: 17 100% 96%;
+        --color-secondary: 211 52% 35%;
+        --color-secondary-foreground: 220 60% 97%;
+        --color-accent: 16 100% 92%;
+        --color-accent-foreground: 0 0% 4%;
+        --color-muted: 16 8% 45%;
+        --color-card: 16 100% 92%;
+        --color-card-foreground: 0 0% 4%;
+        --color-danger: 0 100% 43%;
+    }
+
+    html,
+    body {
+        height: 100%;
+        overscroll-behavior: none;
+    }
+
+    [hidden] {
+        display: none !important;
+    }
+}
+
+@layer utilities {
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+}

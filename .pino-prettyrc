@@ -1,0 +1,12 @@
+{
+  "ignore": "httpMethod,url,requestId,hostname,pid",
+  "messageFormat": "[{requestId}] {msg}",
+  "customColors": {
+    "debug": "blue",
+    "info": "green",
+    "error": "red",
+    "warn": "yellow",
+    "message": "reset",
+    "greyMessage": "gray"
+  }
+}
