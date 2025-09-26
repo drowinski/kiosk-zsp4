@@ -15,10 +15,14 @@ export class ThumbnailGenerator {
   }
 
   async generateFromImage(fileName: string): Promise<void> {
+    await this.fileManager.createDir(this.thumbnailDirectory);
+
     return this.generateFromImageOrPDF(fileName);
   }
 
   async generateFromVideo(fileName: string): Promise<void> {
+    await this.fileManager.createDir(this.thumbnailDirectory);
+
     const inputPath = this.fileManager._definePathInsideRootDir(fileName);
 
     return new Promise<void>((resolve, reject) => {
@@ -40,6 +44,8 @@ export class ThumbnailGenerator {
   }
 
   async generateFromPDF(fileName: string): Promise<void> {
+    await this.fileManager.createDir(this.thumbnailDirectory);
+
     return this.generateFromImageOrPDF(fileName);
   }
 

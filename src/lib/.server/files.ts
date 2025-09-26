@@ -31,6 +31,11 @@ export class FileManager {
     await fsp.unlink(filePath);
   }
 
+  async createDir(dirName: string): Promise<void> {
+    const dirPath = this._definePathInsideRootDir(dirName);
+    await fsp.mkdir(dirPath, { recursive: true });
+  }
+
   _definePathInsideRootDir(...unsafePaths: string[]): string {
     const absolutePath = path.join(this.rootDir, ...unsafePaths);
     if (!absolutePath.startsWith(this.rootDir)) {
