@@ -30,7 +30,7 @@ export function AssetDatePrecisionCombobox({
     >
       <SelectTrigger />
       <SelectContent>
-        {DATE_PRECISION_ARRAY.map((precision, index) => (
+        {DATE_PRECISION_ARRAY.filter((p) => p !== 'century').map((precision, index) => (
           <SelectOption
             key={precision}
             value={precision}
@@ -81,6 +81,7 @@ export function DatePicker({
         day || prevSplit.at(2) || '01'
       ];
       const date = values.join('-');
+      console.log('DATA DATA DATA DATA', date);
       onValueChange?.(date);
       return date;
     });
@@ -99,7 +100,7 @@ export function DatePicker({
 
     const [year, month, _] = splitDate;
     let newNormalizedDate = '';
-    if (precision === 'year') {
+    if (precision === 'year' || precision === 'decade') {
       newNormalizedDate = `${year}-01-01`;
     } else if (precision === 'month') {
       newNormalizedDate = `${year}-${month}-01`;
@@ -139,6 +140,32 @@ export function DatePicker({
           aria-hidden={precision !== 'day'}
           aria-label={ariaLabel}
         />
+      )}
+      {precision === 'decade' && (
+        <Select
+          value={String(Math.floor(parseInt(year) / 10) * 10)}
+          onValueChange={(decadeYear) => {
+            updateDate({ year: decadeYear });
+          }}
+        >
+          <SelectTrigger
+            placeholder={'dekada'}
+            aria-label={ariaLabel ? ariaLabel + ' (dekada)' : undefined}
+          />
+          <SelectContent>
+            {Array.from(
+              { length: Math.floor((new Date().getFullYear() - 1900) / 10) + 1 },
+              (_, i) => 1900 + i * 10
+            ).map((value) => (
+              <SelectOption
+                key={value}
+                value={String(value)}
+              >
+                {value}
+              </SelectOption>
+            ))}
+          </SelectContent>
+        </Select>
       )}
       <ConditionalDiv {...(ConditionalDiv === 'div' ? { className: 'flex flex-nowrap' } : undefined)}>
         {precision === 'month' && (
@@ -265,6 +292,7 @@ export function AssetDatePicker({
                   setMaxDate(value);
                   dateMax?.onValueChange?.(value);
                 }
+                console.log('inside the valuechange of picker', minDate)
               }}
               precision={precision}
               ariaLabel={isRange ? 'data minimalna zakresu' : 'data'}
