@@ -1,0 +1,27 @@
+name: kiosk-zsp4
+
+services:
+  postgres:
+    image: postgres:18-trixie
+    restart: unless-stopped
+    user: postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
+      interval: 5s
+      retries: 5
+  api:
+    build: ./api
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    entrypoint: [ "sh", "-c", "java -Xms256m -Xmx512m -jar app.jar" ]
+    depends_on:
+      postgres:
+        condition: service_healthy

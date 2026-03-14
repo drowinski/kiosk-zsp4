@@ -1,0 +1,17 @@
+services:
+  postgres:
+    ports:
+      - 5432:5432
+    volumes:
+      - db_data:/var/lib/postgresql
+  api:
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - 8080:8080
+    volumes:
+      - api_logs:/logs
+
+volumes:
+  db_data:
+  api_logs:
