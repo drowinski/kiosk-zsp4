@@ -18,9 +18,6 @@ services:
     restart: unless-stopped
     environment:
       DB_HOST: postgres
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
     entrypoint: [ "sh", "-c", "java -Xms256m -Xmx512m -jar app.jar" ]
     depends_on:
       postgres:

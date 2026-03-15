@@ -5,5 +5,12 @@ services:
   api:
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_SECONDS:
+      DEFAULT_USER_USERNAME: ${DEFAULT_USER_USERNAME}
+      DEFAULT_USER_PASSWORD: ${DEFAULT_USER_PASSWORD}
     volumes:
       - /opt/archive/logs:/logs
