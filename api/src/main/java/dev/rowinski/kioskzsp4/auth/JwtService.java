@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -20,15 +21,17 @@ public class JwtService {
     private final String applicationName;
     private final JwtProperties jwtProperties;
     private final SecretKey key;
+    private final Clock clock;
 
-    public JwtService(@Value("${spring.application.name}") String applicationName, JwtProperties jwtProperties) {
+    public JwtService(@Value("${spring.application.name}") String applicationName, JwtProperties jwtProperties, Clock clock) {
         this.applicationName = applicationName;
         this.jwtProperties = jwtProperties;
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.secret()));
+        this.clock = clock;
     }
 
     public String generateToken(String username, List<Role> roles) {
-        Instant now = Instant.now();
+        Instant now = Instant.now(clock);
         return Jwts.builder()
                 .issuer(applicationName)
                 .subject(username)
