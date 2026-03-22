@@ -2,6 +2,9 @@ package dev.rowinski.kioskzsp4.asset;
 
 import dev.rowinski.kioskzsp4.asset.dto.AssetCreationDTO;
 import dev.rowinski.kioskzsp4.asset.dto.AssetResponseDTO;
+import dev.rowinski.kioskzsp4.asset.exception.AssetFileException;
+import dev.rowinski.kioskzsp4.asset.exception.AssetNotFoundException;
+import dev.rowinski.kioskzsp4.asset.exception.AssetOperationNotAllowed;
 import dev.rowinski.kioskzsp4.asset.exception.UnsupportedFileTypeException;
 import dev.rowinski.kioskzsp4.asset.mapping.AssetMapper;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
@@ -14,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -82,5 +86,50 @@ public class AssetController {
         return ResponseEntity
                 .created(URI.create("/api/assets/%s".formatted(asset.getId())))
                 .body(assetMapper.toAssetResponseDTO(asset));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> softDeleteAssetById(@PathVariable UUID id, Authentication authentication) {
+        try {
+            assetService.softDeleteAsset(id, authentication.getName());
+        } catch (AssetNotFoundException e) {
+            log.debug(e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<Void> restoreAssetById(@PathVariable UUID id) {
+        try {
+            assetService.restoreAsset(id);
+        } catch (AssetNotFoundException e) {
+            log.debug(e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        } catch (AssetOperationNotAllowed e) {
+            log.debug(e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> permanentlyDeleteAssetById(@PathVariable UUID id) {
+        try {
+            assetService.permanentlyDeleteAsset(id);
+        } catch (AssetNotFoundException e) {
+            log.debug(e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        } catch (AssetOperationNotAllowed e) {
+            log.debug(e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
+        } catch (AssetFileException e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+
+        return ResponseEntity.noContent().build();
     }
 }

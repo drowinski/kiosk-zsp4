@@ -63,6 +63,9 @@ public class Asset implements Persistable<UUID> {
     @NotNull
     private Instant updatedAt;
 
+    @Nullable
+    private Instant deletedAt;
+
     @CreatedBy
     @Column(updatable = false)
     @NotNull
@@ -71,6 +74,9 @@ public class Asset implements Persistable<UUID> {
     @LastModifiedBy
     @NotNull
     private String updatedBy;
+
+    @Nullable
+    private String deletedBy;
 
     @Transient
     private boolean isNew = true;

@@ -1,8 +1,11 @@
 package dev.rowinski.kioskzsp4.asset;
 
 import dev.rowinski.kioskzsp4.asset.exception.AssetFileException;
+import dev.rowinski.kioskzsp4.asset.exception.AssetNotFoundException;
+import dev.rowinski.kioskzsp4.asset.exception.AssetOperationNotAllowed;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
 import dev.rowinski.kioskzsp4.asset.model.AssetType;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
@@ -16,6 +19,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.UUID;
 
 @Slf4j
@@ -24,6 +29,7 @@ import java.util.UUID;
 public class AssetService {
     private final AssetProperties assetProperties;
     private final AssetRepository assetRepository;
+    private final Clock clock;
     private final Tika tika;
     private final MimeTypes mimeTypes;
 
@@ -83,6 +89,33 @@ public class AssetService {
         } catch (MimeTypeException e) {
             throw new AssetFileException("Mime type exception while trying to save asset file", e);
         }
+    }
+
+    @Transactional
+    public void softDeleteAsset(UUID assetId, String deletedBy) {
+        Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
+        asset.setDeletedAt(Instant.now(clock));
+        asset.setDeletedBy(deletedBy);
+    }
+
+    @Transactional
+    public void restoreAsset(UUID assetId) {
+        Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
+        if (asset.getDeletedAt() == null) {
+            throw new AssetOperationNotAllowed("Asset needs to be soft deleted before it can be restored");
+        }
+        asset.setDeletedAt(null);
+        asset.setDeletedBy(null);
+    }
+
+    @Transactional
+    public void permanentlyDeleteAsset(UUID assetId) {
+        Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
+        if (asset.getDeletedAt() == null) {
+            throw new AssetOperationNotAllowed("Asset needs to be soft deleted before permanent deletion");
+        }
+        assetRepository.delete(asset);
+        deleteAssetFile(asset.getFileName());
     }
 
     private void deleteAssetFile(String fileName) {

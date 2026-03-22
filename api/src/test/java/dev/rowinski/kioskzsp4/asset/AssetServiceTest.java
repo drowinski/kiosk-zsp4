@@ -1,5 +1,6 @@
 package dev.rowinski.kioskzsp4.asset;
 
+import dev.rowinski.kioskzsp4.asset.exception.AssetOperationNotAllowed;
 import dev.rowinski.kioskzsp4.asset.exception.UnsupportedFileTypeException;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
 import dev.rowinski.kioskzsp4.asset.model.AssetType;
@@ -13,7 +14,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +37,11 @@ public class AssetServiceTest {
     public void setUp() {
         assetRepository = mock(AssetRepository.class);
         AssetProperties assetProperties = new AssetProperties(tempDir);
-        assetService = new AssetService(assetProperties, assetRepository, new Tika(), MimeTypes.getDefaultMimeTypes());
+        assetService = new AssetService(assetProperties,
+                assetRepository,
+                Clock.systemUTC(),
+                new Tika(),
+                MimeTypes.getDefaultMimeTypes());
         when(assetRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
@@ -81,5 +90,61 @@ public class AssetServiceTest {
                 assertThat(tempDirStream.findAny()).isEmpty();
             }
         }
+    }
+
+    @Test
+    void permanentlyDeleteAsset_withValidArguments_deletesRecordAndFile() throws IOException {
+        Path assetFile = tempDir.resolve("test-file.jpg");
+        Files.createFile(assetFile);
+
+        Asset asset = new Asset();
+        asset.setId(UUID.randomUUID());
+        asset.setFileName(assetFile.getFileName().toString());
+        asset.setDeletedAt(Instant.now());
+        asset.setDeletedBy("MockUser");
+
+        when(assetRepository.findById(asset.getId())).thenReturn(Optional.of(asset));
+
+        assetService.permanentlyDeleteAsset(asset.getId());
+
+        assertThat(Files.exists(assetFile)).isFalse();
+    }
+
+    @Test
+    void permanentlyDeleteAsset_whenRepositoryThrowsException_doesNotDeleteFile() throws IOException {
+        Path assetFile = tempDir.resolve("test-file.jpg");
+        Files.createFile(assetFile);
+
+        Asset asset = new Asset();
+        asset.setId(UUID.randomUUID());
+        asset.setFileName(assetFile.getFileName().toString());
+        asset.setDeletedAt(Instant.now());
+        asset.setDeletedBy("MockUser");
+
+        when(assetRepository.findById(asset.getId())).thenReturn(Optional.of(asset));
+        doThrow(new RuntimeException("DB Error")).when(assetRepository).delete(asset);
+
+        assertThatThrownBy(() -> assetService.permanentlyDeleteAsset(asset.getId()))
+                .isInstanceOf(RuntimeException.class);
+
+        assertThat(Files.exists(assetFile)).isTrue();
+    }
+
+    @Test
+    void permanentlyDeleteAsset_whenNotSoftDeleted_doesNotDeleteAndThrowsException() throws IOException {
+        Path assetFile = tempDir.resolve("test-file.jpg");
+        Files.createFile(assetFile);
+
+        Asset asset = new Asset();
+        asset.setId(UUID.randomUUID());
+        asset.setFileName(assetFile.getFileName().toString());
+
+        when(assetRepository.findById(asset.getId())).thenReturn(Optional.of(asset));
+
+        assertThatThrownBy(() -> assetService.permanentlyDeleteAsset(asset.getId()))
+                .isInstanceOf(AssetOperationNotAllowed.class);
+
+        verify(assetRepository, never()).delete(any());
+        assertThat(Files.exists(assetFile)).isTrue();
     }
 }
