@@ -92,6 +92,14 @@ public class AssetService {
     }
 
     @Transactional
+    public Asset updateAsset(UUID assetId, Asset assetUpdates) {
+        Asset asset =  assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
+        asset.setDescription(assetUpdates.getDescription());
+        asset.setDate(assetUpdates.getDate());
+        return asset;
+    }
+
+    @Transactional
     public void softDeleteAsset(UUID assetId, String deletedBy) {
         Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
         asset.setDeletedAt(Instant.now(clock));

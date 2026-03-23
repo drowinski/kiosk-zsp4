@@ -2,6 +2,7 @@ package dev.rowinski.kioskzsp4.asset;
 
 import dev.rowinski.kioskzsp4.asset.dto.AssetCreationDTO;
 import dev.rowinski.kioskzsp4.asset.dto.AssetResponseDTO;
+import dev.rowinski.kioskzsp4.asset.dto.AssetUpdateDTO;
 import dev.rowinski.kioskzsp4.asset.exception.AssetFileException;
 import dev.rowinski.kioskzsp4.asset.exception.AssetNotFoundException;
 import dev.rowinski.kioskzsp4.asset.exception.AssetOperationNotAllowed;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -85,6 +87,22 @@ public class AssetController {
 
         return ResponseEntity
                 .created(URI.create("/api/assets/%s".formatted(asset.getId())))
+                .body(assetMapper.toAssetResponseDTO(asset));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AssetResponseDTO> updateAsset(@PathVariable UUID id, @Valid @RequestBody AssetUpdateDTO assetUpdateDTO) {
+
+        Asset asset;
+        try {
+            asset = assetService.updateAsset(id, assetMapper.fromAssetUpdateDTO(assetUpdateDTO));
+        } catch (AssetNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .location(URI.create("/api/assets/%s".formatted(asset.getId())))
                 .body(assetMapper.toAssetResponseDTO(asset));
     }
 

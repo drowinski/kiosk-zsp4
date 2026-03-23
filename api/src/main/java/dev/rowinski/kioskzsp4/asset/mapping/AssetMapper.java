@@ -2,6 +2,7 @@ package dev.rowinski.kioskzsp4.asset.mapping;
 
 import dev.rowinski.kioskzsp4.asset.dto.AssetCreationDTO;
 import dev.rowinski.kioskzsp4.asset.dto.AssetResponseDTO;
+import dev.rowinski.kioskzsp4.asset.dto.AssetUpdateDTO;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
 import org.jspecify.annotations.Nullable;
 import org.mapstruct.Mapper;
@@ -11,4 +12,5 @@ import org.mapstruct.MappingConstants;
 public interface AssetMapper {
     AssetResponseDTO toAssetResponseDTO(@Nullable Asset asset);
     Asset fromAssetCreationDTO(@Nullable AssetCreationDTO assetCreationDTO);
+    Asset fromAssetUpdateDTO(@Nullable AssetUpdateDTO assetUpdateDTO);
 }

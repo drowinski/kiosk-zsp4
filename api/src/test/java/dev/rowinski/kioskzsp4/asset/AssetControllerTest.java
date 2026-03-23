@@ -2,6 +2,7 @@ package dev.rowinski.kioskzsp4.asset;
 
 import dev.rowinski.kioskzsp4.asset.dto.AssetCreationDTO;
 import dev.rowinski.kioskzsp4.asset.dto.AssetDateDTO;
+import dev.rowinski.kioskzsp4.asset.dto.AssetUpdateDTO;
 import dev.rowinski.kioskzsp4.asset.exception.AssetNotFoundException;
 import dev.rowinski.kioskzsp4.asset.exception.AssetOperationNotAllowed;
 import dev.rowinski.kioskzsp4.asset.exception.UnsupportedFileTypeException;
@@ -32,8 +33,7 @@ import java.util.regex.Pattern;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(
@@ -56,6 +56,8 @@ public class AssetControllerTest extends TestWithSecurity {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    /* createAsset */
 
     @Test
     @WithMockUser
@@ -119,6 +121,57 @@ public class AssetControllerTest extends TestWithSecurity {
                 .andExpect(content().string(""));
     }
 
+    /* updateAsset */
+
+    @Test
+    @WithMockUser
+    void updateAsset_withValidRequest_returns200WithLocationHeaderAndPayload() throws Exception {
+        UUID assetId = UUID.randomUUID();
+        AssetUpdateDTO assetUpdateDTO = AssetUpdateDTO.builder()
+                .description("Some description")
+                .date(AssetDateDTO.builder()
+                        .min(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
+                        .precision(AssetDatePrecision.YEAR)
+                        .build())
+                .build();
+
+        Asset mockAsset = new Asset();
+        mockAsset.setId(assetId);
+        when(assetService.updateAsset(eq(assetId), any())).thenReturn(mockAsset);
+
+        mockMvc.perform(put(ID_ENDPOINT, assetId.toString())
+                        .content(serializeToJSON(assetUpdateDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("Location"))
+                .andExpect(header().string("Location", Matchers.matchesRegex(LOCATION_HEADER_REGEX)))
+                .andExpect(jsonPath("$.id").value(assetId.toString()));
+    }
+
+    @Test
+    @WithMockUser
+    void updateAsset_withNonExistentId_returns404() throws Exception {
+        UUID assetId = UUID.randomUUID();
+        AssetUpdateDTO assetUpdateDTO = AssetUpdateDTO.builder()
+                .description("Some description")
+                .date(AssetDateDTO.builder()
+                        .min(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
+                        .precision(AssetDatePrecision.YEAR)
+                        .build())
+                .build();
+
+        when(assetService.updateAsset(eq(assetId), any())).thenThrow(new AssetNotFoundException(assetId));
+
+        mockMvc.perform(put(ID_ENDPOINT, assetId.toString())
+                        .content(serializeToJSON(assetUpdateDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(header().doesNotExist("Location"))
+                .andExpect(content().string(""));
+    }
+
+    /* softDeleteAssetById */
+
     @Test
     @WithMockUser
     void softDeleteAssetById_withValidId_returns204() throws Exception {
@@ -139,6 +192,8 @@ public class AssetControllerTest extends TestWithSecurity {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(""));
     }
+
+    /* permanentlyDeleteAssetById */
 
     @Test
     @WithMockUser
@@ -171,6 +226,8 @@ public class AssetControllerTest extends TestWithSecurity {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(""));
     }
+
+    /* Helpers */
 
     private MockMultipartFile getValidMetadataFile() {
         AssetCreationDTO assetCreationDTO = AssetCreationDTO.builder()
@@ -259,4 +316,7 @@ public class AssetControllerTest extends TestWithSecurity {
         return objectMapper.writeValueAsString(assetCreationDTO);
     }
 
+    private String serializeToJSON(AssetUpdateDTO assetUpdateDTO) {
+        return objectMapper.writeValueAsString(assetUpdateDTO);
+    }
 }
