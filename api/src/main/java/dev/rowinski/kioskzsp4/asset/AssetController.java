@@ -7,6 +7,7 @@ import dev.rowinski.kioskzsp4.asset.exception.AssetFileException;
 import dev.rowinski.kioskzsp4.asset.exception.AssetNotFoundException;
 import dev.rowinski.kioskzsp4.asset.exception.AssetOperationNotAllowed;
 import dev.rowinski.kioskzsp4.asset.exception.UnsupportedFileTypeException;
+import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
 import dev.rowinski.kioskzsp4.asset.mapping.AssetMapper;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
 import jakarta.validation.Valid;
@@ -16,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -34,25 +34,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AssetController {
     private final AssetMapper assetMapper;
-    private final AssetRepository assetRepository; // TODO: Decouple repository from controller
     private final AssetService assetService;
-
-    // TODO: Implement proper endpoint with sorting and filtering, delegating through the service layer
-    @GetMapping
-    public ResponseEntity<Page<AssetResponseDTO>> getAllAssets(
-            @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
-        return ResponseEntity.ok(assetRepository.findAll(pageable).map(assetMapper::toAssetResponseDTO));
-    }
-
-    // TODO: Implement proper endpoint with filtering, delegating through the service layer
-    @GetMapping("/{id}")
-    public ResponseEntity<AssetResponseDTO> getAssetById(@PathVariable UUID id) {
-        return assetRepository.findById(id)
-                .map(assetMapper::toAssetResponseDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
     @PostMapping
     public ResponseEntity<AssetResponseDTO> createAsset(
@@ -88,6 +70,22 @@ public class AssetController {
         return ResponseEntity
                 .created(URI.create("/api/assets/%s".formatted(asset.getId())))
                 .body(assetMapper.toAssetResponseDTO(asset));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AssetResponseDTO> getAssetById(@PathVariable UUID id) {
+        return assetService.getAssetById(id)
+                .map(assetMapper::toAssetResponseDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<AssetResponseDTO>> getAssets(
+            AssetFilterParams filterParams,
+            @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(assetService.getAssets(filterParams, pageable).map(assetMapper::toAssetResponseDTO));
     }
 
     @PutMapping("/{id}")

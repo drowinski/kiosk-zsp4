@@ -144,7 +144,7 @@ public class AssetServiceTest {
         assertThatThrownBy(() -> assetService.permanentlyDeleteAsset(asset.getId()))
                 .isInstanceOf(AssetOperationNotAllowed.class);
 
-        verify(assetRepository, never()).delete(any());
+        verify(assetRepository, never()).delete(any(Asset.class));
         assertThat(Files.exists(assetFile)).isTrue();
     }
 }

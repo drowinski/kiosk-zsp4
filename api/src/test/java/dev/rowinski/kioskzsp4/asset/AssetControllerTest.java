@@ -6,16 +6,21 @@ import dev.rowinski.kioskzsp4.asset.dto.AssetUpdateDTO;
 import dev.rowinski.kioskzsp4.asset.exception.AssetNotFoundException;
 import dev.rowinski.kioskzsp4.asset.exception.AssetOperationNotAllowed;
 import dev.rowinski.kioskzsp4.asset.exception.UnsupportedFileTypeException;
+import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
 import dev.rowinski.kioskzsp4.asset.mapping.AssetMapper;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
 import dev.rowinski.kioskzsp4.asset.model.AssetDatePrecision;
 import dev.rowinski.kioskzsp4.TestWithSecurity;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -28,9 +33,12 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -119,6 +127,95 @@ public class AssetControllerTest extends TestWithSecurity {
                 .andExpect(status().isUnsupportedMediaType())
                 .andExpect(header().doesNotExist("Location"))
                 .andExpect(content().string(""));
+    }
+
+    /* getAssetById */
+
+    @Test
+    @WithMockUser
+    void getAssetById_withValidId_returns200WithAsset() throws Exception {
+        Asset mockAsset = new Asset();
+        mockAsset.setId(UUID.randomUUID());
+
+        when(assetService.getAssetById(mockAsset.getId())).thenReturn(Optional.of(mockAsset));
+
+        mockMvc.perform(get(ID_ENDPOINT, mockAsset.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(mockAsset.getId().toString()));
+    }
+
+    /* getAssets */
+
+    @Test
+    @WithMockUser
+    void getAssets_withoutFiltersOrPagination_usesCorrectDefaultsAndReturns200WithPayload() throws Exception {
+        Asset mockAsset = new Asset();
+        mockAsset.setId(UUID.randomUUID());
+
+        when(assetService.getAssets(any(), any())).thenReturn(new PageImpl<>(List.of(mockAsset)));
+
+        mockMvc.perform(get(ROOT_ENDPOINT))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(mockAsset.getId().toString()));
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+        verify(assetService).getAssets(any(AssetFilterParams.class), pageableCaptor.capture());
+        verifyNoMoreInteractions(assetService);
+
+        Pageable pageable = pageableCaptor.getValue();
+        assertThat(pageable.getPageNumber()).isEqualTo(0);
+        assertThat(pageable.getPageSize()).isEqualTo(50);
+        assertThat(pageable.getSort()).isEqualTo(Sort.by(Sort.Direction.DESC, "createdAt"));
+    }
+
+    @Test
+    @WithMockUser
+    void getAssets_withFiltersAndPagination_bindsQueryParamsAndReturns200() throws Exception {
+        Asset mockAsset1 = new Asset();
+        mockAsset1.setId(UUID.randomUUID());
+        Asset mockAsset2 = new Asset();
+        mockAsset2.setId(UUID.randomUUID());
+
+        when(assetService.getAssets(any(), any())).thenReturn(new PageImpl<>(List.of(mockAsset1, mockAsset2)));
+
+        mockMvc.perform(get(ROOT_ENDPOINT)
+                        .queryParam("page", "2")
+                        .queryParam("size", "56")
+                        .queryParam("sort", "updatedAt,desc")
+                        .queryParam("updatedAfter", "2025-05-05")
+                        .queryParam("deletedOnly", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(mockAsset1.getId().toString()))
+                .andExpect(jsonPath("$.content[1].id").value(mockAsset2.getId().toString()));
+
+        ArgumentCaptor<AssetFilterParams> filterCaptor = ArgumentCaptor.forClass(AssetFilterParams.class);
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+        verify(assetService).getAssets(filterCaptor.capture(), pageableCaptor.capture());
+        verifyNoMoreInteractions(assetService);
+
+        AssetFilterParams filterParams = filterCaptor.getValue();
+
+        assertThat(filterParams).isNotNull();
+        assertThat(filterParams.updatedAfter()).isEqualTo(LocalDate.of(2025, 5, 5));
+        assertThat(filterParams.deletedOnly()).isTrue();
+
+        Pageable pageable = pageableCaptor.getValue();
+
+        assertThat(pageable.getPageNumber()).isEqualTo(2);
+        assertThat(pageable.getPageSize()).isEqualTo(56);
+        assertThat(pageable.getSort()).isEqualTo(Sort.by(Sort.Direction.DESC, "updatedAt"));
+    }
+
+    @Test
+    @WithMockUser
+    void getAssets_withInvalidDate_returns400() throws Exception {
+        mockMvc.perform(get(ROOT_ENDPOINT)
+                        .queryParam("updatedAfter", "not-a-date"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(assetService);
     }
 
     /* updateAsset */

@@ -3,6 +3,8 @@ package dev.rowinski.kioskzsp4.asset;
 import dev.rowinski.kioskzsp4.asset.exception.AssetFileException;
 import dev.rowinski.kioskzsp4.asset.exception.AssetNotFoundException;
 import dev.rowinski.kioskzsp4.asset.exception.AssetOperationNotAllowed;
+import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
+import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterSpecificationBuilder;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
 import dev.rowinski.kioskzsp4.asset.model.AssetType;
 import jakarta.transaction.Transactional;
@@ -12,6 +14,8 @@ import org.apache.tika.Tika;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -89,6 +94,14 @@ public class AssetService {
         } catch (MimeTypeException e) {
             throw new AssetFileException("Mime type exception while trying to save asset file", e);
         }
+    }
+
+    public Optional<Asset> getAssetById(UUID assetId) {
+        return assetRepository.findById(assetId);
+    }
+
+    public Page<Asset> getAssets(AssetFilterParams filterParams, Pageable pageable) {
+        return assetRepository.findAll(AssetFilterSpecificationBuilder.fromFilterParams(filterParams), pageable);
     }
 
     @Transactional

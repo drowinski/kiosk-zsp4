@@ -55,24 +55,22 @@ public class Asset implements Persistable<UUID> {
     private AssetDate date;
 
     @CreatedDate
-    @Column(updatable = false)
-    @NotNull
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
     @LastModifiedDate
-    @NotNull
+    @Column(nullable = false)
     private Instant updatedAt;
 
     @Nullable
     private Instant deletedAt;
 
     @CreatedBy
-    @Column(updatable = false)
-    @NotNull
+    @Column(nullable = false, updatable = false)
     private String createdBy;
 
     @LastModifiedBy
-    @NotNull
+    @Column(nullable = false)
     private String updatedBy;
 
     @Nullable
