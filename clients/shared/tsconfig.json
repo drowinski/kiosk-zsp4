@@ -22,7 +22,7 @@
 
     /* Paths */
     "paths": {
-      "@/*": ["./src/*"]
+      "@kiosk-zsp4/shared/*": ["./src/*"]
     }
   },
   "include": ["src"]

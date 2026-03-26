@@ -29,6 +29,12 @@ export default defineConfig([
         'warn',
         { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
       ],
+      '@typescript-eslint/no-empty-object-type': [
+        'error',
+        {
+          allowInterfaces: 'with-single-extends',
+        },
+      ],
     },
   },
   eslintConfigPrettier,

@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+@source "../";
+
+@plugin "@tailwindcss/forms";
+
+/* Fonts */
+
+@font-face {
+    font-family: "Nunito";
+    src: url("../assets/fonts/Nunito.ttf") format("truetype");
+    font-weight: 200 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Nunito";
+    src: url("../assets/fonts/Nunito-Italic.ttf") format("truetype");
+    font-weight: 200 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Nunito Sans";
+    src: url("../assets/fonts/NunitoSans.ttf") format("truetype");
+    font-weight: 200 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Nunito Sans";
+    src: url("../assets/fonts/NunitoSans-Italic.ttf") format("truetype");
+    font-weight: 200 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+@layer base {
+    :root {
+        --font-nunito: "Nunito", sans-serif;
+        --font-nunito-sans: "Nunito Sans", sans-serif;
+        --font-size-sm: calc(var(--font-size-base) / 1.25);
+        --font-size-base: 1rem;
+        --font-size-lg: calc(var(--font-size-base) * 1.25);
+        --font-size-xl: calc(var(--font-size-lg) * 1.25);
+    }
+}
+
+@theme inline {
+    --font-base: var(--font-nunito-sans);
+    --font-display: var(--font-nunito);
+}
+
+@utility font-body {
+    font-family: var(--font-base), Arial, Helvetica, sans-serif;
+    font-size: var(--font-size-base);
+    line-height: 150%;
+}
+
+@utility font-label-sm {
+    font-family: var(--font-base);
+    font-size: var(--font-size-sm);
+    line-height: 130%;
+}
+
+@utility font-label-md {
+    font-family: var(--font-base);
+    font-size: var(--font-size-base);
+    line-height: 125%;
+}
+
+@utility font-label-lg {
+    font-family: var(--font-base);
+    font-size: var(--font-size-lg);
+    line-height: 120%;
+}
+
+@utility font-heading-sm {
+    font-family: var(--font-display);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    line-height: 125%;
+}
+
+@utility font-heading-md {
+    font-family: var(--font-display);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    line-height: 120%;
+}
+
+@utility font-heading-lg {
+    font-family: var(--font-display);
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    line-height: 118%;
+}
+
+@layer base {
+    body {
+        @apply font-body;
+    }
+
+    * {
+        font: inherit;
+    }
+}
+
+/* Colors */
+
+@layer base {
+    :root {
+        --color-background: hsl(17 100% 96%);
+        --color-foreground: hsl(0 0% 4%);
+        --color-card: hsl(16 100% 92%);
+        --color-card-foreground: hsl(0 0% 4%);
+        --color-primary: hsl(15 81% 37%);
+        --color-primary-foreground: hsl(17 100% 96%);
+        --color-secondary: hsl(211 52% 35%);
+        --color-secondary-foreground: hsl(220 60% 97%);
+        --color-accent: hsl(16 100% 92%);
+        --color-accent-foreground: hsl(0 0% 4%);
+        --color-muted: hsl(16 8% 45%);
+        --color-success: hsl(116, 100%, 43%);
+        --color-danger: hsl(0 100% 43%);
+    }
+}
+
+@theme inline {
+    --color-background: var(--color-background);
+    --color-foreground: var(--color-foreground);
+    --color-card: var(--color-card);
+    --color-card-foreground: var(--color-card-foreground);
+    --color-primary: var(--color-primary);
+    --color-primary-foreground: var(--color-primary-foreground);
+    --color-secondary: var(--color-secondary);
+    --color-secondary-foreground: var(--color-secondary-foreground);
+    --color-accent: var(--color-accent);
+    --color-accent-foreground: var(--color-accent-foreground);
+    --color-muted: var(--color-muted);
+    --color-success: var(--color-success);
+    --color-danger: var(--color-danger);
+}
+
+body {
+    @apply bg-background text-foreground;
+}

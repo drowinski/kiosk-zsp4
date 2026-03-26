@@ -1,0 +1,7 @@
+:root {
+    font-size: 24px;
+}
+
+html, body, #root {
+    height: 100%;
+}
