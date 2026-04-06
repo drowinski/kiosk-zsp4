@@ -1,6 +1,5 @@
 package dev.rowinski.kioskzsp4.auth;
 
-import dev.rowinski.kioskzsp4.system.SystemController;
 import dev.rowinski.kioskzsp4.user.Role;
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(JwtFilterTestController.class)
-@Import({WebSecurityConfig.class, JwtFilter.class})
+@Import({AuthConfig.class, JwtFilter.class})
 @ActiveProfiles("test")
 public class JwtFilterTest {
     private final String PROTECTED_ENDPOINT_URI = "/test/protected";

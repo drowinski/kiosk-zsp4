@@ -1,8 +1,8 @@
 package dev.rowinski.kioskzsp4.asset;
 
-import dev.rowinski.kioskzsp4.asset.exception.AssetFileException;
-import dev.rowinski.kioskzsp4.asset.exception.AssetNotFoundException;
-import dev.rowinski.kioskzsp4.asset.exception.AssetOperationNotAllowed;
+import dev.rowinski.kioskzsp4.asset.exceptions.AssetFileException;
+import dev.rowinski.kioskzsp4.asset.exceptions.AssetNotFoundException;
+import dev.rowinski.kioskzsp4.asset.exceptions.AssetOperationNotAllowed;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterSpecificationBuilder;
 import dev.rowinski.kioskzsp4.asset.model.Asset;

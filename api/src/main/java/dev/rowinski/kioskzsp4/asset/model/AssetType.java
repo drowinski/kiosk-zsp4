@@ -1,6 +1,6 @@
 package dev.rowinski.kioskzsp4.asset.model;
 
-import dev.rowinski.kioskzsp4.asset.exception.UnsupportedFileTypeException;
+import dev.rowinski.kioskzsp4.asset.exceptions.UnsupportedFileTypeException;
 
 public enum AssetType {
     IMAGE,

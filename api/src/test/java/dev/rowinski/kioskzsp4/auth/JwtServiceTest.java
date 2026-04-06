@@ -19,17 +19,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(SpringExtension.class)
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties(AuthProperties.class)
 @TestPropertySource("classpath:application-test.properties")
 public class JwtServiceTest {
     @Autowired
-    private JwtProperties jwtProperties;
+    private AuthProperties authProperties;
 
     private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService("kiosk-zsp4", jwtProperties, Clock.systemUTC());
+        jwtService = new JwtService("kiosk-zsp4", authProperties, Clock.systemUTC());
     }
 
     @Test
@@ -49,9 +49,9 @@ public class JwtServiceTest {
     @Test
     void verifyToken_withExpiredToken_throwsJwtException() {
         Clock pastClock = Clock.fixed(
-                Instant.now().minusSeconds(jwtProperties.expirationSeconds() + 1), ZoneOffset.UTC
+                Instant.now().minusSeconds(authProperties.jwt().expirationSeconds() + 1), ZoneOffset.UTC
         );
-        JwtService pastService = new JwtService("kiosk-zsp4", jwtProperties, pastClock);
+        JwtService pastService = new JwtService("kiosk-zsp4", authProperties, pastClock);
         String token = pastService.generateToken("admin", List.of(Role.ADMIN));
 
         assertThatThrownBy(() -> jwtService.verifyTokenAndExtractClaims(token))
@@ -69,11 +69,11 @@ public class JwtServiceTest {
 
     @Test
     void verifyToken_withTokenFromDifferentSecret_throwsJwtException() {
-        JwtProperties jwtPropertiesWithDifferentSecret = new JwtProperties(
+        AuthProperties authPropertiesWithDifferentJwtSecret = new AuthProperties(new AuthProperties.JwtProperties(
                 "ZGlmZmVyZW50c2VjcmV0a2V5dGhhdGlzbG9uZ2Vub3VnaAo=",
-                jwtProperties.expirationSeconds()
-        );
-        JwtService serviceWithDifferentSecret = new JwtService("kiosk-zsp4", jwtPropertiesWithDifferentSecret, Clock.systemUTC());
+                authProperties.jwt().expirationSeconds()
+        ));
+        JwtService serviceWithDifferentSecret = new JwtService("kiosk-zsp4", authPropertiesWithDifferentJwtSecret, Clock.systemUTC());
         String token = serviceWithDifferentSecret.generateToken("admin", List.of(Role.ADMIN));
 
         assertThatThrownBy(() -> jwtService.verifyTokenAndExtractClaims(token))

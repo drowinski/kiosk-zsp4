@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class UserBootstrap implements ApplicationRunner {
+public class UserInitializer implements ApplicationRunner {
     private final UserService userService;
     private final UserRepository userRepository;
     private final UserProperties userProperties;

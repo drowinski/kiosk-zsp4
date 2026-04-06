@@ -1,7 +1,7 @@
 package dev.rowinski.kioskzsp4.asset;
 
-import dev.rowinski.kioskzsp4.asset.exception.AssetOperationNotAllowed;
-import dev.rowinski.kioskzsp4.asset.exception.UnsupportedFileTypeException;
+import dev.rowinski.kioskzsp4.asset.exceptions.AssetOperationNotAllowed;
+import dev.rowinski.kioskzsp4.asset.exceptions.UnsupportedFileTypeException;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
 import dev.rowinski.kioskzsp4.asset.model.AssetType;
 import org.apache.tika.Tika;

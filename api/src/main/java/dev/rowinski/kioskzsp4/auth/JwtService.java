@@ -19,14 +19,14 @@ import java.util.stream.Collectors;
 @Service
 public class JwtService {
     private final String applicationName;
-    private final JwtProperties jwtProperties;
+    private final AuthProperties authProperties;
     private final SecretKey key;
     private final Clock clock;
 
-    public JwtService(@Value("${spring.application.name}") String applicationName, JwtProperties jwtProperties, Clock clock) {
+    public JwtService(@Value("${spring.application.name}") String applicationName, AuthProperties authProperties, Clock clock) {
         this.applicationName = applicationName;
-        this.jwtProperties = jwtProperties;
-        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.secret()));
+        this.authProperties = authProperties;
+        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(authProperties.jwt().secret()));
         this.clock = clock;
     }
 
@@ -36,7 +36,7 @@ public class JwtService {
                 .issuer(applicationName)
                 .subject(username)
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusSeconds(jwtProperties.expirationSeconds())))
+                .expiration(Date.from(now.plusSeconds(authProperties.jwt().expirationSeconds())))
                 .claim("roles", roles.stream().map(Enum::name).toList())
                 .signWith(key, Jwts.SIG.HS256)
                 .compact();

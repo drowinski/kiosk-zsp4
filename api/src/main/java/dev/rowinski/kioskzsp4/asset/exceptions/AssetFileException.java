@@ -1,4 +1,4 @@
-package dev.rowinski.kioskzsp4.asset.exception;
+package dev.rowinski.kioskzsp4.asset.exceptions;
 
 public class AssetFileException extends RuntimeException {
     public AssetFileException(String message) {

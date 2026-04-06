@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AssetBootstrap implements ApplicationRunner {
+public class AssetInitializer implements ApplicationRunner {
     private final AssetProperties assetProperties;
 
     private final Environment environment;

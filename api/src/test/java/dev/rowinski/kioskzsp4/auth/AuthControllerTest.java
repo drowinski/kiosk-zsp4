@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
-@Import({WebSecurityConfig.class, JwtFilter.class})
+@Import({AuthConfig.class, JwtFilter.class})
 @ActiveProfiles("test")
 public class AuthControllerTest {
     private final String LOGIN_ENDPOINT = "/api/auth/login";

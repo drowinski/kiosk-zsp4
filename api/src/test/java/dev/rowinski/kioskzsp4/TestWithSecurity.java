@@ -2,7 +2,7 @@ package dev.rowinski.kioskzsp4;
 
 import dev.rowinski.kioskzsp4.auth.JwtFilter;
 import dev.rowinski.kioskzsp4.auth.JwtService;
-import dev.rowinski.kioskzsp4.auth.WebSecurityConfig;
+import dev.rowinski.kioskzsp4.auth.AuthConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -13,7 +13,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
-@Import({WebSecurityConfig.class, JwtFilter.class})
+@Import({AuthConfig.class, JwtFilter.class})
 public abstract class TestWithSecurity {
     @Autowired
     protected WebApplicationContext webApplicationContext;
