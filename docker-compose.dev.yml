@@ -12,6 +12,7 @@ services:
       DB_PASSWORD:
       JWT_SECRET:
       JWT_EXPIRATION_SECONDS:
+      ALLOWED_ORIGINS:
       DEFAULT_USER_USERNAME:
       DEFAULT_USER_PASSWORD:
     ports:

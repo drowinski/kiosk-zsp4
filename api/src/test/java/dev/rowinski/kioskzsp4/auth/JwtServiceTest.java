@@ -72,7 +72,7 @@ public class JwtServiceTest {
         AuthProperties authPropertiesWithDifferentJwtSecret = new AuthProperties(new AuthProperties.JwtProperties(
                 "ZGlmZmVyZW50c2VjcmV0a2V5dGhhdGlzbG9uZ2Vub3VnaAo=",
                 authProperties.jwt().expirationSeconds()
-        ));
+        ), authProperties.cors());
         JwtService serviceWithDifferentSecret = new JwtService("kiosk-zsp4", authPropertiesWithDifferentJwtSecret, Clock.systemUTC());
         String token = serviceWithDifferentSecret.generateToken("admin", List.of(Role.ADMIN));
 
