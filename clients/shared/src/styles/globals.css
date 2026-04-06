@@ -124,6 +124,7 @@
         --color-accent: hsl(16 100% 92%);
         --color-accent-foreground: hsl(0 0% 4%);
         --color-muted: hsl(16 8% 45%);
+        --color-focus: hsl(212, 43%, 50%);
         --color-success: hsl(116, 100%, 43%);
         --color-danger: hsl(0 100% 43%);
     }
@@ -141,10 +142,17 @@
     --color-accent: var(--color-accent);
     --color-accent-foreground: var(--color-accent-foreground);
     --color-muted: var(--color-muted);
+    --color-focus: var(--color-focus);
     --color-success: var(--color-success);
     --color-danger: var(--color-danger);
 }
 
 body {
     @apply bg-background text-foreground;
+}
+
+@layer utility {
+    *:focus, *:focus-visible {
+        @apply ring-focus outline-none;
+    }
 }

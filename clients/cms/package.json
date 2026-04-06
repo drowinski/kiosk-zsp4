@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "@kiosk-zsp4/shared": "workspace:*",
+    "@tanstack/react-query": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-router": "catalog:"
+    "react-router": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

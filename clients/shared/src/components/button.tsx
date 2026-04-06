@@ -3,7 +3,7 @@ import { cn } from '@kiosk-zsp4/shared/styles/cn';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const buttonVariants = cva(
-  'inline-flex w-fit items-center justify-center border border-transparent active:scale-[99%]',
+  'inline-flex w-fit items-center justify-center border border-transparent active:scale-[99%] focus-visible:ring-focus focus-visible:ring',
   {
     variants: {
       variant: {
@@ -18,7 +18,7 @@ const buttonVariants = cva(
     },
     defaultVariants: {
       variant: 'primary',
-      size: 'small',
+      size: 'medium',
     },
   },
 );

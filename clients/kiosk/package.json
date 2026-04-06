@@ -13,7 +13,8 @@
     "@kiosk-zsp4/shared": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-router": "catalog:"
+    "react-router": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
