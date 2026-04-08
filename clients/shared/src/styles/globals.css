@@ -81,21 +81,21 @@
 @utility font-heading-sm {
     font-family: var(--font-display);
     font-size: var(--font-size-base);
-    font-weight: 600;
+    font-weight: 700;
     line-height: 125%;
 }
 
 @utility font-heading-md {
     font-family: var(--font-display);
     font-size: var(--font-size-lg);
-    font-weight: 600;
+    font-weight: 700;
     line-height: 120%;
 }
 
 @utility font-heading-lg {
     font-family: var(--font-display);
     font-size: var(--font-size-xl);
-    font-weight: 600;
+    font-weight: 700;
     line-height: 118%;
 }
 
@@ -113,13 +113,13 @@
 
 @layer base {
     :root {
-        --color-background: hsl(17 100% 96%);
-        --color-foreground: hsl(0 0% 4%);
-        --color-card: hsl(16 100% 92%);
-        --color-card-foreground: hsl(0 0% 4%);
-        --color-primary: hsl(15 81% 37%);
+        --color-background: hsl(30, 100%, 99%);
+        --color-foreground: hsl(218, 83%, 16%);
+        --color-card: hsl(23, 72%, 94%);
+        --color-card-foreground: hsl(0, 93%, 12%);
+        --color-primary: hsl(9, 77%, 40%);
         --color-primary-foreground: hsl(17 100% 96%);
-        --color-secondary: hsl(211 52% 35%);
+        --color-secondary: hsl(216, 47%, 38%);
         --color-secondary-foreground: hsl(220 60% 97%);
         --color-accent: hsl(16 100% 92%);
         --color-accent-foreground: hsl(0 0% 4%);
@@ -151,8 +151,25 @@ body {
     @apply bg-background text-foreground;
 }
 
+/* Shadows */
+
+@utility elevation-1 {
+    box-shadow: 0 0 6px color-mix(in srgb, var(--color-foreground) 30%, transparent), 0 0 2px color-mix(in srgb, var(--color-foreground) 25%, transparent);
+}
+
+/* Other */
+
 @layer utility {
     *:focus, *:focus-visible {
         @apply ring-focus outline-none;
+    }
+}
+
+@utility no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    ::-webkit-scrollbar {
+        display: none;
     }
 }
