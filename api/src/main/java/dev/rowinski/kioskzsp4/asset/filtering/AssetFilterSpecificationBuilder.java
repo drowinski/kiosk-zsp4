@@ -55,28 +55,19 @@ public class AssetFilterSpecificationBuilder {
         if (dateFrom == null && dateTo == null) return Specification.unrestricted();
 
         return (root, query, cb) -> {
-            Path<LocalDate> min = root.get("date").get("min");
-            Path<LocalDate> max = root.get("date").get("max");
-
-            Predicate isRange = cb.isNotNull(max);
-            Predicate isSingleDate = cb.isNull(max);
-
             Predicate predicate = cb.conjunction();
 
             if (dateFrom != null) {
                 predicate = cb.and(
                         predicate,
-                        cb.or(
-                                cb.and(isSingleDate, cb.greaterThanOrEqualTo(min, dateFrom)),
-                                cb.and(isRange, cb.greaterThanOrEqualTo(max, dateFrom))
-                        )
+                        cb.greaterThanOrEqualTo(root.get("date").get("max"), dateFrom)
                 );
             }
 
             if (dateTo != null) {
                 predicate = cb.and(
                         predicate,
-                        cb.lessThanOrEqualTo(min, dateTo)
+                        cb.lessThanOrEqualTo(root.get("date").get("min"), dateTo)
                 );
             }
 

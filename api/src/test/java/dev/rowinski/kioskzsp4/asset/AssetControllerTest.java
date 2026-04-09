@@ -72,7 +72,7 @@ public class AssetControllerTest extends TestWithSecurity {
     void createAsset_withValidRequest_returns201WithLocationHeaderAndPayload() throws Exception {
         Asset mockAsset = new Asset();
         mockAsset.setId(UUID.randomUUID());
-        when(assetService.storeAsset(any(), any())).thenReturn(mockAsset);
+        when(assetService.storeAsset(any(), any(), any(), any())).thenReturn(mockAsset);
 
         mockMvc.perform(multipart(ROOT_ENDPOINT)
                         .file(getValidJPEGFile())
@@ -119,7 +119,7 @@ public class AssetControllerTest extends TestWithSecurity {
     @Test
     @WithMockUser
     void createAsset_withMalformedMediaFile_returns415() throws Exception {
-        when(assetService.storeAsset(any(), any())).thenThrow(new UnsupportedFileTypeException("Mock message"));
+        when(assetService.storeAsset(any(), any(), any(), any())).thenThrow(new UnsupportedFileTypeException("Mock message"));
 
         mockMvc.perform(multipart(ROOT_ENDPOINT)
                         .file(getMalformedJPEGFile())
@@ -228,13 +228,14 @@ public class AssetControllerTest extends TestWithSecurity {
                 .description("Some description")
                 .date(AssetDateDTO.builder()
                         .min(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
+                        .max(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
                         .precision(AssetDatePrecision.YEAR)
                         .build())
                 .build();
 
         Asset mockAsset = new Asset();
         mockAsset.setId(assetId);
-        when(assetService.updateAsset(eq(assetId), any())).thenReturn(mockAsset);
+        when(assetService.updateAsset(eq(assetId), any(), any())).thenReturn(mockAsset);
 
         mockMvc.perform(put(ID_ENDPOINT, assetId.toString())
                         .content(serializeToJSON(assetUpdateDTO))
@@ -253,11 +254,12 @@ public class AssetControllerTest extends TestWithSecurity {
                 .description("Some description")
                 .date(AssetDateDTO.builder()
                         .min(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
+                        .max(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
                         .precision(AssetDatePrecision.YEAR)
                         .build())
                 .build();
 
-        when(assetService.updateAsset(eq(assetId), any())).thenThrow(new AssetNotFoundException(assetId));
+        when(assetService.updateAsset(eq(assetId), any(), any())).thenThrow(new AssetNotFoundException(assetId));
 
         mockMvc.perform(put(ID_ENDPOINT, assetId.toString())
                         .content(serializeToJSON(assetUpdateDTO))
@@ -331,7 +333,7 @@ public class AssetControllerTest extends TestWithSecurity {
                 .description("Some description")
                 .date(AssetDateDTO.builder()
                         .min(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
-                        .max(null)
+                        .max(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
                         .precision(AssetDatePrecision.DAY)
                         .isApproximate(false)
                         .build())

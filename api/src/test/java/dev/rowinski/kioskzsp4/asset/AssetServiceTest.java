@@ -47,16 +47,16 @@ public class AssetServiceTest {
 
     @Test
     void storeAsset_withValidArguments_returnsAsset() throws IOException {
-        Asset asset = new Asset();
-        asset.setOriginalFileName("originalFileName.jpg");
+        String originalFileName = "originalFileName.jpg";
+
         try (InputStream inputStream = AssetControllerTest.class.getResourceAsStream("test-file.jpg")) {
             assertThat(inputStream).isNotNull();
 
-            Asset result = assetService.storeAsset(asset, inputStream);
+            Asset result = assetService.storeAsset(inputStream, originalFileName, null, null);
 
             assertThat(result.getId()).isNotNull();
             assertThat(result.getFileName()).isIn(List.of(result.getId() + ".jpg", result.getId() + ".jpeg"));
-            assertThat(result.getOriginalFileName()).isEqualTo(asset.getOriginalFileName());
+            assertThat(result.getOriginalFileName()).isEqualTo(originalFileName);
             assertThat(result.getMimeType()).isEqualTo("image/jpeg");
             assertThat(result.getType()).isEqualTo(AssetType.IMAGE);
             assertThat(Files.exists(tempDir.resolve(result.getFileName()))).isTrue();
@@ -65,11 +65,10 @@ public class AssetServiceTest {
 
     @Test
     void storeAsset_withUnsupportedMimeType_throwsUnsupportedFileTypeException() throws IOException {
-        Asset asset = new Asset();
         try (InputStream inputStream = AssetControllerTest.class.getResourceAsStream("unsupported-file.sql")) {
             assertThat(inputStream).isNotNull();
 
-            assertThatThrownBy(() -> assetService.storeAsset(asset, inputStream))
+            assertThatThrownBy(() -> assetService.storeAsset(inputStream, null, null, null))
                     .isInstanceOf(UnsupportedFileTypeException.class);
             verify(assetRepository, never()).save(any());
             try (Stream<Path> tempDirStream = Files.list(tempDir)) {
@@ -84,7 +83,7 @@ public class AssetServiceTest {
         try (InputStream inputStream = AssetControllerTest.class.getResourceAsStream("test-file.jpg")) {
             assertThat(inputStream).isNotNull();
 
-            assertThatThrownBy(() -> assetService.storeAsset(new Asset(), inputStream))
+            assertThatThrownBy(() -> assetService.storeAsset(inputStream, null, null, null))
                     .isInstanceOf(RuntimeException.class);
             try (Stream<Path> tempDirStream = Files.list(tempDir)) {
                 assertThat(tempDirStream.findAny()).isEmpty();

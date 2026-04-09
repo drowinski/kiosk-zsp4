@@ -3,7 +3,6 @@ package dev.rowinski.kioskzsp4.asset.dto;
 import dev.rowinski.kioskzsp4.asset.model.AssetDatePrecision;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
-import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDate;
 
@@ -12,7 +11,7 @@ public record AssetDateDTO(
         @NotNull
         LocalDate min,
 
-        @Nullable
+        @NotNull
         LocalDate max,
 
         @NotNull

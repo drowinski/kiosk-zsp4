@@ -50,11 +50,11 @@ public class AssetFilterSpecificationBuilderTest {
         List<LocalDate> outsideAfter = List.of(to.plusDays(1), to.plusDays(2));                 // [] () - value range after filter
 
         // Specific asset dates - List.of(asset.date.min, null)
-        List<LocalDate> singleContained = Arrays.asList(from.plusDays(1), null); // [d] - filter contains specific date
-        List<LocalDate> singleSameAsFrom = Arrays.asList(from, null);                               // d] - date same as filter start
-        List<LocalDate> singleSameAsTo = Arrays.asList(to, null);                                   // [d - date same as filter end
-        List<LocalDate> singleOutsideBefore = Arrays.asList(from.minusDays(1), null); // d [] - specific date before filter
-        List<LocalDate> singleOutsideAfter = Arrays.asList(to.plusDays(1), null);  // [] d - specific date after filter
+        List<LocalDate> singleContained = Arrays.asList(from.plusDays(1), from.plusDays(1)); // [d] - filter contains specific date
+        List<LocalDate> singleSameAsFrom = Arrays.asList(from, from);                               // d] - date same as filter start
+        List<LocalDate> singleSameAsTo = Arrays.asList(to, to);                                   // [d - date same as filter end
+        List<LocalDate> singleOutsideBefore = Arrays.asList(from.minusDays(1), from.minusDays(1)); // d [] - specific date before filter
+        List<LocalDate> singleOutsideAfter = Arrays.asList(to.plusDays(1), to.plusDays(1));  // [] d - specific date after filter
 
         List<List<LocalDate>> dates = List.of(
                 same, contained, contains, endsInside, startsInside, outsideBefore, outsideAfter,
@@ -63,10 +63,12 @@ public class AssetFilterSpecificationBuilderTest {
 
         for (List<LocalDate> dateRange : dates) {
             Asset asset = createAsset();
-            AssetDate assetDate = new AssetDate();
-            assetDate.setMin(dateRange.get(0));
-            assetDate.setMax(dateRange.get(1));
-            assetDate.setPrecision(AssetDatePrecision.DAY);
+            AssetDate assetDate = AssetDate.of(
+                    dateRange.get(0),
+                    dateRange.get(1),
+                    AssetDatePrecision.DAY,
+                    false
+            );
             asset.setDate(assetDate);
             testEntityManager.persist(asset);
         }

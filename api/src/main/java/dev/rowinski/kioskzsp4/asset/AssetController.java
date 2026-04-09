@@ -54,11 +54,14 @@ public class AssetController {
             return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
         }
 
-        Asset asset = assetMapper.fromAssetCreationDTO(assetCreationDTO);
-        asset.setOriginalFileName(file.getOriginalFilename());
-
+        Asset asset;
         try (InputStream inputStream = file.getInputStream()) {
-            asset = assetService.storeAsset(asset, inputStream);
+            asset = assetService.storeAsset(
+                    inputStream,
+                    file.getOriginalFilename(),
+                    assetCreationDTO.description(),
+                    assetMapper.fromAssetDateDTO(assetCreationDTO.date())
+            );
         } catch (UnsupportedFileTypeException e) {
             log.debug(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
@@ -93,7 +96,7 @@ public class AssetController {
 
         Asset asset;
         try {
-            asset = assetService.updateAsset(id, assetMapper.fromAssetUpdateDTO(assetUpdateDTO));
+            asset = assetService.updateAsset(id, assetUpdateDTO.description(), assetMapper.fromAssetDateDTO(assetUpdateDTO.date()));
         } catch (AssetNotFoundException e) {
             return ResponseEntity.notFound().build();
         }

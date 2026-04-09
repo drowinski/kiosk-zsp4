@@ -6,6 +6,7 @@ import dev.rowinski.kioskzsp4.asset.exceptions.AssetOperationNotAllowed;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterSpecificationBuilder;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
+import dev.rowinski.kioskzsp4.asset.model.AssetDate;
 import dev.rowinski.kioskzsp4.asset.model.AssetType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.apache.tika.Tika;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,31 +40,40 @@ public class AssetService {
     private final Tika tika;
     private final MimeTypes mimeTypes;
 
-    public Asset storeAsset(Asset asset, InputStream inputStream) {
+    public Asset storeAsset(
+            InputStream inputStream,
+            @Nullable String originalFileName,
+            @Nullable String description,
+            @Nullable AssetDate assetDate
+    ) {
         UUID assetId = UUID.randomUUID();
 
-        StoreAssetFileResult result;
+        StoreAssetFileResult storeResult;
         try {
-            result = storeAssetFile(inputStream, assetId);
+            storeResult = storeAssetFile(inputStream, assetId);
         } catch (AssetFileException exception) {
             log.error(exception.getMessage(), exception);
             throw exception;
         }
 
         try {
+            Asset asset = new Asset();
             asset.setId(assetId);
-            asset.setFileName(result.destinationPath().getFileName().toString());
-            asset.setMimeType(result.mimeType());
-            asset.setType(AssetType.fromMimeType(result.mimeType()));
+            asset.setFileName(storeResult.destinationPath().getFileName().toString());
+            asset.setOriginalFileName(originalFileName);
+            asset.setMimeType(storeResult.mimeType());
+            asset.setType(AssetType.fromMimeType(storeResult.mimeType()));
+            asset.setDescription(description);
+            asset.setDate(assetDate);
 
             return assetRepository.save(asset);
         } catch (RuntimeException exception1) {
             log.error("Unable to save asset to repository. Asset ID: {}", assetId, exception1);
             try {
                 log.warn("Attempting orphaned file cleanup...");
-                deleteAssetFile(result.destinationPath().getFileName().toString());
+                deleteAssetFile(storeResult.destinationPath().getFileName().toString());
             } catch (AssetFileException exception2) {
-                log.warn("Unable to delete orphaned asset file {}", result.destinationPath().getFileName(), exception2);
+                log.warn("Unable to delete orphaned asset file {}", storeResult.destinationPath().getFileName(), exception2);
             }
             throw exception1;
         }
@@ -105,10 +116,10 @@ public class AssetService {
     }
 
     @Transactional
-    public Asset updateAsset(UUID assetId, Asset assetUpdates) {
-        Asset asset =  assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
-        asset.setDescription(assetUpdates.getDescription());
-        asset.setDate(assetUpdates.getDate());
+    public Asset updateAsset(UUID assetId, @Nullable String description, @Nullable AssetDate assetDate) {
+        Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
+        asset.setDescription(description);
+        asset.setDate(assetDate);
         return asset;
     }
 
