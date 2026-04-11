@@ -21,7 +21,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Table(name = "assets", check = {
-        @CheckConstraint(constraint = "date_min IS NULL OR (date_min IS NOT NULL AND date_precision IS NOT NULL)")
+        @CheckConstraint(constraint = "date_min <= date_max")
 })
 public class Asset implements Persistable<UUID> {
     @Id
@@ -58,20 +58,26 @@ public class Asset implements Persistable<UUID> {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    @LastModifiedDate
-    @Column(nullable = false)
-    private Instant updatedAt;
-
-    @Nullable
-    private Instant deletedAt;
-
     @CreatedBy
     @Column(nullable = false, updatable = false)
     private String createdBy;
 
+    @LastModifiedDate
+    @Column(nullable = false)
+    private Instant updatedAt;
+
     @LastModifiedBy
     @Column(nullable = false)
     private String updatedBy;
+
+    @Nullable
+    private Instant publishedAt;
+
+    @Nullable
+    private String publishedBy;
+
+    @Nullable
+    private Instant deletedAt;
 
     @Nullable
     private String deletedBy;

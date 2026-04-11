@@ -6,6 +6,7 @@ import dev.rowinski.kioskzsp4.asset.dto.AssetUpdateDTO;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetNotFoundException;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetOperationNotAllowed;
 import dev.rowinski.kioskzsp4.asset.exceptions.UnsupportedFileTypeException;
+import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterStatus;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
 import dev.rowinski.kioskzsp4.asset.mapping.AssetMapper;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
@@ -52,6 +53,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class AssetControllerTest extends TestWithSecurity {
     private final static String ROOT_ENDPOINT = "/api/assets";
     private final static String ID_ENDPOINT = "/api/assets/{id}";
+    private final static String PUBLISH_ENDPOINT = "/api/assets/{id}/publish";
+    private final static String UNPUBLISH_ENDPOINT = "/api/assets/{id}/unpublish";
     private final static String PERMANENT_DELETION_ENDPOINT = "/api/assets/{id}/permanent";
 
     private final static Pattern LOCATION_HEADER_REGEX = Pattern.compile("^" + Pattern.quote(ROOT_ENDPOINT + "/") + "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
@@ -129,11 +132,11 @@ public class AssetControllerTest extends TestWithSecurity {
                 .andExpect(content().string(""));
     }
 
-    /* getAssetById */
+    /* getAsset */
 
     @Test
     @WithMockUser
-    void getAssetById_withValidId_returns200WithAsset() throws Exception {
+    void getAsset_withValidId_returns200WithAsset() throws Exception {
         Asset mockAsset = new Asset();
         mockAsset.setId(UUID.randomUUID());
 
@@ -184,7 +187,7 @@ public class AssetControllerTest extends TestWithSecurity {
                         .queryParam("size", "56")
                         .queryParam("sort", "updatedAt,desc")
                         .queryParam("updatedAfter", "2025-05-05")
-                        .queryParam("deletedOnly", "true"))
+                        .queryParam("status", "unpublished"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(mockAsset1.getId().toString()))
                 .andExpect(jsonPath("$.content[1].id").value(mockAsset2.getId().toString()));
@@ -199,7 +202,7 @@ public class AssetControllerTest extends TestWithSecurity {
 
         assertThat(filterParams).isNotNull();
         assertThat(filterParams.updatedAfter()).isEqualTo(LocalDate.of(2025, 5, 5));
-        assertThat(filterParams.deletedOnly()).isTrue();
+        assertThat(filterParams.status()).isEqualTo(AssetFilterStatus.UNPUBLISHED);
 
         Pageable pageable = pageableCaptor.getValue();
 
@@ -269,11 +272,73 @@ public class AssetControllerTest extends TestWithSecurity {
                 .andExpect(content().string(""));
     }
 
-    /* softDeleteAssetById */
+    /* publish / unpublish asset */
 
     @Test
     @WithMockUser
-    void softDeleteAssetById_withValidId_returns204() throws Exception {
+    void publishAsset_withValidRequest_returns200WithPayload() throws Exception {
+        UUID assetId = UUID.randomUUID();
+        Asset mockAsset = new Asset();
+        mockAsset.setId(assetId);
+        mockAsset.setPublishedAt(Instant.now());
+        mockAsset.setPublishedBy("MockUser");
+
+        when(assetService.setAssetPublishedStatus(eq(assetId), eq(true), any())).thenReturn(mockAsset);
+
+        mockMvc.perform(post(PUBLISH_ENDPOINT, assetId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(assetId.toString()))
+                .andExpect(jsonPath("$.publishedAt").value(String.valueOf(mockAsset.getPublishedAt())))
+                .andExpect(jsonPath("$.publishedBy").value(mockAsset.getPublishedBy()));
+    }
+
+    @Test
+    @WithMockUser
+    void publishAsset_withNonExistentId_returns404() throws Exception {
+        UUID assetId = UUID.randomUUID();
+
+        when(assetService.setAssetPublishedStatus(eq(assetId), eq(true), any())).thenThrow(new AssetNotFoundException(assetId));
+
+        mockMvc.perform(post(PUBLISH_ENDPOINT, assetId.toString()))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    @WithMockUser
+    void unpublishAsset_withValidRequest_returns200WithPayload() throws Exception {
+        UUID assetId = UUID.randomUUID();
+        Asset mockAsset = new Asset();
+        mockAsset.setId(assetId);
+        mockAsset.setPublishedAt(null);
+        mockAsset.setPublishedBy(null);
+
+        when(assetService.setAssetPublishedStatus(eq(assetId), eq(false), any())).thenReturn(mockAsset);
+
+        mockMvc.perform(post(UNPUBLISH_ENDPOINT, assetId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(assetId.toString()))
+                .andExpect(jsonPath("$.publishedAt").value(mockAsset.getPublishedAt()))
+                .andExpect(jsonPath("$.publishedBy").value(mockAsset.getPublishedBy()));
+    }
+
+    @Test
+    @WithMockUser
+    void unpublishAsset_withNonExistentId_returns404() throws Exception {
+        UUID assetId = UUID.randomUUID();
+
+        when(assetService.setAssetPublishedStatus(eq(assetId), eq(false), any())).thenThrow(new AssetNotFoundException(assetId));
+
+        mockMvc.perform(post(UNPUBLISH_ENDPOINT, assetId.toString()))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
+    }
+
+    /* softDeleteAsset */
+
+    @Test
+    @WithMockUser
+    void softDeleteAsset_returns204() throws Exception {
         UUID id = UUID.randomUUID();
 
         mockMvc.perform(delete(ID_ENDPOINT, id))
@@ -283,7 +348,7 @@ public class AssetControllerTest extends TestWithSecurity {
 
     @Test
     @WithMockUser
-    void softDeleteAssetById_withNonExistentId_returns404() throws Exception {
+    void softDeleteAsset_returns404() throws Exception {
         UUID id = UUID.randomUUID();
         doThrow(new AssetNotFoundException(id)).when(assetService).softDeleteAsset(any(), any());
 
@@ -292,11 +357,11 @@ public class AssetControllerTest extends TestWithSecurity {
                 .andExpect(content().string(""));
     }
 
-    /* permanentlyDeleteAssetById */
+    /* permanentlyDeleteAsset */
 
     @Test
     @WithMockUser
-    void permanentlyDeleteAssetById_withValidId_returns204() throws Exception {
+    void permanentlyDeleteAsset_returns204() throws Exception {
         UUID id = UUID.randomUUID();
 
         mockMvc.perform(delete(PERMANENT_DELETION_ENDPOINT, id))
@@ -306,7 +371,7 @@ public class AssetControllerTest extends TestWithSecurity {
 
     @Test
     @WithMockUser
-    void permanentlyDeleteAssetById_withNonExistentId_returns404() throws Exception {
+    void permanentlyDeleteAsset_returns404() throws Exception {
         UUID id = UUID.randomUUID();
         doThrow(new AssetNotFoundException(id)).when(assetService).permanentlyDeleteAsset(any());
 
@@ -317,7 +382,7 @@ public class AssetControllerTest extends TestWithSecurity {
 
     @Test
     @WithMockUser
-    void permanentlyDeleteAssetById_whenNotSoftDeleted_returns400() throws Exception {
+    void permanentlyDeleteAsset_whenNotSoftDeleted_returns400() throws Exception {
         UUID id = UUID.randomUUID();
         doThrow(new AssetOperationNotAllowed("Not soft deleted")).when(assetService).permanentlyDeleteAsset(any());
 

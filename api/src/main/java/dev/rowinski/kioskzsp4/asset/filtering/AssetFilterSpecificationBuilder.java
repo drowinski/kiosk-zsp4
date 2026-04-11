@@ -1,7 +1,6 @@
 package dev.rowinski.kioskzsp4.asset.filtering;
 
 import dev.rowinski.kioskzsp4.asset.model.Asset;
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
@@ -15,7 +14,7 @@ public class AssetFilterSpecificationBuilder {
 
     public static Specification<Asset> fromFilterParams(AssetFilterParams params) {
         return Specification
-                .where(notDeleted(params))
+                .where(status(params.status()))
                 .and(dateOn(params.dateOn()))
                 .and(dateRange(params.dateFrom(), params.dateTo()))
                 .and(description(params.description()))
@@ -23,18 +22,29 @@ public class AssetFilterSpecificationBuilder {
                 .and(createdBefore(params.createdBefore()))
                 .and(updatedAfter(params.updatedAfter()))
                 .and(updatedBefore(params.updatedBefore()))
+                .and(publishedAfter(params.publishedAfter()))
+                .and(publishedBefore(params.publishedBefore()))
                 .and(deletedAfter(params.deletedAfter()))
                 .and(deletedBefore(params.deletedBefore()));
     }
 
-    private static Specification<Asset> notDeleted(AssetFilterParams params) {
-        if (Boolean.TRUE.equals(params.deletedOnly())) {
-            return (root, query, cb) -> cb.isNotNull(root.get("deletedAt"));
-        }
-        if (Boolean.TRUE.equals(params.includeDeleted())) {
-            return Specification.unrestricted();
-        }
-        return (root, query, cb) -> cb.isNull(root.get("deletedAt"));
+    private static Specification<Asset> status(@Nullable AssetFilterStatus status) {
+        return (root, query, cb) -> switch (status) {
+            case PUBLISHED -> cb.and(
+                    cb.isNull(root.get("deletedAt")),
+                    cb.isNotNull(root.get("publishedAt"))
+            );
+            case PUBLISHED_UNPUBLISHED -> cb.isNull(root.get("deletedAt"));
+            case UNPUBLISHED -> cb.and(
+                    cb.isNull(root.get("deletedAt")),
+                    cb.isNull(root.get("publishedAt"))
+            );
+            case DELETED -> cb.isNotNull(root.get("deletedAt"));
+            case null -> cb.and(
+                    cb.isNull(root.get("deletedAt")),
+                    cb.isNotNull(root.get("publishedAt"))
+            );
+        };
     }
 
     private static Specification<Asset> dateOn(@Nullable LocalDate dateOn) {
@@ -94,6 +104,14 @@ public class AssetFilterSpecificationBuilder {
 
     private static Specification<Asset> updatedBefore(@Nullable LocalDate updatedBefore) {
         return before("updatedAt", updatedBefore);
+    }
+
+    private static Specification<Asset> publishedAfter(@Nullable LocalDate publishedAfter) {
+        return after("publishedAt", publishedAfter);
+    }
+
+    private static Specification<Asset> publishedBefore(@Nullable LocalDate publishedBefore) {
+        return before("publishedAt", publishedBefore);
     }
 
     private static Specification<Asset> deletedAfter(@Nullable LocalDate deletedAfter) {

@@ -1,6 +1,7 @@
 package dev.rowinski.kioskzsp4.asset;
 
 
+import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterStatus;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterSpecificationBuilder;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
@@ -16,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -70,6 +72,7 @@ public class AssetFilterSpecificationBuilderTest {
                     false
             );
             asset.setDate(assetDate);
+            asset.setPublishedAt(Instant.now());
             testEntityManager.persist(asset);
         }
 
@@ -118,66 +121,85 @@ public class AssetFilterSpecificationBuilderTest {
     }
 
     @Test
-    void defaultSpec__includesOnlyNonDeletedAssets() {
-        DeletionFilterTestAssets assets = persistDeletedAndNonDeletedAssets();
+    void defaultSpec__includesOnlyPublishedAssets() {
+        StatusFilterTestAssets assets = persistStatusFilterTestAssets();
 
         Specification<Asset> spec = AssetFilterSpecificationBuilder.fromFilterParams(
                 AssetFilterParams.builder().build()
         );
         List<Asset> result = assetRepository.findAll(spec);
 
-        assertThat(result).contains(assets.nonDeleted()).doesNotContain(assets.deleted());
+        assertThat(result).contains(assets.published()).doesNotContain(assets.unpublished(), assets.deleted());
     }
 
     @Test
-    void deletedOnlySpec__includesOnlyDeletedAssets() {
-        DeletionFilterTestAssets assets = persistDeletedAndNonDeletedAssets();
+    void statusPublishedSpec__includesOnlyPublishedAssets() {
+        StatusFilterTestAssets assets = persistStatusFilterTestAssets();
 
         Specification<Asset> spec = AssetFilterSpecificationBuilder.fromFilterParams(
-                AssetFilterParams.builder().deletedOnly(true).build()
+                AssetFilterParams.builder().status(AssetFilterStatus.PUBLISHED).build()
         );
         List<Asset> result = assetRepository.findAll(spec);
 
-        assertThat(result).contains(assets.deleted()).doesNotContain(assets.nonDeleted());
+        assertThat(result).contains(assets.published()).doesNotContain(assets.unpublished(), assets.deleted());
     }
 
     @Test
-    void includeDeletedSpec__includesAllAssets() {
-        DeletionFilterTestAssets assets = persistDeletedAndNonDeletedAssets();
+    void statusUnpublishedSpec__includesOnlyUnpublishedAssets() {
+        StatusFilterTestAssets assets = persistStatusFilterTestAssets();
 
         Specification<Asset> spec = AssetFilterSpecificationBuilder.fromFilterParams(
-                AssetFilterParams.builder().includeDeleted(true).build()
+                AssetFilterParams.builder().status(AssetFilterStatus.UNPUBLISHED).build()
         );
         List<Asset> result = assetRepository.findAll(spec);
 
-        assertThat(result).contains(assets.deleted(), assets.nonDeleted());
+        assertThat(result).contains(assets.unpublished()).doesNotContain(assets.published(), assets.deleted());
     }
 
     @Test
-    void deletedOnlyAndIncludeDeletedSpec__includesOnlyDeletedAssets() {
-        DeletionFilterTestAssets assets = persistDeletedAndNonDeletedAssets();
+    void statusPublishedUnpublishedSpec__includesOnlyPublishedAndUnpublishedAssets() {
+        StatusFilterTestAssets assets = persistStatusFilterTestAssets();
 
         Specification<Asset> spec = AssetFilterSpecificationBuilder.fromFilterParams(
-                AssetFilterParams.builder().deletedOnly(true).includeDeleted(true).build()
+                AssetFilterParams.builder().status(AssetFilterStatus.PUBLISHED_UNPUBLISHED).build()
         );
         List<Asset> result = assetRepository.findAll(spec);
 
-        assertThat(result).contains(assets.deleted());
+        assertThat(result).contains(assets.published(), assets.unpublished()).doesNotContain(assets.deleted());
     }
 
-    private record DeletionFilterTestAssets(Asset deleted, Asset nonDeleted) {
+    @Test
+    void statusDeleted__includesOnlyDeletedAssets() {
+        StatusFilterTestAssets assets = persistStatusFilterTestAssets();
+
+        Specification<Asset> spec = AssetFilterSpecificationBuilder.fromFilterParams(
+                AssetFilterParams.builder().status(AssetFilterStatus.DELETED).build()
+        );
+        List<Asset> result = assetRepository.findAll(spec);
+
+        assertThat(result).contains(assets.deleted()).doesNotContain(assets.published(), assets.unpublished());
     }
 
-    private DeletionFilterTestAssets persistDeletedAndNonDeletedAssets() {
+    private record StatusFilterTestAssets(Asset published, Asset unpublished, Asset deleted) {
+    }
+
+    private StatusFilterTestAssets persistStatusFilterTestAssets() {
+        Asset publishedAsset = createAsset();
+        publishedAsset.setPublishedAt(Instant.now());
+        publishedAsset.setDeletedAt(null);
+        testEntityManager.persist(publishedAsset);
+
+        Asset unpublishedAsset = createAsset();
+        unpublishedAsset.setPublishedAt(null);
+        unpublishedAsset.setDeletedAt(null);
+        testEntityManager.persist(unpublishedAsset);
+
         Asset deletedAsset = createAsset();
-        deletedAsset.setDeletedAt(java.time.Instant.now());
+        deletedAsset.setPublishedAt(null);
+        deletedAsset.setDeletedAt(Instant.now());
         testEntityManager.persist(deletedAsset);
 
-        Asset nonDeletedAsset = createAsset();
-        nonDeletedAsset.setDeletedAt(null);
-        testEntityManager.persist(nonDeletedAsset);
-
-        return new DeletionFilterTestAssets(deletedAsset, nonDeletedAsset);
+        return new StatusFilterTestAssets(publishedAsset, unpublishedAsset, deletedAsset);
     }
 
     private Asset createAsset() {

@@ -20,6 +20,9 @@ public record AssetFilterParams(
         String description,
 
         @Nullable
+        AssetFilterStatus status,
+
+        @Nullable
         LocalDate createdAfter,
 
         @Nullable
@@ -32,15 +35,15 @@ public record AssetFilterParams(
         LocalDate updatedBefore,
 
         @Nullable
+        LocalDate publishedAfter,
+
+        @Nullable
+        LocalDate publishedBefore,
+
+        @Nullable
         LocalDate deletedAfter,
 
         @Nullable
-        LocalDate deletedBefore,
-
-        @Nullable
-        Boolean includeDeleted,
-
-        @Nullable
-        Boolean deletedOnly
+        LocalDate deletedBefore
 ) {
 }

@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -76,7 +77,7 @@ public class AssetController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AssetResponseDTO> getAssetById(@PathVariable UUID id) {
+    public ResponseEntity<AssetResponseDTO> getAsset(@PathVariable UUID id) {
         return assetService.getAssetById(id)
                 .map(assetMapper::toAssetResponseDTO)
                 .map(ResponseEntity::ok)
@@ -93,7 +94,6 @@ public class AssetController {
 
     @PutMapping("/{id}")
     public ResponseEntity<AssetResponseDTO> updateAsset(@PathVariable UUID id, @Valid @RequestBody AssetUpdateDTO assetUpdateDTO) {
-
         Asset asset;
         try {
             asset = assetService.updateAsset(id, assetUpdateDTO.description(), assetMapper.fromAssetDateDTO(assetUpdateDTO.date()));
@@ -107,8 +107,34 @@ public class AssetController {
                 .body(assetMapper.toAssetResponseDTO(asset));
     }
 
+    @PostMapping("/{id}/publish")
+    public ResponseEntity<AssetResponseDTO> publishAsset(@PathVariable UUID id, Authentication authentication) {
+        Asset asset;
+        try {
+            asset = assetService.setAssetPublishedStatus(id, true, authentication.getName());
+        } catch (AssetNotFoundException e) {
+            log.debug(e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(assetMapper.toAssetResponseDTO(asset));
+    }
+
+    @PostMapping("/{id}/unpublish")
+    public ResponseEntity<AssetResponseDTO> unpublishAsset(@PathVariable UUID id, Authentication authentication) {
+        Asset asset;
+        try {
+            asset = assetService.setAssetPublishedStatus(id, false, authentication.getName());
+        } catch (AssetNotFoundException e) {
+            log.debug(e.getMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(assetMapper.toAssetResponseDTO(asset));
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> softDeleteAssetById(@PathVariable UUID id, Authentication authentication) {
+    public ResponseEntity<Void> softDeleteAsset(@PathVariable UUID id, Authentication authentication) {
         try {
             assetService.softDeleteAsset(id, authentication.getName());
         } catch (AssetNotFoundException e) {
@@ -120,7 +146,7 @@ public class AssetController {
     }
 
     @PostMapping("/{id}/restore")
-    public ResponseEntity<Void> restoreAssetById(@PathVariable UUID id) {
+    public ResponseEntity<Void> restoreAsset(@PathVariable UUID id) {
         try {
             assetService.restoreAsset(id);
         } catch (AssetNotFoundException e) {
@@ -135,7 +161,7 @@ public class AssetController {
     }
 
     @DeleteMapping("/{id}/permanent")
-    public ResponseEntity<Void> permanentlyDeleteAssetById(@PathVariable UUID id) {
+    public ResponseEntity<Void> permanentlyDeleteAsset(@PathVariable UUID id) {
         try {
             assetService.permanentlyDeleteAsset(id);
         } catch (AssetNotFoundException e) {

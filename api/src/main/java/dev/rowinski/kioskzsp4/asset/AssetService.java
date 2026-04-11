@@ -124,6 +124,14 @@ public class AssetService {
     }
 
     @Transactional
+    public Asset setAssetPublishedStatus(UUID assetId, boolean isPublished, String publishedBy) {
+        Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
+        asset.setPublishedAt(isPublished ? Instant.now(clock) : null);
+        asset.setPublishedBy(isPublished ? publishedBy : null);
+        return asset;
+    }
+
+    @Transactional
     public void softDeleteAsset(UUID assetId, String deletedBy) {
         Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
         asset.setDeletedAt(Instant.now(clock));

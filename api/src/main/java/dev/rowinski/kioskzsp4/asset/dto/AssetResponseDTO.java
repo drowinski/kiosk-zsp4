@@ -29,6 +29,24 @@ public record AssetResponseDTO(
         Instant createdAt,
 
         @NotNull
-        Instant updatedAt
+        String createdBy,
+
+        @NotNull
+        Instant updatedAt,
+
+        @NotNull
+        String updatedBy,
+
+        @Nullable
+        Instant publishedAt,
+
+        @Nullable
+        String publishedBy,
+
+        @Nullable
+        Instant deletedAt,
+
+        @Nullable
+        String deletedBy
 ) {
 }
