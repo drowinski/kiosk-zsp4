@@ -39,6 +39,7 @@ public class AuthConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/assets/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

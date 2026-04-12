@@ -1,5 +1,7 @@
 package dev.rowinski.kioskzsp4.asset.model;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+import dev.rowinski.kioskzsp4.asset.AssetMimeTypes;
 import dev.rowinski.kioskzsp4.asset.exceptions.UnsupportedFileTypeException;
 
 public enum AssetType {
@@ -9,6 +11,10 @@ public enum AssetType {
     DOCUMENT;
 
     public static AssetType fromMimeType(String mimeType) {
+        if (!AssetMimeTypes.isSupported(mimeType)) {
+            throw new UnsupportedFileTypeException("Unsupported mime type: " + mimeType);
+        }
+
         if (mimeType.startsWith("image/")) {
             return IMAGE;
         } else if (mimeType.startsWith("video/")) {
@@ -18,7 +24,12 @@ public enum AssetType {
         } else if (mimeType.equals("application/pdf")) {
             return DOCUMENT;
         } else {
-            throw new UnsupportedFileTypeException("Unknown mime type: " + mimeType);
+            throw new UnsupportedFileTypeException("AssetType cannot be inferred from mime type: " + mimeType);
         }
+    }
+
+    @JsonValue
+    public String toLowerCase() {
+        return this.name().toLowerCase();
     }
 }

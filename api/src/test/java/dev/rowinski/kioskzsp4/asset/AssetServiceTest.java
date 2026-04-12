@@ -36,7 +36,7 @@ public class AssetServiceTest {
     @BeforeEach
     public void setUp() {
         assetRepository = mock(AssetRepository.class);
-        AssetProperties assetProperties = new AssetProperties(tempDir);
+        AssetProperties assetProperties = new AssetProperties(tempDir, "/irrelevant");
         assetService = new AssetService(assetProperties,
                 assetRepository,
                 Clock.systemUTC(),

@@ -3,6 +3,7 @@ package dev.rowinski.kioskzsp4.asset;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetFileException;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetNotFoundException;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetOperationNotAllowed;
+import dev.rowinski.kioskzsp4.asset.exceptions.UnsupportedFileTypeException;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterSpecificationBuilder;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
@@ -49,12 +50,7 @@ public class AssetService {
         UUID assetId = UUID.randomUUID();
 
         StoreAssetFileResult storeResult;
-        try {
-            storeResult = storeAssetFile(inputStream, assetId);
-        } catch (AssetFileException exception) {
-            log.error(exception.getMessage(), exception);
-            throw exception;
-        }
+        storeResult = storeAssetFile(inputStream, assetId, originalFileName);
 
         try {
             Asset asset = new Asset();
@@ -82,7 +78,7 @@ public class AssetService {
     private record StoreAssetFileResult(Path destinationPath, String mimeType) {
     }
 
-    private StoreAssetFileResult storeAssetFile(InputStream inputStream, UUID assetId) {
+    private StoreAssetFileResult storeAssetFile(InputStream inputStream, UUID assetId, @Nullable String originalFileName) {
         try {
             byte[] header = inputStream.readNBytes(8192);
 
@@ -90,9 +86,13 @@ public class AssetService {
                 throw new AssetFileException("Input stream is empty");
             }
 
-            String mimeTypeString = tika.detect(header);
-            MimeType mimeType = mimeTypes.forName(mimeTypeString);
-            Path destinationPath = getSafeFilePath(assetId + mimeType.getExtension());
+            String mimeTypeString = tika.detect(header, originalFileName);
+
+            if (!AssetMimeTypes.isSupported(mimeTypeString)) {
+                throw new UnsupportedFileTypeException("Tika detected an unsupported mime type: " + mimeTypeString);
+            }
+
+            Path destinationPath = getSafeFilePath(assetId + mimeTypes.forName(mimeTypeString).getExtension());
 
             try (OutputStream outputStream = Files.newOutputStream(destinationPath)) {
                 outputStream.write(header);
@@ -103,7 +103,7 @@ public class AssetService {
         } catch (IOException e) {
             throw new AssetFileException("IO exception while trying to save asset file", e);
         } catch (MimeTypeException e) {
-            throw new AssetFileException("Mime type exception while trying to save asset file", e);
+            throw new AssetFileException("Tika mime type exception while trying to save asset file", e);
         }
     }
 

@@ -19,14 +19,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -46,12 +44,7 @@ public class AssetController {
             return ResponseEntity.badRequest().build();
         }
 
-        if (!List.of(
-                "image/jpeg",
-                "image/png",
-                "video/mp4",
-                "application/pdf"
-        ).contains(file.getContentType())) {
+        if (!AssetMimeTypes.isSupported(file.getContentType())) {
             return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
         }
 

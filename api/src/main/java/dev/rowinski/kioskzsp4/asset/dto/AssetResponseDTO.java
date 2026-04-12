@@ -19,6 +19,9 @@ public record AssetResponseDTO(
         @NotNull
         AssetType type,
 
+        @NotNull
+        String mediaUri,
+
         @Nullable
         String description,
 
