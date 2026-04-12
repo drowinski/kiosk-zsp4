@@ -3,7 +3,7 @@ package dev.rowinski.kioskzsp4.asset;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetFileException;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetNotFoundException;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetOperationNotAllowed;
-import dev.rowinski.kioskzsp4.asset.exceptions.UnsupportedFileTypeException;
+import dev.rowinski.kioskzsp4.asset.exceptions.AssetTypeNotSupportedException;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterSpecificationBuilder;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
@@ -13,7 +13,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
-import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
 import org.jspecify.annotations.Nullable;
@@ -89,7 +88,7 @@ public class AssetService {
             String mimeTypeString = tika.detect(header, originalFileName);
 
             if (!AssetMimeTypes.isSupported(mimeTypeString)) {
-                throw new UnsupportedFileTypeException("Tika detected an unsupported mime type: " + mimeTypeString);
+                throw new AssetTypeNotSupportedException("Tika detected an unsupported mime type: " + mimeTypeString);
             }
 
             Path destinationPath = getSafeFilePath(assetId + mimeTypes.forName(mimeTypeString).getExtension());

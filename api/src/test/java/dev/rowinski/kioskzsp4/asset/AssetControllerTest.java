@@ -5,7 +5,7 @@ import dev.rowinski.kioskzsp4.asset.dto.AssetDateDTO;
 import dev.rowinski.kioskzsp4.asset.dto.AssetUpdateDTO;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetNotFoundException;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetOperationNotAllowed;
-import dev.rowinski.kioskzsp4.asset.exceptions.UnsupportedFileTypeException;
+import dev.rowinski.kioskzsp4.asset.exceptions.AssetTypeNotSupportedException;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterStatus;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
 import dev.rowinski.kioskzsp4.asset.mapping.AssetMapper;
@@ -122,7 +122,7 @@ public class AssetControllerTest extends TestWithSecurity {
     @Test
     @WithMockUser
     void createAsset_withMalformedMediaFile_returns415() throws Exception {
-        when(assetService.storeAsset(any(), any(), any(), any())).thenThrow(new UnsupportedFileTypeException("Mock message"));
+        when(assetService.storeAsset(any(), any(), any(), any())).thenThrow(new AssetTypeNotSupportedException("Mock message"));
 
         mockMvc.perform(multipart(ROOT_ENDPOINT)
                         .file(getMalformedJPEGFile())

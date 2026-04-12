@@ -6,7 +6,7 @@ import dev.rowinski.kioskzsp4.asset.dto.AssetUpdateDTO;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetFileException;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetNotFoundException;
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetOperationNotAllowed;
-import dev.rowinski.kioskzsp4.asset.exceptions.UnsupportedFileTypeException;
+import dev.rowinski.kioskzsp4.asset.exceptions.AssetTypeNotSupportedException;
 import dev.rowinski.kioskzsp4.asset.filtering.AssetFilterParams;
 import dev.rowinski.kioskzsp4.asset.mapping.AssetMapper;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
@@ -23,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.UUID;
@@ -39,7 +40,7 @@ public class AssetController {
     public ResponseEntity<AssetResponseDTO> createAsset(
             @Valid @RequestPart("metadata") AssetCreationDTO assetCreationDTO,
             @RequestPart("file") MultipartFile file
-    ) {
+    ) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -56,12 +57,6 @@ public class AssetController {
                     assetCreationDTO.description(),
                     assetMapper.fromAssetDateDTO(assetCreationDTO.date())
             );
-        } catch (UnsupportedFileTypeException e) {
-            log.debug(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return ResponseEntity.internalServerError().build();
         }
 
         return ResponseEntity
@@ -87,13 +82,7 @@ public class AssetController {
 
     @PutMapping("/{id}")
     public ResponseEntity<AssetResponseDTO> updateAsset(@PathVariable UUID id, @Valid @RequestBody AssetUpdateDTO assetUpdateDTO) {
-        Asset asset;
-        try {
-            asset = assetService.updateAsset(id, assetUpdateDTO.description(), assetMapper.fromAssetDateDTO(assetUpdateDTO.date()));
-        } catch (AssetNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
-
+        Asset asset = assetService.updateAsset(id, assetUpdateDTO.description(), assetMapper.fromAssetDateDTO(assetUpdateDTO.date()));
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .location(URI.create("/api/assets/%s".formatted(asset.getId())))
@@ -102,72 +91,31 @@ public class AssetController {
 
     @PostMapping("/{id}/publish")
     public ResponseEntity<AssetResponseDTO> publishAsset(@PathVariable UUID id, Authentication authentication) {
-        Asset asset;
-        try {
-            asset = assetService.setAssetPublishedStatus(id, true, authentication.getName());
-        } catch (AssetNotFoundException e) {
-            log.debug(e.getMessage(), e);
-            return ResponseEntity.notFound().build();
-        }
-
+        Asset asset = assetService.setAssetPublishedStatus(id, true, authentication.getName());
         return ResponseEntity.ok(assetMapper.toAssetResponseDTO(asset));
     }
 
     @PostMapping("/{id}/unpublish")
     public ResponseEntity<AssetResponseDTO> unpublishAsset(@PathVariable UUID id, Authentication authentication) {
-        Asset asset;
-        try {
-            asset = assetService.setAssetPublishedStatus(id, false, authentication.getName());
-        } catch (AssetNotFoundException e) {
-            log.debug(e.getMessage(), e);
-            return ResponseEntity.notFound().build();
-        }
-
+        Asset asset = assetService.setAssetPublishedStatus(id, false, authentication.getName());
         return ResponseEntity.ok(assetMapper.toAssetResponseDTO(asset));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> softDeleteAsset(@PathVariable UUID id, Authentication authentication) {
-        try {
-            assetService.softDeleteAsset(id, authentication.getName());
-        } catch (AssetNotFoundException e) {
-            log.debug(e.getMessage(), e);
-            return ResponseEntity.notFound().build();
-        }
-
+        assetService.softDeleteAsset(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/restore")
     public ResponseEntity<Void> restoreAsset(@PathVariable UUID id) {
-        try {
-            assetService.restoreAsset(id);
-        } catch (AssetNotFoundException e) {
-            log.debug(e.getMessage(), e);
-            return ResponseEntity.notFound().build();
-        } catch (AssetOperationNotAllowed e) {
-            log.debug(e.getMessage(), e);
-            return ResponseEntity.badRequest().build();
-        }
-
+        assetService.restoreAsset(id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}/permanent")
     public ResponseEntity<Void> permanentlyDeleteAsset(@PathVariable UUID id) {
-        try {
-            assetService.permanentlyDeleteAsset(id);
-        } catch (AssetNotFoundException e) {
-            log.debug(e.getMessage(), e);
-            return ResponseEntity.notFound().build();
-        } catch (AssetOperationNotAllowed e) {
-            log.debug(e.getMessage(), e);
-            return ResponseEntity.badRequest().build();
-        } catch (AssetFileException e) {
-            log.error(e.getMessage(), e);
-            return ResponseEntity.internalServerError().build();
-        }
-
+        assetService.permanentlyDeleteAsset(id);
         return ResponseEntity.noContent().build();
     }
 }

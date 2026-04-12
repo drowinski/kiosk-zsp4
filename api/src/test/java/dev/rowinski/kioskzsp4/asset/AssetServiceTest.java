@@ -1,7 +1,7 @@
 package dev.rowinski.kioskzsp4.asset;
 
 import dev.rowinski.kioskzsp4.asset.exceptions.AssetOperationNotAllowed;
-import dev.rowinski.kioskzsp4.asset.exceptions.UnsupportedFileTypeException;
+import dev.rowinski.kioskzsp4.asset.exceptions.AssetTypeNotSupportedException;
 import dev.rowinski.kioskzsp4.asset.model.Asset;
 import dev.rowinski.kioskzsp4.asset.model.AssetType;
 import org.apache.tika.Tika;
@@ -69,7 +69,7 @@ public class AssetServiceTest {
             assertThat(inputStream).isNotNull();
 
             assertThatThrownBy(() -> assetService.storeAsset(inputStream, null, null, null))
-                    .isInstanceOf(UnsupportedFileTypeException.class);
+                    .isInstanceOf(AssetTypeNotSupportedException.class);
             verify(assetRepository, never()).save(any());
             try (Stream<Path> tempDirStream = Files.list(tempDir)) {
                 assertThat(tempDirStream.findAny()).isEmpty();
