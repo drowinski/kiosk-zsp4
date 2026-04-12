@@ -27,9 +27,9 @@ public class AssetDate {
     private AssetDatePrecision precision;
 
     @NotNull
-    private boolean isApproximate = false;
+    private boolean approximate = false;
 
-    public static AssetDate of(LocalDate min, LocalDate max, AssetDatePrecision precision, boolean isApproximate) {
+    public static AssetDate of(LocalDate min, LocalDate max, AssetDatePrecision precision, boolean approximate) {
         LocalDate normalizedMin = switch (precision) {
             case DAY -> min;
             case MONTH -> min.with(TemporalAdjusters.firstDayOfMonth());
@@ -50,7 +50,7 @@ public class AssetDate {
         assetDate.setMin(normalizedMin);
         assetDate.setMax(normalizedMax);
         assetDate.setPrecision(precision);
-        assetDate.setApproximate(isApproximate);
+        assetDate.setApproximate(approximate);
         return assetDate;
     }
 }

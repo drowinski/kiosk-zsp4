@@ -34,7 +34,7 @@ public abstract class AssetMapper {
                 assetDateDTO.min(),
                 assetDateDTO.max(),
                 assetDateDTO.precision(),
-                assetDateDTO.isApproximate()
+                assetDateDTO.approximate()
         );
     }
 }

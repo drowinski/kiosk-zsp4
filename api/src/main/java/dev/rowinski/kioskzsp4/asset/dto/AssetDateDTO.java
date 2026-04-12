@@ -18,6 +18,6 @@ public record AssetDateDTO(
         AssetDatePrecision precision,
 
         @NotNull
-        boolean isApproximate
+        Boolean approximate
 ) {
 }

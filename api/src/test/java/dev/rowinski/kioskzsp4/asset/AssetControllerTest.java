@@ -233,6 +233,7 @@ public class AssetControllerTest extends TestWithSecurity {
                         .min(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
                         .max(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
                         .precision(AssetDatePrecision.YEAR)
+                        .approximate(false)
                         .build())
                 .build();
 
@@ -259,6 +260,7 @@ public class AssetControllerTest extends TestWithSecurity {
                         .min(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
                         .max(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
                         .precision(AssetDatePrecision.YEAR)
+                        .approximate(false)
                         .build())
                 .build();
 
@@ -400,7 +402,7 @@ public class AssetControllerTest extends TestWithSecurity {
                         .min(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
                         .max(LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault()))
                         .precision(AssetDatePrecision.DAY)
-                        .isApproximate(false)
+                        .approximate(false)
                         .build())
                 .build();
 
@@ -420,7 +422,7 @@ public class AssetControllerTest extends TestWithSecurity {
                         .min(null)
                         .max(null)
                         .precision(AssetDatePrecision.DAY)
-                        .isApproximate(false)
+                        .approximate(false)
                         .build())
                 .build();
 
