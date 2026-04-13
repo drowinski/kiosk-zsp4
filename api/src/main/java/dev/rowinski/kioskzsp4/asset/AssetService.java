@@ -18,6 +18,8 @@ import org.apache.tika.mime.MimeTypes;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -40,6 +42,7 @@ public class AssetService {
     private final Tika tika;
     private final MimeTypes mimeTypes;
 
+    @PreAuthorize("hasRole('STAFF')")
     public Asset storeAsset(
             InputStream inputStream,
             @Nullable String originalFileName,
@@ -106,15 +109,18 @@ public class AssetService {
         }
     }
 
+    @PostAuthorize("hasRole('STAFF') || returnObject.orElse(null)?.publishedAt != null")
     public Optional<Asset> getAssetById(UUID assetId) {
         return assetRepository.findById(assetId);
     }
 
+    @PreAuthorize("hasRole('STAFF') || !#p0.containsStaffOnlyFilters()")
     public Page<Asset> getAssets(AssetFilterParams filterParams, Pageable pageable) {
         return assetRepository.findAll(AssetFilterSpecificationBuilder.fromFilterParams(filterParams), pageable);
     }
 
     @Transactional
+    @PreAuthorize("hasRole('STAFF')")
     public Asset updateAsset(UUID assetId, @Nullable String description, @Nullable AssetDate assetDate) {
         Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
         asset.setDescription(description);
@@ -123,6 +129,7 @@ public class AssetService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('STAFF')")
     public Asset setAssetPublishedStatus(UUID assetId, boolean isPublished, String publishedBy) {
         Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
         asset.setPublishedAt(isPublished ? Instant.now(clock) : null);
@@ -131,13 +138,17 @@ public class AssetService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('STAFF')")
     public void softDeleteAsset(UUID assetId, String deletedBy) {
         Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
         asset.setDeletedAt(Instant.now(clock));
         asset.setDeletedBy(deletedBy);
+        asset.setPublishedAt(null);
+        asset.setPublishedBy(null);
     }
 
     @Transactional
+    @PreAuthorize("hasRole('STAFF')")
     public void restoreAsset(UUID assetId) {
         Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
         if (asset.getDeletedAt() == null) {
@@ -145,9 +156,12 @@ public class AssetService {
         }
         asset.setDeletedAt(null);
         asset.setDeletedBy(null);
+        asset.setPublishedAt(null);
+        asset.setPublishedBy(null);
     }
 
     @Transactional
+    @PreAuthorize("hasRole('STAFF')")
     public void permanentlyDeleteAsset(UUID assetId) {
         Asset asset = assetRepository.findById(assetId).orElseThrow(() -> new AssetNotFoundException(assetId));
         if (asset.getDeletedAt() == null) {

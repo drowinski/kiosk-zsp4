@@ -1,11 +1,17 @@
 package dev.rowinski.kioskzsp4.auth;
 
+import dev.rowinski.kioskzsp4.user.Role;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authorization.AuthorizationManagerFactory;
+import org.springframework.security.authorization.DefaultAuthorizationManagerFactory;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,6 +24,7 @@ import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class AuthConfig {
     private final JwtFilter jwtFilter;
@@ -52,6 +59,22 @@ public class AuthConfig {
                         )
                 )
                 .build();
+    }
+
+    @Bean
+    RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role(Role.ADMIN.toString()).implies(Role.STAFF.toString())
+                .role(Role.STAFF.toString()).implies(Role.KIOSK.toString())
+                .build();
+    }
+
+    @Bean
+    <T> AuthorizationManagerFactory<T> authorizationManagerFactory() {
+        DefaultAuthorizationManagerFactory<T> authorizationManagerFactory =
+                new DefaultAuthorizationManagerFactory<>();
+        authorizationManagerFactory.setRoleHierarchy(roleHierarchy());
+        return authorizationManagerFactory;
     }
 
     @Bean

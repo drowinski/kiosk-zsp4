@@ -46,4 +46,11 @@ public record AssetFilterParams(
         @Nullable
         LocalDate deletedBefore
 ) {
+    public boolean containsStaffOnlyFilters() {
+        return status != null && status != AssetFilterStatus.PUBLISHED
+                || publishedAfter != null
+                || publishedBefore != null
+                || deletedAfter != null
+                || deletedBefore != null;
+    }
 }
