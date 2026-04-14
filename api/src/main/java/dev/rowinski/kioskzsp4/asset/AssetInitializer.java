@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 @Slf4j
+@Order(1)
 @Component
 @RequiredArgsConstructor
 public class AssetInitializer implements ApplicationRunner {
