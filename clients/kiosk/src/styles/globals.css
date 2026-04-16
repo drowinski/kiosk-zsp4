@@ -9,3 +9,10 @@ html, body, #root {
 html, body {
     overscroll-behavior: none;
 }
+
+@keyframes gallery-detail-overlay-scale-up {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+}

@@ -27,7 +27,7 @@ const testItems: TimelineItemData[] = [
       'https://images.pexels.com/photos/1472999/pexels-photo-1472999.jpeg',
     caption: '2000–dziś',
   },
-].map((item) => ({ ...item, onClickUri: '#' }));
+].map((item) => ({ ...item, onClickUri: '/gallery' }));
 
 export function TimelinePage() {
   return (
